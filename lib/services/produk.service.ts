@@ -2,6 +2,7 @@ import api from "@/lib/api";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 export interface ProdukItem {
+  coinsPenaltyPerItem: number;
   id: number;
   nama: string;
   harga: number;
@@ -81,8 +82,8 @@ export async function getAllProduk(
   }
 
   const params = new URLSearchParams();
-  if (query.kategori)             params.set("kategori",  query.kategori);
-  if (query.search)               params.set("search",    query.search);
+  if (query.kategori) params.set("kategori", query.kategori);
+  if (query.search) params.set("search", query.search);
   if (query.isActive !== undefined) params.set("isActive", String(query.isActive));
   if (query.isTitipan !== undefined) params.set("isTitipan", String(query.isTitipan));
 
@@ -176,8 +177,8 @@ export async function deleteProduk(id: number): Promise<void> {
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 export function stokStatus(stok: number): "habis" | "rendah" | "cukup" {
-  if (stok === 0)  return "habis";
-  if (stok <= 10)  return "rendah";
+  if (stok === 0) return "habis";
+  if (stok <= 10) return "rendah";
   return "cukup";
 }
 
@@ -207,8 +208,8 @@ export function filterProduk(
   if (!Array.isArray(list)) return [];
   return list.filter((p) => {
     const matchSearch = !search || p.nama.toLowerCase().includes(search.toLowerCase());
-    const matchKat    = !kategori || kategori === "semua" || p.kategori === kategori;
-    const matchAktif  = showInaktif ? true : p.isActive;
+    const matchKat = !kategori || kategori === "semua" || p.kategori === kategori;
+    const matchAktif = showInaktif ? true : p.isActive;
     return matchSearch && matchKat && matchAktif;
   });
 }

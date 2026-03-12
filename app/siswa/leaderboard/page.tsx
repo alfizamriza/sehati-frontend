@@ -33,6 +33,7 @@ import {
   LeaderboardKelasRow,
   LeaderboardJenjangRow,
 } from "@/lib/services/admin";
+import SehatiLoadingScreen from "@/components/siswa/SehatiLoadingScreen";
 import "../siswa-tokens.css";
 import "./leaderboard-light.css";
 
@@ -42,23 +43,23 @@ import "./leaderboard-light.css";
 type TabKey = "kelas" | "antarKelas" | "sekolah" | "antarJenjang" | "siswaAntarJenjang";
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "kelas",             label: "Kelas Saya"    },
-  { key: "antarKelas",        label: "Antar Kelas"   },
-  { key: "sekolah",           label: "Sekolah"       },
-  { key: "antarJenjang",      label: "Antar Jenjang" },
-  { key: "siswaAntarJenjang", label: "Se-Jenjang"    },
+  { key: "kelas", label: "Kelas Saya" },
+  { key: "antarKelas", label: "Antar Kelas" },
+  { key: "sekolah", label: "Sekolah" },
+  { key: "antarJenjang", label: "Antar Jenjang" },
+  { key: "siswaAntarJenjang", label: "Se-Jenjang" },
 ];
 
 // Jenjang config — icons only, no emoji
 const JENJANG_CFG: Record<string, { icon: React.ReactNode; color: string }> = {
-  SD:  { icon: <BookOpen  size={16} />, color: "var(--jenjang-sd)"  },
-  SMP: { icon: <School    size={16} />, color: "var(--jenjang-smp)" },
+  SD: { icon: <BookOpen size={16} />, color: "var(--jenjang-sd)" },
+  SMP: { icon: <School size={16} />, color: "var(--jenjang-smp)" },
   SMA: { icon: <GraduationCap size={16} />, color: "var(--jenjang-sma)" },
 };
 
 // Rank medal icons
 const RankIcon = ({ rank }: { rank: number }) => {
-  if (rank === 1) return <Medal size={18} color="var(--gold)"   strokeWidth={2.5} />;
+  if (rank === 1) return <Medal size={18} color="var(--gold)" strokeWidth={2.5} />;
   if (rank === 2) return <Medal size={18} color="var(--silver)" strokeWidth={2.5} />;
   if (rank === 3) return <Medal size={18} color="var(--bronze)" strokeWidth={2.5} />;
   return <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-muted)" }}>#{rank}</span>;
@@ -294,37 +295,37 @@ export default function LeaderboardSiswaPage() {
   const [isDark, setIsDark] = useState(false);
 
   // ── Query hooks ──
-  const { data: dataKelas,        isLoading: loadKelas,        refetch: refKelas        } = useLeaderboardKelasSaya();
-  const { data: dataAntarKelas,   isLoading: loadAntarKelas,   refetch: refAntarKelas   } = useLeaderboardAntarKelas();
-  const { data: dataSekolah,      isLoading: loadSekolah,      refetch: refSekolah      } = useLeaderboardSekolah();
+  const { data: dataKelas, isLoading: loadKelas, refetch: refKelas } = useLeaderboardKelasSaya();
+  const { data: dataAntarKelas, isLoading: loadAntarKelas, refetch: refAntarKelas } = useLeaderboardAntarKelas();
+  const { data: dataSekolah, isLoading: loadSekolah, refetch: refSekolah } = useLeaderboardSekolah();
   const { data: dataAntarJenjang, isLoading: loadAntarJenjang, refetch: refAntarJenjang } = useLeaderboardAntarJenjang();
   const { data: dataSiswaJenjang, isLoading: loadSiswaJenjang, refetch: refSiswaJenjang } = useLeaderboardSiswaAntarJenjang();
 
   const handleRefresh = () => {
     const map: Record<TabKey, () => void> = {
-      kelas:             refKelas,
-      antarKelas:        refAntarKelas,
-      sekolah:           refSekolah,
-      antarJenjang:      refAntarJenjang,
+      kelas: refKelas,
+      antarKelas: refAntarKelas,
+      sekolah: refSekolah,
+      antarJenjang: refAntarJenjang,
       siswaAntarJenjang: refSiswaJenjang,
     };
     map[tab]();
   };
 
   const isLoading = {
-    kelas:             loadKelas,
-    antarKelas:        loadAntarKelas,
-    sekolah:           loadSekolah,
-    antarJenjang:      loadAntarJenjang,
+    kelas: loadKelas,
+    antarKelas: loadAntarKelas,
+    sekolah: loadSekolah,
+    antarJenjang: loadAntarJenjang,
     siswaAntarJenjang: loadSiswaJenjang,
   }[tab];
 
   // Top 3 podium
   const top3Siswa = useMemo((): LeaderboardSiswaRow[] => {
     const src =
-      tab === "kelas"             ? dataKelas :
-      tab === "sekolah"           ? dataSekolah :
-      tab === "siswaAntarJenjang" ? dataSiswaJenjang : undefined;
+      tab === "kelas" ? dataKelas :
+        tab === "sekolah" ? dataSekolah :
+          tab === "siswaAntarJenjang" ? dataSiswaJenjang : undefined;
     return (src ?? []).filter((r) => r.rank <= 3);
   }, [tab, dataKelas, dataSekolah, dataSiswaJenjang]);
 
@@ -333,9 +334,9 @@ export default function LeaderboardSiswaPage() {
   // "Posisi Saya"
   const myPosSiswa = useMemo(() => {
     const src =
-      tab === "kelas"             ? dataKelas :
-      tab === "sekolah"           ? dataSekolah :
-      tab === "siswaAntarJenjang" ? dataSiswaJenjang : undefined;
+      tab === "kelas" ? dataKelas :
+        tab === "sekolah" ? dataSekolah :
+          tab === "siswaAntarJenjang" ? dataSiswaJenjang : undefined;
     return (src ?? []).find((r) => r.is_me);
   }, [tab, dataKelas, dataSekolah, dataSiswaJenjang]);
 

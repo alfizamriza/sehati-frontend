@@ -110,8 +110,6 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (res) => {
-    // Response is already in standardized format from backend
-    // { success: true, message: "...", data: {...} }
     return res;
   },
   (error) => {
