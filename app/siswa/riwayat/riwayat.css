@@ -1,0 +1,556 @@
+/* ================================================================
+   RIWAYAT — Page-specific styles
+   Requires: siswa-tokens.css imported BEFORE this file
+
+   Usage:
+     import "@/styles/siswa-tokens.css";
+     import "./riwayat.css";
+   ================================================================ */
+
+/* ================================================================
+   TABS
+   ================================================================ */
+.rw-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-base);
+  border-radius: 16px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  box-shadow: var(--shadow-card);
+}
+.rw-tabs::-webkit-scrollbar { display: none; }
+
+.rw-tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 11px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.rw-tab:hover:not(.active) {
+  background: var(--color-primary-hover);
+  color: var(--text-primary);
+}
+.rw-tab.active {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 4px 14px var(--color-primary-glow);
+}
+
+/* ================================================================
+   ITEM CARDS
+   ================================================================ */
+.rw-card-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: block;
+}
+
+.rw-item-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-base);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card);
+  transition: background 0.18s, border-color 0.18s, transform 0.15s, box-shadow 0.15s;
+}
+.rw-item-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-1px);
+}
+
+/* ── Card title text ── */
+.rw-item-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+.rw-item-date {
+  font-size: 0.71rem;
+  color: var(--text-muted);
+}
+
+/* ── Icon box inside card ── */
+.rw-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.rw-icon-box-tumbler {
+  background: var(--status-hadir-bg);
+  border: 1px solid var(--status-hadir-border);
+}
+.rw-icon-box-belanja {
+  background: var(--color-primary-soft);
+  border: 1px solid var(--border-primary);
+}
+.rw-icon-box-belanja-plastik {
+  background: var(--status-plastik-bg);
+  border: 1px solid var(--status-plastik-border);
+}
+.rw-icon-box-pelanggaran-ringan {
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+.rw-icon-box-pelanggaran-sedang {
+  background: var(--status-plastik-bg);
+  border: 1px solid var(--status-plastik-border);
+}
+.rw-icon-box-pelanggaran-berat {
+  background: var(--status-pel-bg);
+  border: 1px solid var(--status-pel-border);
+}
+
+/* ── Coins badge ── */
+.rw-coins-plus {
+  font-weight: 800;
+  font-size: 0.93rem;
+  color: var(--status-hadir-text);
+}
+.rw-coins-minus {
+  font-weight: 800;
+  font-size: 0.93rem;
+  color: var(--status-pel-text);
+}
+.rw-coins-label {
+  font-size: 0.62rem;
+  color: var(--text-disabled);
+}
+
+/* ── Chevron ── */
+.rw-chevron {
+  color: var(--border-strong);
+}
+
+/* ── Product list in card (belanja) ── */
+.rw-product-list {
+  font-size: 0.71rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   CHIP / BADGE
+   ================================================================ */
+.rw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid var(--border-base);
+  background: var(--surface-input);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ================================================================
+   SUMMARY CARDS
+   ================================================================ */
+.rw-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.rw-summary-card {
+  padding: 12px 10px;
+  border-radius: var(--radius-item);
+  text-align: center;
+  background: var(--surface-card);
+  border: 1px solid var(--border-base);
+  box-shadow: var(--shadow-card);
+}
+.rw-summary-card-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+.rw-summary-card-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.rw-summary-card-label {
+  font-size: 0.67rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.rw-summary-footer {
+  grid-column: span 3;
+  padding: 12px 18px;
+  border-radius: var(--radius-item);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: var(--surface-card);
+  border: 1px solid var(--border-base);
+  box-shadow: var(--shadow-card);
+}
+.rw-summary-footer-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.rw-summary-footer-label {
+  font-size: 0.64rem;
+  color: var(--text-muted);
+}
+.rw-summary-footer-value {
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+.rw-summary-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border-base);
+}
+
+/* ================================================================
+   PLASTIK WARNING BANNER
+   ================================================================ */
+.rw-plastik-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid;
+}
+.rw-plastik-warning-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.rw-plastik-warning-body {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ================================================================
+   MODAL BOTTOM SHEET
+   ================================================================ */
+.rw-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 9998;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+}
+[data-theme="dark"] .rw-modal-overlay {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.rw-modal-sheet {
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 22px 22px 0 0;
+  padding: 20px 22px 44px;
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: modalUp 0.25s ease;
+  position: relative;
+  box-shadow: var(--shadow-overlay);
+}
+
+/* Top border accent — set via inline style per type */
+.rw-modal-drag {
+  width: 32px;
+  height: 4px;
+  background: var(--border-strong);
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+
+.rw-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: var(--surface-input);
+  border: 1px solid var(--border-base);
+  border-radius: 8px;
+  padding: 5px 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+.rw-modal-close:hover {
+  background: var(--status-pel-bg);
+  color: var(--status-pel-text);
+}
+
+/* ── Modal header ── */
+.rw-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.rw-modal-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.rw-modal-title {
+  font-weight: 700;
+  font-size: 0.97rem;
+  color: var(--text-primary);
+}
+.rw-modal-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.rw-modal-kode {
+  font-size: 0.68rem;
+  color: var(--text-disabled);
+  margin-top: 1px;
+}
+
+/* ── Modal divider ── */
+.rw-modal-divider {
+  height: 1px;
+  background: var(--border-base);
+  margin: 14px 0;
+}
+
+/* ── Modal row ── */
+.rw-modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-base);
+}
+.rw-modal-row-label {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+.rw-modal-row-value {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ── Coins summary in modal ── */
+.rw-modal-coins-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rw-modal-coins-total-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.rw-modal-coins-total-plus {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--status-hadir-text);
+}
+.rw-modal-coins-total-minus {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--status-pel-text);
+}
+
+.rw-modal-coins-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+}
+.rw-modal-coins-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid;
+}
+.rw-modal-coins-chip-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.rw-modal-coins-chip-value {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+/* ── Eco note ── */
+.rw-eco-note {
+  margin-top: 14px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  background: var(--status-hadir-bg);
+  border: 1px solid var(--status-hadir-border);
+}
+
+/* ── Belanja item list ── */
+.rw-belanja-items {
+  margin-bottom: 14px;
+}
+.rw-belanja-items-title {
+  font-size: 0.67rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.rw-belanja-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--border-base);
+  background: var(--surface-panel);
+  margin-bottom: 5px;
+  transition: border-color 0.15s;
+}
+.rw-belanja-item-row.is-plastik {
+  background: var(--status-plastik-bg);
+  border-color: var(--status-plastik-border);
+}
+.rw-belanja-item-row.is-kertas {
+  background: var(--status-hadir-bg);
+  border-color: var(--status-hadir-border);
+}
+.rw-belanja-item-name {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.rw-belanja-item-qty {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.rw-belanja-item-price {
+  font-size: 0.79rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* ── Plastik alert in modal ── */
+.rw-plastik-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 0.74rem;
+  background: var(--status-plastik-bg);
+  border: 1px solid var(--status-plastik-border);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Bukti foto ── */
+.rw-bukti-label {
+  font-size: 0.69rem;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rw-bukti-img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border-base);
+  max-height: 200px;
+  object-fit: cover;
+}
+
+/* ── Refreshing bar ── */
+.rw-refreshing-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+}
+
+/* ================================================================
+   EMPTY STATE
+   ================================================================ */
+.rw-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 20px;
+  color: var(--text-disabled);
+  text-align: center;
+}
+.rw-empty span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ================================================================
+   KEYFRAMES (page-local)
+   ================================================================ */
+@keyframes modalUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to   { transform: none;             opacity: 1; }
+}

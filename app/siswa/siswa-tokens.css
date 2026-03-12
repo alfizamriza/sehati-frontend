@@ -1,0 +1,1369 @@
+/* ================================================================
+   SISWA TOKENS — Shared across ALL siswa pages
+   Import this first, then your page-specific CSS.
+
+   Usage:
+     import "@/styles/siswa-tokens.css";
+     import "./dashboard.css";
+   ================================================================ */
+
+/* ================================================================
+   1. THEME TOKENS — Light (default) + Dark override
+   ================================================================ */
+:root {
+  color-scheme: light;
+
+  /* — Brand / Primary — */
+  --color-primary: #1a6ff4;
+  --color-primary-soft: rgba(26, 111, 244, 0.10);
+  --color-primary-mid: rgba(26, 111, 244, 0.22);
+  --color-primary-glow: rgba(26, 111, 244, 0.30);
+  --color-primary-hover: rgba(26, 111, 244, 0.06);
+
+  /* — Surface — */
+  --surface-page: #f0f4fb;
+  --surface-card: #ffffff;
+  --surface-panel: #f7f9fd;
+  --surface-input: #eef1f8;
+
+  /* — Border — */
+  --border-base: rgba(30, 60, 120, 0.10);
+  --border-strong: rgba(30, 60, 120, 0.18);
+  --border-primary: rgba(26, 111, 244, 0.30);
+
+  /* — Text — */
+  --text-primary: #0d1b3e;
+  --text-secondary: #4b5f85;
+  --text-muted: #8a9ab8;
+  --text-disabled: #bec9dc;
+
+  /* — Status: Hadir — */
+  --status-hadir-bg: rgba(16, 185, 129, 0.12);
+  --status-hadir-border: rgba(16, 185, 129, 0.40);
+  --status-hadir-text: #059669;
+
+  /* — Status: Pelanggaran — */
+  --status-pel-bg: rgba(239, 68, 68, 0.10);
+  --status-pel-border: rgba(239, 68, 68, 0.35);
+  --status-pel-text: #dc2626;
+
+  /* — Status: Plastik — */
+  --status-plastik-bg: rgba(249, 115, 22, 0.10);
+  --status-plastik-border: rgba(249, 115, 22, 0.35);
+  --status-plastik-text: #ea580c;
+
+  /* — Status: Libur — */
+  --status-libur-bg: rgba(59, 130, 246, 0.10);
+  --status-libur-border: rgba(59, 130, 246, 0.35);
+  --status-libur-text: #2563eb;
+
+  /* — Status: Kosong — */
+  --status-kosong-bg: rgba(0, 0, 0, 0.03);
+  --status-kosong-border: rgba(0, 0, 0, 0.08);
+  --status-kosong-text: #bec9dc;
+
+  /* — Calendar (shared with absensi) — */
+  --cal-today-ring: #f59e0b;
+  --cal-today-glow: rgba(245, 158, 11, 0.28);
+  --cal-head-color: #8a9ab8;
+  --cal-outside-opacity: 0.30;
+  --cal-nav-bg: rgba(30, 60, 120, 0.06);
+  --cal-nav-hover: rgba(26, 111, 244, 0.12);
+  --cal-dropdown-bg: #ffffff;
+  --cal-dropdown-border: rgba(30, 60, 120, 0.12);
+  --cal-dropdown-text: #0d1b3e;
+  --cal-muted: #8a9ab8;
+  --cal-text: #0d1b3e;
+
+  /* — Rank / Medal — */
+  --gold: #d97706;
+  --silver: #64748b;
+  --bronze: #92400e;
+
+  /* — Jenjang — */
+  --jenjang-sd: #16a34a;
+  --jenjang-smp: #2563eb;
+  --jenjang-sma: #9333ea;
+
+  /* — Streak — */
+  --streak-color: #ea580c;
+  --streak-bg: rgba(234, 88, 12, 0.08);
+  --streak-border: rgba(234, 88, 12, 0.20);
+
+  /* — Score / Coins — */
+  --score-color: #d97706;
+
+  /* — Elevation — */
+  --shadow-card: 0 2px 12px rgba(30, 60, 120, 0.08);
+  --shadow-elevated: 0 8px 32px rgba(30, 60, 120, 0.14);
+  --shadow-overlay: 0 20px 60px rgba(30, 60, 120, 0.20);
+
+  /* — Radius — */
+  --radius-sm: 10px;
+  --radius-card: 20px;
+  --radius-item: 14px;
+  --radius-pill: 999px;
+
+  /* — Typography — */
+  --font-sans: "Plus Jakarta Sans", "DM Sans", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-primary: #3b8bff;
+  --color-primary-soft: rgba(59, 139, 255, 0.10);
+  --color-primary-mid: rgba(59, 139, 255, 0.22);
+  --color-primary-glow: rgba(59, 139, 255, 0.30);
+  --color-primary-hover: rgba(59, 139, 255, 0.07);
+
+  --surface-page: #080e1f;
+  --surface-card: #0d1628;
+  --surface-panel: #111d34;
+  --surface-input: rgba(255, 255, 255, 0.06);
+
+  --border-base: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --border-primary: rgba(59, 139, 255, 0.32);
+
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-muted: rgba(255, 255, 255, 0.35);
+  --text-disabled: rgba(255, 255, 255, 0.18);
+
+  --status-hadir-bg: rgba(16, 185, 129, 0.18);
+  --status-hadir-border: rgba(16, 185, 129, 0.55);
+  --status-hadir-text: #10b981;
+
+  --status-pel-bg: rgba(239, 68, 68, 0.18);
+  --status-pel-border: rgba(239, 68, 68, 0.55);
+  --status-pel-text: #ef4444;
+
+  --status-plastik-bg: rgba(249, 115, 22, 0.18);
+  --status-plastik-border: rgba(249, 115, 22, 0.50);
+  --status-plastik-text: #f97316;
+
+  --status-libur-bg: rgba(59, 130, 246, 0.15);
+  --status-libur-border: rgba(59, 130, 246, 0.45);
+  --status-libur-text: #60a5fa;
+
+  --status-kosong-bg: rgba(255, 255, 255, 0.03);
+  --status-kosong-border: rgba(255, 255, 255, 0.08);
+  --status-kosong-text: rgba(255, 255, 255, 0.25);
+
+  --cal-head-color: rgba(255, 255, 255, 0.38);
+  --cal-outside-opacity: 0.20;
+  --cal-nav-bg: rgba(255, 255, 255, 0.07);
+  --cal-nav-hover: rgba(23, 158, 255, 0.18);
+  --cal-dropdown-bg: #0d1628;
+  --cal-dropdown-border: rgba(255, 255, 255, 0.12);
+  --cal-dropdown-text: rgba(255, 255, 255, 0.85);
+  --cal-muted: rgba(255, 255, 255, 0.35);
+  --cal-text: rgba(255, 255, 255, 0.88);
+
+  --gold: #f59e0b;
+  --silver: #94a3b8;
+  --bronze: #c2784f;
+
+  --jenjang-sd: #4ade80;
+  --jenjang-smp: #60a5fa;
+  --jenjang-sma: #f472b6;
+
+  --streak-color: #f97316;
+  --streak-bg: rgba(249, 115, 22, 0.12);
+  --streak-border: rgba(249, 115, 22, 0.25);
+
+  --score-color: #f59e0b;
+
+  --shadow-card: 0 2px 14px rgba(0, 0, 0, 0.35);
+  --shadow-elevated: 0 8px 40px rgba(0, 0, 0, 0.55);
+  --shadow-overlay: 0 20px 60px rgba(0, 0, 0, 0.70);
+}
+
+/* ================================================================
+   2. RESET & BASE
+   ================================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ================================================================
+   3. PAGE SHELL
+   ================================================================ */
+.dashboard-page {
+  min-height: 100vh;
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: 100px;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* Ambient gradient overlay */
+.dashboard-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 15% 15%, var(--color-primary-soft) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(147, 51, 234, 0.04) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboard-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ================================================================
+   4. GLASS PANEL (base card)
+   ================================================================ */
+.glass-panel {
+  background: var(--surface-card);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.2s;
+}
+
+/* ================================================================
+   5. HEADER
+   ================================================================ */
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0 8px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, var(--color-primary-soft) 100%);
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--color-primary);
+  box-shadow: 0 4px 14px var(--color-primary-glow);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--text-primary);
+  letter-spacing: -0.4px;
+}
+
+.brand-role {
+  font-size: 10px;
+  color: var(--color-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+[data-theme="dark"] .brand-logo {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #0b5bd3 100%);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ================================================================
+   6. ICON BUTTONS
+   ================================================================ */
+.btn-icon,
+.btn-theme {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-base);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-card);
+  flex-shrink: 0;
+}
+
+.btn-icon:hover,
+.btn-theme:hover {
+  background: var(--color-primary-soft);
+  border-color: var(--border-primary);
+  color: var(--color-primary);
+}
+
+.btn-icon.spinning svg {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ================================================================
+   7. BOTTOM NAV
+   ================================================================ */
+.bottom-nav-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 450px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-base);
+  border-radius: 24px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 8px;
+  z-index: 90;
+  box-shadow: var(--shadow-elevated);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s, transform 0.15s;
+  flex: 1;
+}
+
+.nav-item span {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.nav-item.active {
+  color: var(--color-primary);
+}
+
+.nav-item:active {
+  transform: scale(0.88);
+}
+
+/* ================================================================
+   8. STREAK BADGE
+   ================================================================ */
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--streak-bg);
+  border: 1.5px solid var(--streak-border);
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  animation: streakPulse 3s ease-in-out infinite;
+}
+
+.streak-badge.streak-faded {
+  opacity: 0.4;
+  animation: none;
+  border-color: var(--border-base);
+  background: var(--surface-input);
+}
+
+.streak-flame-icon {
+  color: var(--streak-color);
+  filter: drop-shadow(0 0 4px rgba(234, 88, 12, 0.6));
+}
+
+.streak-count {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--streak-color);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.streak-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--streak-color);
+  opacity: 0.8;
+}
+
+/* ================================================================
+   9. SECTION TITLE
+   ================================================================ */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  margin-top: 20px;
+}
+
+.icon-title {
+  color: var(--color-primary);
+}
+
+.section-title h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+/* ================================================================
+   10. MODAL
+   ================================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+[data-theme="dark"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.80);
+}
+
+.modal-content-glass {
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  padding: 32px;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  position: relative;
+  box-shadow: var(--shadow-overlay);
+}
+
+.close-modal {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--surface-input);
+  border: 1px solid var(--border-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.close-modal:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+/* ================================================================
+   11. PROFILE DROPDOWN
+   ================================================================ */
+.profile-dropdown-wrapper {
+  position: relative;
+}
+
+.profile-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px 6px 6px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background 0.2s, border-color 0.2s;
+  box-shadow: var(--shadow-card);
+}
+
+.profile-trigger-btn:hover,
+.profile-trigger-btn.active {
+  background: var(--color-primary-soft);
+  border-color: var(--border-primary);
+}
+
+.avatar-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), #0369a1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  z-index: 200;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: var(--shadow-overlay);
+  animation: dropdownIn 0.15s ease;
+}
+
+.dropdown-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px 12px;
+}
+
+.dropdown-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), #0369a1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.dropdown-nama {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.dropdown-kelas {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-base);
+  margin: 4px 0;
+}
+
+.dropdown-item-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-align: left;
+  font-family: inherit;
+}
+
+.dropdown-item-btn:hover {
+  background: var(--surface-input);
+  color: var(--text-primary);
+}
+
+.dropdown-item-btn.logout-btn {
+  color: #dc2626;
+}
+
+.dropdown-item-btn.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+}
+
+.dropdown-item-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ================================================================
+   12. WELCOME BANNER
+   ================================================================ */
+.welcome-banner {
+  background: linear-gradient(120deg, var(--surface-panel) 0%, var(--surface-card) 100%);
+  border: 1px solid var(--border-base);
+  padding: 24px;
+  border-radius: var(--radius-card);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+[data-theme="dark"] .welcome-banner {
+  background: linear-gradient(120deg, #1a2540 0%, #0d1628 100%);
+}
+
+.greet {
+  font-size: 17px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin: 0 0 4px;
+  line-height: 1.3;
+}
+
+.greet span {
+  font-size: 26px;
+  color: var(--text-primary);
+  font-weight: 800;
+  display: inline-block;
+}
+
+.welcome-decor {
+  opacity: 0.10;
+  transform: rotate(-10deg);
+  color: var(--color-primary);
+}
+
+/* ================================================================
+   13. STAT CARDS
+   ================================================================ */
+.stats-grid-siswa {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat-card-mini {
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-card);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.stat-card-mini:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-elevated);
+}
+
+.stat-info .stat-label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+.stat-info .stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin-top: 2px;
+  margin-bottom: 20px;
+}
+
+/* Coins marquee */
+.coins-marquee-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  background: linear-gradient(0deg, rgba(217, 119, 6, 0.10) 0%, transparent 100%);
+  padding: 4px 0 5px;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  margin-top: 10px;
+}
+
+.coins-marquee-track {
+  display: flex;
+  white-space: nowrap;
+  animation: coinsMarquee 22s linear infinite;
+}
+
+.coins-marquee-text {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: var(--score-color);
+  opacity: 0.65;
+  flex-shrink: 0;
+  letter-spacing: 0.2px;
+  padding-right: 2rem;
+  margin-top: 10px;
+}
+
+/* ================================================================
+   14. QR CARD
+   ================================================================ */
+.qr-preview-card-new {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, var(--color-primary-soft) 0%, transparent 100%);
+  border: 1px solid var(--border-primary);
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+
+.qr-preview-card-new:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px var(--color-primary-glow);
+  border-color: var(--color-primary);
+}
+
+.qr-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+  opacity: 0.5;
+  animation: qrScan 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.qr-frame-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.qr-glow-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 14px;
+  box-shadow: 0 0 14px var(--color-primary-glow);
+  pointer-events: none;
+}
+
+.qr-frame {
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  position: relative;
+  z-index: 1;
+}
+
+.qr-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--color-primary);
+  border-style: solid;
+  z-index: 2;
+}
+
+.qr-corner-tl {
+  top: -2px;
+  left: -2px;
+  border-width: 2px 0 0 2px;
+  border-radius: 3px 0 0 0;
+}
+
+.qr-corner-tr {
+  top: -2px;
+  right: -2px;
+  border-width: 2px 2px 0 0;
+  border-radius: 0 3px 0 0;
+}
+
+.qr-corner-bl {
+  bottom: -2px;
+  left: -2px;
+  border-width: 0 0 2px 2px;
+  border-radius: 0 0 0 3px;
+}
+
+.qr-corner-br {
+  bottom: -2px;
+  right: -2px;
+  border-width: 0 2px 2px 0;
+  border-radius: 0 0 3px 0;
+}
+
+.qr-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.qr-nis-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  opacity: 0.75;
+}
+
+.qr-nis-value {
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+
+.qr-tap-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.70rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.qr-tap-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 6px var(--color-primary);
+  animation: tapDotPulse 1.5s ease-in-out infinite;
+}
+
+.qr-large-wrapper {
+  background: white;
+  padding: 16px;
+  border-radius: 20px;
+  display: inline-block;
+  margin: 20px 0;
+}
+
+.nis-display {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+/* ================================================================
+   15. CALENDAR (shared base — used in absensi)
+   ================================================================ */
+.cal-caption-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px 14px;
+  border-bottom: 1px solid var(--border-base);
+  margin-bottom: 10px;
+}
+
+.cal-nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-base);
+  background: var(--cal-nav-bg);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.cal-nav-btn:hover:not(:disabled) {
+  background: var(--cal-nav-hover);
+  border-color: var(--border-primary);
+  color: var(--color-primary);
+}
+
+.cal-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.cal-caption-selects {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.cal-select-wrapper {
+  position: relative;
+}
+
+.cal-select-wrapper::after {
+  content: "▾";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  color: var(--color-primary);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.cal-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--cal-dropdown-bg);
+  border: 1px solid var(--cal-dropdown-border);
+  color: var(--cal-dropdown-text);
+  border-radius: var(--radius-sm);
+  padding: 6px 30px 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-width: 80px;
+}
+
+.cal-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.cal-select option {
+  background: var(--cal-dropdown-bg);
+  color: var(--cal-dropdown-text);
+}
+
+/* DayPicker — hide built-in chrome */
+.attendance-cal-caption-hidden,
+.attendance-cal-caption-label-hidden,
+.attendance-cal-dropdown-hidden,
+.attendance-cal-nav-hidden {
+  display: none !important;
+}
+
+.attendance-cal-root {
+  width: 100%;
+  background: transparent;
+  color: var(--cal-text);
+  font-family: inherit;
+  padding: 0;
+}
+
+.attendance-cal-months,
+.attendance-cal-month {
+  width: 100%;
+}
+
+.attendance-cal-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  table-layout: fixed;
+}
+
+.attendance-cal-head-cell {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--cal-head-color);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 0 8px;
+  width: calc(100% / 7);
+}
+
+.attendance-cal-cell {
+  text-align: center;
+  padding: 2px;
+  position: relative;
+}
+
+.attendance-cal-day {
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--cal-text);
+  font-size: 0.78rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  position: relative;
+  font-family: inherit;
+}
+
+.attendance-cal-day:hover:not(.attendance-cal-day-disabled) {
+  background: var(--color-primary-soft);
+  transform: scale(1.05);
+}
+
+.attendance-cal-day-disabled {
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+.attendance-cal-day-outside {
+  opacity: var(--cal-outside-opacity) !important;
+}
+
+/* Calendar — status day styles */
+.attendance-cal-cell.cal-day-hadir .attendance-cal-day,
+.cal-day-hadir.attendance-cal-day {
+  background: var(--status-hadir-bg) !important;
+  border-color: var(--status-hadir-border) !important;
+  color: var(--status-hadir-text) !important;
+  font-weight: 700 !important;
+}
+
+.attendance-cal-cell.cal-day-pelanggaran .attendance-cal-day,
+.cal-day-pelanggaran.attendance-cal-day {
+  background: var(--status-pel-bg) !important;
+  border-color: var(--status-pel-border) !important;
+  color: var(--status-pel-text) !important;
+  font-weight: 700 !important;
+}
+
+.attendance-cal-cell.cal-day-plastik .attendance-cal-day,
+.cal-day-plastik.attendance-cal-day {
+  background: var(--status-plastik-bg) !important;
+  border-color: var(--status-plastik-border) !important;
+  color: var(--status-plastik-text) !important;
+  font-weight: 700 !important;
+}
+
+.attendance-cal-cell.cal-day-libur .attendance-cal-day,
+.cal-day-libur.attendance-cal-day {
+  background: var(--status-libur-bg) !important;
+  border-color: var(--status-libur-border) !important;
+  color: var(--status-libur-text) !important;
+  font-weight: 700 !important;
+}
+
+.attendance-cal-cell.cal-day-kosong .attendance-cal-day,
+.cal-day-kosong.attendance-cal-day {
+  background: var(--status-kosong-bg) !important;
+  border-color: var(--status-kosong-border) !important;
+  color: var(--status-kosong-text) !important;
+}
+
+/* Calendar — dot indicator */
+.attendance-cal-cell.cal-day-hadir .attendance-cal-day::after,
+.attendance-cal-cell.cal-day-pelanggaran .attendance-cal-day::after,
+.attendance-cal-cell.cal-day-plastik .attendance-cal-day::after,
+.attendance-cal-cell.cal-day-libur .attendance-cal-day::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.attendance-cal-cell.cal-day-hadir .attendance-cal-day::after {
+  background: var(--status-hadir-border);
+}
+
+.attendance-cal-cell.cal-day-pelanggaran .attendance-cal-day::after {
+  background: var(--status-pel-border);
+}
+
+.attendance-cal-cell.cal-day-plastik .attendance-cal-day::after {
+  background: var(--status-plastik-border);
+}
+
+.attendance-cal-cell.cal-day-libur .attendance-cal-day::after {
+  background: var(--status-libur-border);
+}
+
+/* Calendar — today ring */
+.attendance-cal-cell.cal-day-today .attendance-cal-day,
+.cal-day-today.attendance-cal-day {
+  box-shadow: 0 0 0 2px var(--cal-today-ring), 0 0 10px var(--cal-today-glow) !important;
+  border-color: var(--cal-today-ring) !important;
+  z-index: 2;
+}
+
+/* Calendar — day detail box */
+.attendance-day-detail {
+  margin-top: 14px;
+  padding: 13px 14px;
+  border-radius: var(--radius-item);
+  border: 1px solid var(--border-base);
+  background: var(--surface-panel);
+}
+
+.attendance-day-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.attendance-day-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.attendance-day-meta .meta-item {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  background: var(--surface-input);
+  border: 1px solid var(--border-base);
+  border-radius: 8px;
+  padding: 4px 9px;
+}
+
+.meta-status-hadir {
+  border-color: var(--status-hadir-border) !important;
+  color: var(--status-hadir-text) !important;
+}
+
+.meta-status-pelanggaran {
+  border-color: var(--status-pel-border) !important;
+  color: var(--status-pel-text) !important;
+}
+
+.meta-status-plastik {
+  border-color: var(--status-plastik-border) !important;
+  color: var(--status-plastik-text) !important;
+}
+
+.meta-status-libur {
+  border-color: var(--status-libur-border) !important;
+  color: var(--status-libur-text) !important;
+}
+
+.meta-status-kosong {
+  border-color: var(--status-kosong-border) !important;
+  color: var(--status-kosong-text) !important;
+}
+
+/* Calendar — legend */
+.attendance-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-base);
+}
+
+.attendance-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.70rem;
+  color: var(--cal-muted);
+  font-weight: 600;
+}
+
+.attendance-legend .legend-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.attendance-legend .legend-hadir {
+  background: var(--status-hadir-bg);
+  border-color: var(--status-hadir-border);
+}
+
+.attendance-legend .legend-pelanggaran {
+  background: var(--status-pel-bg);
+  border-color: var(--status-pel-border);
+}
+
+.attendance-legend .legend-plastik {
+  background: var(--status-plastik-bg);
+  border-color: var(--status-plastik-border);
+}
+
+.attendance-legend .legend-libur {
+  background: var(--status-libur-bg);
+  border-color: var(--status-libur-border);
+}
+
+.attendance-legend .legend-kosong {
+  background: var(--status-kosong-bg);
+  border-color: var(--status-kosong-border);
+}
+
+/* ================================================================
+   16. KEYFRAMES
+   ================================================================ */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes streakPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px var(--streak-bg);
+  }
+
+  50% {
+    box-shadow: 0 0 22px var(--streak-border);
+  }
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes qrScan {
+  0% {
+    top: 20%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 80%;
+    opacity: 0;
+  }
+}
+
+@keyframes tapDotPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(0.7);
+  }
+}
+
+@keyframes coinsMarquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ================================================================
+   17. RESPONSIVE
+   ================================================================ */
+@media (min-width: 640px) {
+  .dashboard-container {
+    padding: 28px 32px;
+  }
+}
+
+@media (min-width: 768px) {
+  .dashboard-container {
+    padding: 30px 40px;
+  }
+
+  .bottom-nav-container {
+    bottom: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .greet span {
+    font-size: 32px;
+  }
+
+  .welcome-banner {
+    padding: 32px;
+  }
+
+  .bottom-nav-container {
+    bottom: 30px;
+    width: 400px;
+  }
+}

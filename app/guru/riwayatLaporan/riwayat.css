@@ -1,0 +1,733 @@
+/* =========================================
+   CSS CUSTOM PROPERTIES — RIWAYAT PAGE
+   ========================================= */
+
+:root {
+  /* ── Back button ── */
+  --riwayat-back-color:         rgba(255, 255, 255, 0.55);
+
+  /* ── Page title ── */
+  --riwayat-title-color:        #ffffff;
+  --riwayat-subtitle-color:     rgba(255, 255, 255, 0.40);
+
+  /* ── Page icon badge (purple) ── */
+  --riwayat-icon-bg:            rgba(168, 85, 247, 0.12);
+  --riwayat-icon-border:        rgba(168, 85, 247, 0.22);
+
+  /* ── Stat cards ── */
+  --stat-mini-label:            rgba(255, 255, 255, 0.35);
+
+  /* ── Toolbar ── */
+  --search-icon-color:          rgba(255, 255, 255, 0.28);
+  --filter-btn-inactive-color:  rgba(255, 255, 255, 0.35);
+  --filter-btn-inactive-border: rgba(255, 255, 255, 0.09);
+  --filter-btn-all-color:       rgba(255, 255, 255, 0.55);
+  --filter-btn-all-bg:          rgba(255, 255, 255, 0.05);
+  --filter-btn-all-border:      rgba(255, 255, 255, 0.10);
+
+  /* ── Count label ── */
+  --count-label-color:          rgba(255, 255, 255, 0.35);
+  --count-label-strong:         rgba(255, 255, 255, 0.70);
+
+  /* ── Riwayat card ── */
+  --card-bg:                    rgba(255, 255, 255, 0.03);
+  --card-border:                rgba(255, 255, 255, 0.08);
+  --card-divider:               rgba(255, 255, 255, 0.05);
+  --card-date-color:            rgba(255, 255, 255, 0.35);
+  --card-name-color:            #ffffff;
+  --card-nis-color:             rgba(255, 255, 255, 0.40);
+  --card-dot-color:             rgba(255, 255, 255, 0.15);
+  --card-locked-color:          rgba(255, 255, 255, 0.22);
+
+  /* ── Catatan box ── */
+  --catatan-bg:                 rgba(255, 255, 255, 0.02);
+  --catatan-border:             rgba(255, 255, 255, 0.06);
+  --catatan-color:              rgba(255, 255, 255, 0.50);
+
+  /* ── Action buttons in card ── */
+  --card-edit-bg:               rgba(23, 158, 255, 0.10);
+  --card-edit-border:           rgba(23, 158, 255, 0.22);
+  --card-edit-color:            #179EFF;
+  --card-del-bg:                rgba(239, 68, 68, 0.10);
+  --card-del-border:            rgba(239, 68, 68, 0.22);
+  --card-del-color:             #EF4444;
+
+  /* ── Empty state ── */
+  --empty-color:                rgba(255, 255, 255, 0.25);
+
+  /* ── Confirm dialog ── */
+  --dialog-bg:                  rgba(13, 18, 36, 0.99);
+  --dialog-border:              rgba(255, 255, 255, 0.10);
+  --dialog-title-color:         #ffffff;
+  --dialog-body-color:          rgba(255, 255, 255, 0.52);
+  --dialog-name-color:          #ffffff;
+
+  /* ── Edit modal ── */
+  --modal-bg:                   rgba(13, 18, 36, 0.99);
+  --modal-border:               rgba(255, 255, 255, 0.10);
+  --modal-title-color:          #ffffff;
+  --modal-meta-color:           rgba(255, 255, 255, 0.45);
+  --modal-meta-strong:          #ffffff;
+  --modal-dot-color:            rgba(255, 255, 255, 0.20);
+  --modal-note-optional:        rgba(255, 255, 255, 0.30);
+
+  /* ── Custom select (dropdown) ── */
+  --csel-trigger-bg:            rgba(255, 255, 255, 0.04);
+  --csel-trigger-border:        rgba(255, 255, 255, 0.10);
+  --csel-trigger-border-open:   rgba(239, 68, 68, 0.40);
+  --csel-placeholder:           rgba(255, 255, 255, 0.35);
+  --csel-name-color:            #ffffff;
+  --csel-chevron:               rgba(255, 255, 255, 0.35);
+  --csel-dropdown-bg:           rgba(13, 18, 36, 0.99);
+  --csel-dropdown-border:       rgba(255, 255, 255, 0.10);
+  --csel-item-divider:          rgba(255, 255, 255, 0.04);
+  --csel-item-hover:            rgba(255, 255, 255, 0.04);
+  --csel-item-active:           rgba(239, 68, 68, 0.08);
+  --csel-item-color:            rgba(255, 255, 255, 0.80);
+  --csel-item-color-active:     #ffffff;
+
+  /* ── Btn secondary ── */
+  --btn-secondary-bg:           rgba(255, 255, 255, 0.07);
+  --btn-secondary-border:       rgba(255, 255, 255, 0.12);
+  --btn-secondary-color:        rgba(255, 255, 255, 0.75);
+  --btn-primary-bg:             rgba(239, 68, 68, 0.90);
+  --btn-primary-border:         rgba(239, 68, 68, 0.40);
+  --btn-primary-color:          #ffffff;
+}
+
+/* =========================================
+   LIGHT MODE OVERRIDES
+   ========================================= */
+@media (prefers-color-scheme: light) {
+  :root {
+    /* ── Back button ── */
+    --riwayat-back-color:         #475569;
+
+    /* ── Page title ── */
+    --riwayat-title-color:        #0f172a;
+    --riwayat-subtitle-color:     #64748b;
+
+    /* ── Page icon badge ── */
+    --riwayat-icon-bg:            rgba(168, 85, 247, 0.10);
+    --riwayat-icon-border:        rgba(168, 85, 247, 0.28);
+
+    /* ── Stat cards ── */
+    --stat-mini-label:            #64748b;
+
+    /* ── Toolbar ── */
+    --search-icon-color:          #94a3b8;
+    --filter-btn-inactive-color:  #64748b;
+    --filter-btn-inactive-border: rgba(15, 23, 42, 0.12);
+    --filter-btn-all-color:       #475569;
+    --filter-btn-all-bg:          rgba(15, 23, 42, 0.05);
+    --filter-btn-all-border:      rgba(15, 23, 42, 0.12);
+
+    /* ── Count label ── */
+    --count-label-color:          #64748b;
+    --count-label-strong:         #1e293b;
+
+    /* ── Riwayat card ── */
+    --card-bg:                    rgba(255, 255, 255, 0.95);
+    --card-border:                rgba(15, 23, 42, 0.10);
+    --card-divider:               rgba(15, 23, 42, 0.08);
+    --card-date-color:            #64748b;
+    --card-name-color:            #0f172a;
+    --card-nis-color:             #475569;
+    --card-dot-color:             #cbd5e1;
+    --card-locked-color:          #94a3b8;
+
+    /* ── Catatan box ── */
+    --catatan-bg:                 #f8fafc;
+    --catatan-border:             rgba(15, 23, 42, 0.10);
+    --catatan-color:              #475569;
+
+    /* ── Action buttons in card ── */
+    --card-edit-bg:               rgba(3, 105, 161, 0.08);
+    --card-edit-border:           rgba(3, 105, 161, 0.22);
+    --card-edit-color:            #0369a1;
+    --card-del-bg:                rgba(239, 68, 68, 0.08);
+    --card-del-border:            rgba(239, 68, 68, 0.22);
+    --card-del-color:             #dc2626;
+
+    /* ── Empty state ── */
+    --empty-color:                #94a3b8;
+
+    /* ── Confirm dialog ── */
+    --dialog-bg:                  #ffffff;
+    --dialog-border:              rgba(15, 23, 42, 0.12);
+    --dialog-title-color:         #0f172a;
+    --dialog-body-color:          #475569;
+    --dialog-name-color:          #0f172a;
+
+    /* ── Edit modal ── */
+    --modal-bg:                   #ffffff;
+    --modal-border:               rgba(15, 23, 42, 0.12);
+    --modal-title-color:          #0f172a;
+    --modal-meta-color:           #475569;
+    --modal-meta-strong:          #0f172a;
+    --modal-dot-color:            #cbd5e1;
+    --modal-note-optional:        #94a3b8;
+
+    /* ── Custom select ── */
+    --csel-trigger-bg:            #ffffff;
+    --csel-trigger-border:        rgba(15, 23, 42, 0.14);
+    --csel-trigger-border-open:   rgba(239, 68, 68, 0.40);
+    --csel-placeholder:           #94a3b8;
+    --csel-name-color:            #0f172a;
+    --csel-chevron:               #94a3b8;
+    --csel-dropdown-bg:           #ffffff;
+    --csel-dropdown-border:       rgba(15, 23, 42, 0.12);
+    --csel-item-divider:          rgba(15, 23, 42, 0.06);
+    --csel-item-hover:            rgba(15, 23, 42, 0.04);
+    --csel-item-active:           rgba(239, 68, 68, 0.06);
+    --csel-item-color:            #374151;
+    --csel-item-color-active:     #0f172a;
+
+    /* ── Buttons ── */
+    --btn-secondary-bg:           rgba(15, 23, 42, 0.06);
+    --btn-secondary-border:       rgba(15, 23, 42, 0.14);
+    --btn-secondary-color:        #374151;
+    --btn-primary-bg:             rgba(239, 68, 68, 0.90);
+    --btn-primary-border:         rgba(239, 68, 68, 0.40);
+    --btn-primary-color:          #ffffff;
+  }
+}
+
+/* =========================================
+   PAGE ELEMENTS
+   ========================================= */
+
+/* Back button */
+.riwayat-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--riwayat-back-color);
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.2s;
+}
+.riwayat-back-btn:hover { color: var(--accent, #179EFF); }
+
+/* Page title row */
+.riwayat-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.riwayat-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--riwayat-icon-bg);
+  border: 1px solid var(--riwayat-icon-border);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.riwayat-title-text h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--riwayat-title-color);
+}
+
+.riwayat-title-text p {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--riwayat-subtitle-color);
+}
+
+/* ── Stat mini cards ── */
+.stat-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.stat-mini-card {
+  padding: 14px 18px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.stat-mini-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-mini-label {
+  color: var(--stat-mini-label);
+  font-size: 0.76rem;
+  margin-top: 4px;
+}
+
+/* ── Toolbar ── */
+.riwayat-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--search-icon-color);
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 36px;
+  font-size: 0.85rem;
+}
+
+.filter-btns {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.filter-btn-inactive {
+  border: 1px solid var(--filter-btn-inactive-border);
+  background: transparent;
+  color: var(--filter-btn-inactive-color);
+}
+
+.filter-btn-all-inactive {
+  border: 1px solid var(--filter-btn-inactive-border);
+  background: transparent;
+  color: var(--filter-btn-inactive-color);
+}
+
+/* ── Count label ── */
+.count-label {
+  font-size: 0.78rem;
+  color: var(--count-label-color);
+  margin-bottom: 14px;
+}
+
+.count-label strong {
+  color: var(--count-label-strong);
+}
+
+/* ── Riwayat card ── */
+.riwayat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.2s;
+}
+
+.riwayat-card-divider {
+  height: 1px;
+  background: var(--card-divider);
+  margin: 0 -20px;
+}
+
+.card-date {
+  font-size: 0.76rem;
+  color: var(--card-date-color);
+  flex: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-row1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-action-btns {
+  display: flex;
+  gap: 5px;
+}
+
+.card-btn-edit {
+  padding: 5px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--card-edit-bg);
+  border: 1px solid var(--card-edit-border);
+  color: var(--card-edit-color);
+  display: flex;
+  align-items: center;
+}
+
+.card-btn-del {
+  padding: 5px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--card-del-bg);
+  border: 1px solid var(--card-del-border);
+  color: var(--card-del-color);
+  display: flex;
+  align-items: center;
+}
+
+/* Avatar + student info */
+.card-row2 {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.card-student-name {
+  font-weight: 700;
+  font-size: 0.97rem;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--card-name-color);
+}
+
+.card-student-meta {
+  font-size: 0.78rem;
+  color: var(--card-nis-color);
+}
+
+.card-dot {
+  margin: 0 6px;
+  color: var(--card-dot-color);
+}
+
+/* Badges row */
+.card-row3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Catatan */
+.card-catatan {
+  padding: 10px 14px;
+  background: var(--catatan-bg);
+  border: 1px solid var(--catatan-border);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: var(--catatan-color);
+  line-height: 1.7;
+  font-style: italic;
+}
+
+/* Locked info */
+.card-locked {
+  font-size: 0.73rem;
+  color: var(--card-locked-color);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Empty state ── */
+.riwayat-empty {
+  border-radius: 16px;
+  padding: 48px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: var(--empty-color);
+}
+
+/* ── Confirm Dialog ── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+
+.confirm-box {
+  background: var(--dialog-bg);
+  border: 1px solid var(--dialog-border);
+  border-radius: 18px;
+  padding: 28px;
+  width: 360px;
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.40);
+  animation: scaleIn 0.2s ease;
+}
+
+.confirm-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.confirm-icon-wrap {
+  background: rgba(239, 68, 68, 0.12);
+  padding: 9px;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+
+.confirm-title {
+  font-weight: 700;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+  color: var(--dialog-title-color);
+}
+
+.confirm-body {
+  color: var(--dialog-body-color);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.confirm-name {
+  color: var(--dialog-name-color);
+  font-weight: 600;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ── Edit Modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  padding: 16px;
+}
+
+.modal-box {
+  background: var(--modal-bg);
+  border: 1px solid var(--modal-border);
+  border-radius: 18px;
+  padding: 28px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.40);
+  animation: scaleIn 0.2s ease;
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 6px;
+  color: var(--modal-title-color);
+}
+
+.modal-meta {
+  color: var(--modal-meta-color);
+  font-size: 0.82rem;
+  margin-bottom: 22px;
+}
+
+.modal-meta strong {
+  color: var(--modal-meta-strong);
+}
+
+.modal-dot {
+  margin: 0 6px;
+  color: var(--modal-dot-color);
+}
+
+.modal-note-optional {
+  color: var(--modal-note-optional);
+  font-weight: 400;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 18px;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--btn-secondary-color);
+}
+
+.btn-primary {
+  background: var(--btn-primary-bg);
+  border: 1px solid var(--btn-primary-border);
+  color: var(--btn-primary-color);
+}
+
+/* ── Custom Select (dropdown) ── */
+.csel-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: var(--csel-trigger-bg);
+  border: 1px solid var(--csel-trigger-border);
+  cursor: pointer;
+  text-align: left;
+  transition: border 0.2s;
+  color: var(--csel-name-color);
+  font-family: inherit;
+}
+
+.csel-trigger-open {
+  border-color: var(--csel-trigger-border-open);
+}
+
+.csel-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.csel-placeholder {
+  color: var(--csel-placeholder);
+  font-size: 0.875rem;
+}
+
+.csel-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--csel-name-color);
+}
+
+.csel-chevron {
+  color: var(--csel-chevron);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.csel-chevron-open { transform: rotate(180deg); }
+
+.csel-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--csel-dropdown-bg);
+  border: 1px solid var(--csel-dropdown-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.30);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.csel-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  background: transparent;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.csel-item-selected { background: var(--csel-item-active); }
+
+.csel-item:hover:not(.csel-item-selected) {
+  background: var(--csel-item-hover);
+}
+
+.csel-item-divider {
+  border-bottom: 1px solid var(--csel-item-divider);
+}
+
+.csel-item-label {
+  font-size: 0.86rem;
+  color: var(--csel-item-color);
+  flex: 1;
+}
+
+.csel-item-label-active {
+  color: var(--csel-item-color-active);
+  font-weight: 600;
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+@keyframes scaleIn {
+  from { transform: scale(0.93); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}

@@ -1,0 +1,982 @@
+/* =========================================
+   CSS CUSTOM PROPERTIES — PELANGGARAN PAGE
+   ========================================= */
+
+:root {
+  /* ── Header ── */
+  --pel-back-color:             rgba(255, 255, 255, 0.55);
+  --pel-konselor-dot:           #A855F7;
+  --pel-konselor-label:         #A855F7;
+
+  /* ── Page title ── */
+  --pel-title-color:            #ffffff;
+  --pel-subtitle-color:         rgba(255, 255, 255, 0.40);
+  --pel-icon-bg:                rgba(239, 68, 68, 0.12);
+  --pel-icon-border:            rgba(239, 68, 68, 0.22);
+
+  /* ── Tab nav ── */
+  --tab-bar-border:             rgba(255, 255, 255, 0.06);
+  --tab-inactive-color:         rgba(255, 255, 255, 0.38);
+  --tab-inactive-bg:            transparent;
+  --tab-active-color:           #EF4444;
+  --tab-active-bg:              rgba(239, 68, 68, 0.08);
+
+  /* ── Stat mini cards ── */
+  --stat-mini-label:            rgba(255, 255, 255, 0.35);
+
+  /* ── Toolbar ── */
+  --toolbar-search-icon:        rgba(255, 255, 255, 0.28);
+  --filter-inactive-color:      rgba(255, 255, 255, 0.38);
+  --filter-inactive-border:     rgba(255, 255, 255, 0.09);
+
+  /* ── Table info bar ── */
+  --table-info-color:           rgba(255, 255, 255, 0.38);
+  --table-info-strong:          rgba(255, 255, 255, 0.70);
+  --table-info-border:          rgba(255, 255, 255, 0.06);
+
+  /* ── Table ── */
+  --table-th-bg:                rgba(255, 255, 255, 0.03);
+  --table-th-color:             rgba(255, 255, 255, 0.45);
+  --table-th-border:            rgba(255, 255, 255, 0.06);
+  --table-td-border:            rgba(255, 255, 255, 0.04);
+  --table-td-color:             rgba(255, 255, 255, 0.85);
+  --table-td-muted:             rgba(255, 255, 255, 0.60);
+  --table-td-faint:             rgba(255, 255, 255, 0.40);
+  --table-td-deskripsi:         rgba(255, 255, 255, 0.38);
+  --table-td-nis:               #179EFF;
+  --table-row-hover:            rgba(255, 255, 255, 0.02);
+
+  /* ── Empty state ── */
+  --empty-color:                rgba(255, 255, 255, 0.25);
+
+  /* ── Form ── */
+  --form-label-color:           rgba(255, 255, 255, 0.55);
+  --form-input-bg:              rgba(255, 255, 255, 0.05);
+  --form-input-border:          rgba(255, 255, 255, 0.10);
+  --form-input-color:           #ffffff;
+  --form-input-placeholder:     rgba(255, 255, 255, 0.28);
+  --form-input-focus-bg:        rgba(23, 158, 255, 0.08);
+  --form-input-focus-border:    rgba(23, 158, 255, 0.50);
+  --form-select-arrow:          rgba(255, 255, 255, 0.40);
+
+  /* ── Form tambah ── */
+  --form-tambah-bg:             rgba(239, 68, 68, 0.04);
+  --form-tambah-border:         rgba(239, 68, 68, 0.18);
+  --form-preview-bg:            rgba(255, 255, 255, 0.02);
+  --form-preview-border:        rgba(255, 255, 255, 0.06);
+  --form-preview-name:          rgba(255, 255, 255, 0.85);
+
+  /* ── Coins color ── */
+  --coins-color:                #ef4444;
+
+  /* ── Status badge (aktif/nonaktif) ── */
+  --status-inactive-bg:         rgba(255, 255, 255, 0.04);
+  --status-inactive-color:      #6b7280;
+  --status-inactive-border:     rgba(255, 255, 255, 0.08);
+
+  /* ── Action buttons ── */
+  --act-blue-bg:                rgba(23, 158, 255, 0.10);
+  --act-blue-border:            rgba(23, 158, 255, 0.20);
+  --act-blue-color:             #179EFF;
+  --act-green-bg:               rgba(16, 185, 129, 0.10);
+  --act-green-border:           rgba(16, 185, 129, 0.20);
+  --act-green-color:            #10b981;
+  --act-red-bg:                 rgba(239, 68, 68, 0.10);
+  --act-red-border:             rgba(239, 68, 68, 0.20);
+  --act-red-color:              #EF4444;
+  --act-gray-bg:                rgba(255, 255, 255, 0.04);
+  --act-gray-border:            rgba(255, 255, 255, 0.08);
+  --act-gray-color:             #6b7280;
+
+  /* ── Confirm / modal dialogs ── */
+  --modal-overlay:              rgba(0, 0, 0, 0.72);
+  --modal-bg:                   rgba(13, 18, 36, 0.99);
+  --modal-border:               rgba(255, 255, 255, 0.10);
+  --modal-title-color:          #ffffff;
+  --modal-body-color:           rgba(255, 255, 255, 0.50);
+  --modal-strong-color:         #ffffff;
+  --modal-meta-color:           rgba(255, 255, 255, 0.50);
+
+  /* ── Image modal ── */
+  --img-empty-border:           rgba(255, 255, 255, 0.10);
+  --img-empty-icon:             rgba(255, 255, 255, 0.20);
+  --img-empty-text:             rgba(255, 255, 255, 0.40);
+  --img-border:                 rgba(255, 255, 255, 0.10);
+
+  /* ── Btn variants ── */
+  --btn-secondary-bg:           rgba(255, 255, 255, 0.07);
+  --btn-secondary-border:       rgba(255, 255, 255, 0.12);
+  --btn-secondary-color:        rgba(255, 255, 255, 0.75);
+  --btn-primary-bg:             rgba(239, 68, 68, 0.90);
+  --btn-primary-border:         rgba(239, 68, 68, 0.40);
+  --btn-primary-color:          #ffffff;
+  --btn-approve-bg:             rgba(16, 185, 129, 0.90);
+  --btn-approve-border:         rgba(16, 185, 129, 0.40);
+  --btn-upload-bg:              rgba(23, 158, 255, 0.90);
+  --btn-upload-border:          rgba(23, 158, 255, 0.40);
+}
+
+/* =========================================
+   LIGHT MODE OVERRIDES
+   ========================================= */
+@media (prefers-color-scheme: light) {
+  :root {
+    /* ── Header ── */
+    --pel-back-color:             #475569;
+
+    /* ── Page title ── */
+    --pel-title-color:            #0f172a;
+    --pel-subtitle-color:         #64748b;
+    --pel-icon-bg:                #fff1f2;
+    --pel-icon-border:            #fecdd3;
+
+    /* ── Tab nav ── */
+    --tab-bar-border:             rgba(15, 23, 42, 0.10);
+    --tab-inactive-color:         #64748b;
+    --tab-inactive-bg:            transparent;
+    --tab-active-color:           #dc2626;
+    --tab-active-bg:              rgba(220, 38, 38, 0.06);
+
+    /* ── Stat mini cards ── */
+    --stat-mini-label:            #64748b;
+
+    /* ── Toolbar ── */
+    --toolbar-search-icon:        #94a3b8;
+    --filter-inactive-color:      #64748b;
+    --filter-inactive-border:     rgba(15, 23, 42, 0.12);
+
+    /* ── Table info bar ── */
+    --table-info-color:           #64748b;
+    --table-info-strong:          #1e293b;
+    --table-info-border:          rgba(15, 23, 42, 0.08);
+
+    /* ── Table ── */
+    --table-th-bg:                #f8fafc;
+    --table-th-color:             #475569;
+    --table-th-border:            rgba(15, 23, 42, 0.08);
+    --table-td-border:            rgba(15, 23, 42, 0.06);
+    --table-td-color:             #0f172a;
+    --table-td-muted:             #374151;
+    --table-td-faint:             #475569;
+    --table-td-deskripsi:         #94a3b8;
+    --table-td-nis:               #0369a1;
+    --table-row-hover:            rgba(15, 23, 42, 0.025);
+
+    /* ── Empty state ── */
+    --empty-color:                #94a3b8;
+
+    /* ── Form ── */
+    --form-label-color:           #475569;
+    --form-input-bg:              #ffffff;
+    --form-input-border:          rgba(15, 23, 42, 0.14);
+    --form-input-color:           #0f172a;
+    --form-input-placeholder:     #94a3b8;
+    --form-input-focus-bg:        #f0f9ff;
+    --form-input-focus-border:    rgba(3, 105, 161, 0.50);
+    --form-select-arrow:          #64748b;
+
+    /* ── Form tambah ── */
+    --form-tambah-bg:             #fff5f5;
+    --form-tambah-border:         #fecaca;
+    --form-preview-bg:            #f8fafc;
+    --form-preview-border:        rgba(15, 23, 42, 0.10);
+    --form-preview-name:          #0f172a;
+
+    /* ── Coins color ── */
+    --coins-color:                #dc2626;
+
+    /* ── Status badge ── */
+    --status-inactive-bg:         #f1f5f9;
+    --status-inactive-color:      #94a3b8;
+    --status-inactive-border:     rgba(15, 23, 42, 0.12);
+
+    /* ── Action buttons ── */
+    --act-blue-bg:                rgba(3, 105, 161, 0.08);
+    --act-blue-border:            rgba(3, 105, 161, 0.22);
+    --act-blue-color:             #0369a1;
+    --act-green-bg:               rgba(5, 150, 105, 0.08);
+    --act-green-border:           rgba(5, 150, 105, 0.22);
+    --act-green-color:            #059669;
+    --act-red-bg:                 rgba(239, 68, 68, 0.08);
+    --act-red-border:             rgba(239, 68, 68, 0.22);
+    --act-red-color:              #dc2626;
+    --act-gray-bg:                rgba(15, 23, 42, 0.05);
+    --act-gray-border:            rgba(15, 23, 42, 0.12);
+    --act-gray-color:             #64748b;
+
+    /* ── Confirm / modal dialogs ── */
+    --modal-bg:                   #ffffff;
+    --modal-border:               rgba(15, 23, 42, 0.12);
+    --modal-title-color:          #0f172a;
+    --modal-body-color:           #475569;
+    --modal-strong-color:         #0f172a;
+    --modal-meta-color:           #475569;
+
+    /* ── Image modal ── */
+    --img-empty-border:           rgba(15, 23, 42, 0.12);
+    --img-empty-icon:             #cbd5e1;
+    --img-empty-text:             #94a3b8;
+    --img-border:                 rgba(15, 23, 42, 0.10);
+
+    /* ── Btn variants ── */
+    --btn-secondary-bg:           rgba(15, 23, 42, 0.06);
+    --btn-secondary-border:       rgba(15, 23, 42, 0.14);
+    --btn-secondary-color:        #374151;
+  }
+}
+
+/* =========================================
+   PAGE HEADER
+   ========================================= */
+.pel-back-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--pel-back-color);
+  font-size: 0.82rem;
+  transition: color 0.2s;
+}
+.pel-back-link:hover { color: var(--accent, #179EFF); }
+
+.pel-konselor-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pel-konselor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pel-konselor-dot);
+  box-shadow: 0 0 6px var(--pel-konselor-dot);
+}
+.pel-konselor-label {
+  font-size: 0.78rem;
+  color: var(--pel-konselor-label);
+  font-weight: 600;
+}
+
+/* ── Page title row ── */
+.pel-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.pel-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--pel-icon-bg);
+  border: 1px solid var(--pel-icon-border);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.pel-title-text h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--pel-title-color);
+}
+.pel-title-text p {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--pel-subtitle-color);
+}
+
+/* =========================================
+   TAB NAVIGATION
+   ========================================= */
+.tab-nav {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--tab-bar-border);
+}
+
+.tab-btn {
+  flex: 0;
+  padding: 12px 20px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.87rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.tab-btn-inactive {
+  background: var(--tab-inactive-bg);
+  border-bottom: 2px solid transparent;
+  color: var(--tab-inactive-color);
+}
+
+.tab-btn-inactive:hover {
+  color: var(--pel-title-color);
+  background: var(--table-row-hover);
+}
+
+.tab-btn-active {
+  background: var(--tab-active-bg);
+  border-bottom: 2px solid #EF4444;
+  color: var(--tab-active-color);
+  font-weight: 600;
+}
+
+/* =========================================
+   STAT MINI GRID
+   ========================================= */
+.stat-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.stat-mini-card {
+  padding: 14px 18px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.stat-mini-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-mini-label {
+  color: var(--stat-mini-label);
+  font-size: 0.76rem;
+  margin-top: 4px;
+}
+
+/* =========================================
+   TOOLBAR
+   ========================================= */
+.pel-toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--toolbar-search-icon);
+  pointer-events: none;
+}
+
+.search-input { padding-left: 36px; font-size: 0.85rem; }
+
+.filter-group { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.filter-btn {
+  padding: 6px 13px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  text-transform: capitalize;
+}
+
+/* =========================================
+   FORM INPUTS (shared across all forms)
+   ========================================= */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--form-label-color);
+}
+
+.form-input {
+  background: var(--form-input-bg);
+  border: 1px solid var(--form-input-border);
+  color: var(--form-input-color);
+  border-radius: 9px;
+  padding: 9px 13px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input::placeholder {
+  color: var(--form-input-placeholder);
+}
+
+.form-input:focus {
+  background: var(--form-input-focus-bg);
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 0 0 3px rgba(23, 158, 255, 0.10);
+}
+
+/* Select wrapper — custom arrow */
+.form-select-wrap {
+  position: relative;
+}
+
+.form-select-wrap::after {
+  content: "▾";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 0.75rem;
+  color: var(--form-select-arrow);
+}
+
+.form-select-wrap .form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+/* Number input — coins merah */
+.input-coins {
+  color: var(--coins-color) !important;
+  font-weight: 700;
+}
+
+/* =========================================
+   TABLE WRAPPER
+   Menggantikan glass-panel langsung agar
+   bisa punya background solid di light mode
+   ========================================= */
+.table-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 0;
+
+  /* dark mode — ikut glass-panel */
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  backdrop-filter: blur(12px);
+}
+
+@media (prefers-color-scheme: light) {
+  .table-wrapper {
+    background: #ffffff;
+    border-color: rgba(15, 23, 42, 0.10);
+    backdrop-filter: none;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+  }
+
+  /* Thead solid di light mode */
+  .table-wrapper .custom-table thead tr {
+    background: #f8fafc;
+  }
+
+  /* Tbody rows putih */
+  .table-wrapper .custom-table tbody tr {
+    background: #ffffff;
+  }
+
+  .table-wrapper .custom-table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  /* Pastikan td tidak punya background gelap */
+  .table-wrapper .custom-table td,
+  .table-wrapper .custom-table th {
+    background: transparent;
+  }
+}
+
+/* =========================================
+   TABLE INFO BAR
+   ========================================= */
+.table-info-bar {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--table-info-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--table-info-color);
+}
+
+.table-info-bar strong { color: var(--table-info-strong); }
+.table-info-bar em     { color: var(--accent, #179EFF); font-style: italic; }
+
+/* =========================================
+   TABLE
+   ========================================= */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.custom-table thead tr {
+  background: var(--table-th-bg);
+}
+
+.custom-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--table-th-color);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--table-th-border);
+  white-space: nowrap;
+}
+
+.custom-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--table-td-border);
+  color: var(--table-td-color);
+  vertical-align: middle;
+}
+
+.custom-table tbody tr:last-child td { border-bottom: none; }
+
+.custom-table tbody tr:hover {
+  background: var(--table-row-hover);
+}
+
+/* Cell variant helpers */
+.td-muted    { color: var(--table-td-muted); }
+.td-faint    { color: var(--table-td-faint); font-size: 0.9rem; }
+.td-deskripsi{ color: var(--table-td-deskripsi); font-size: 0.81rem; }
+.td-nis      { color: var(--table-td-nis); font-weight: 600; }
+.td-guru-nip { font-size: 0.8rem; color: var(--table-td-faint); }
+
+/* Inline cell spans — mengikuti variable, bukan hardcode */
+.td-coins-value {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--coins-color);
+  font-weight: 700;
+}
+
+/* =========================================
+   EMPTY STATE
+   ========================================= */
+.table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 44px 20px;
+  color: var(--empty-color);
+  font-size: 0.85rem;
+}
+
+/* =========================================
+   FORM TAMBAH
+   ========================================= */
+.form-tambah {
+  background: var(--form-tambah-bg);
+  border: 1px solid var(--form-tambah-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.form-tambah-title {
+  font-weight: 700;
+  color: #EF4444;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (prefers-color-scheme: light) {
+  .form-tambah-title { color: #dc2626; }
+}
+
+.form-tambah-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 640px) {
+  .form-tambah-grid { grid-template-columns: 1fr; }
+}
+
+.form-preview {
+  padding: 10px 14px;
+  background: var(--form-preview-bg);
+  border: 1px solid var(--form-preview-border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-preview-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--form-preview-name);
+  flex: 1;
+}
+
+.form-preview-coins {
+  color: var(--coins-color);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  margin-left: auto;
+}
+
+/* =========================================
+   STATUS BADGE
+   ========================================= */
+.status-badge-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.badge-aktif {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 11px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.20);
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+
+.badge-nonaktif {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 11px;
+  background: var(--status-inactive-bg);
+  color: var(--status-inactive-color);
+  border: 1px solid var(--status-inactive-border);
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+
+/* =========================================
+   ACTION BUTTONS
+   ========================================= */
+.act-btn {
+  padding: 5px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+  font-family: inherit;
+}
+
+.act-btn:hover { filter: brightness(1.15); }
+.act-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.act-blue  { background: var(--act-blue-bg);  border-color: var(--act-blue-border);  color: var(--act-blue-color);  }
+.act-green { background: var(--act-green-bg); border-color: var(--act-green-border); color: var(--act-green-color); }
+.act-red   { background: var(--act-red-bg);   border-color: var(--act-red-border);   color: var(--act-red-color);   }
+.act-gray  { background: var(--act-gray-bg);  border-color: var(--act-gray-border);  color: var(--act-gray-color);  }
+
+/* =========================================
+   BUTTONS
+   ========================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 18px;
+  transition: all 0.2s;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--btn-secondary-color);
+}
+
+.btn-primary {
+  background: var(--btn-primary-bg);
+  border: 1px solid var(--btn-primary-border);
+  color: var(--btn-primary-color);
+}
+
+.btn-approve {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--btn-approve-bg);
+  border: 1px solid var(--btn-approve-border);
+  border-radius: 9px;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+.btn-approve:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-reject {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--btn-primary-bg);
+  border: 1px solid var(--btn-primary-border);
+  border-radius: 9px;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+.btn-reject:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--btn-upload-bg);
+  border: 1px solid var(--btn-upload-border);
+  border-radius: 9px;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+.btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* =========================================
+   MODALS
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+
+.modal-box {
+  background: var(--modal-bg);
+  border: 1px solid var(--modal-border);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.30);
+  animation: scaleIn 0.2s ease;
+}
+
+.modal-title {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--modal-title-color);
+}
+
+.modal-meta {
+  margin: 0;
+  color: var(--modal-meta-color);
+  font-size: 0.85rem;
+}
+
+.modal-meta strong { color: var(--modal-strong-color); }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+/* Confirm dialog */
+.confirm-box { width: 360px; max-width: 92vw; }
+
+.confirm-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.confirm-icon-wrap {
+  background: rgba(239, 68, 68, 0.12);
+  padding: 9px;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+
+.confirm-title {
+  font-weight: 700;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+  color: var(--modal-title-color);
+}
+
+.confirm-body {
+  color: var(--modal-body-color);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.confirm-name { color: var(--modal-strong-color); font-weight: 600; }
+
+/* Status modal */
+.status-modal-box { width: 420px; max-width: 92vw; }
+
+/* Image modal */
+.image-modal-box {
+  width: 500px;
+  max-width: 92vw;
+  max-height: 85vh;
+  overflow: auto;
+}
+
+.img-preview-wrap {
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--img-border);
+}
+
+.img-preview-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.img-empty-zone {
+  margin-bottom: 20px;
+  padding: 40px;
+  border-radius: 12px;
+  border: 2px dashed var(--img-empty-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.img-empty-text {
+  font-size: 0.9rem;
+  color: var(--img-empty-text);
+}
+
+/* =========================================
+   INLINE BADGE — kategori in table/form
+   (used with inline style for color, but
+   structure defined here)
+   ========================================= */
+.badge-kategori {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+@keyframes fadeIn  {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes scaleIn {
+  from { transform: scale(0.93); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 768px) {
+  .pel-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-wrap {
+    flex: 1 1 100%;
+  }
+
+  .filter-group {
+    justify-content: flex-start;
+  }
+
+  .btn[style*="margin-left: auto"] {
+    margin-left: 0 !important;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stat-mini-grid {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  }
+
+  .table-container {
+    font-size: 0.82rem;
+  }
+}

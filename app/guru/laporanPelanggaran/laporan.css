@@ -1,0 +1,532 @@
+/* =========================================
+   CSS CUSTOM PROPERTIES — LAPORAN PAGE
+   Extends dashboard.css tokens
+   ========================================= */
+
+:root {
+  /* Form inputs */
+  --form-input-bg:        rgba(255, 255, 255, 0.04);
+  --form-input-border:    rgba(255, 255, 255, 0.12);
+  --form-input-border-focus: #179EFF;
+  --form-input-color:     #ffffff;
+  --form-input-placeholder: rgba(255, 255, 255, 0.35);
+  --form-input-disabled-opacity: 0.45;
+
+  /* Form labels */
+  --form-label-color:     rgba(255, 255, 255, 0.75);
+  --form-label-optional:  rgba(255, 255, 255, 0.35);
+
+  /* Select option bg */
+  --select-option-bg:     #0f172a;
+  --select-option-color:  #ffffff;
+
+  /* Select chevron */
+  --select-chevron:       rgba(255, 255, 255, 0.30);
+
+  /* Page title */
+  --page-title-color:     #ffffff;
+  --page-subtitle-color:  rgba(255, 255, 255, 0.40);
+
+  /* Back button */
+  --back-btn-color:       rgba(255, 255, 255, 0.55);
+
+  /* Icon badge */
+  --icon-badge-red-bg:    rgba(239, 68, 68, 0.12);
+  --icon-badge-red-border: rgba(239, 68, 68, 0.22);
+
+  /* Upload zone */
+  --upload-border:        rgba(255, 255, 255, 0.10);
+  --upload-bg:            rgba(255, 255, 255, 0.02);
+  --upload-text:          rgba(255, 255, 255, 0.35);
+  --upload-hint:          rgba(255, 255, 255, 0.20);
+
+  /* Summary box */
+  --summary-bg:           rgba(239, 68, 68, 0.04);
+  --summary-border:       rgba(239, 68, 68, 0.15);
+  --summary-label:        rgba(255, 255, 255, 0.38);
+  --summary-value:        #ffffff;
+  --summary-meta:         rgba(255, 255, 255, 0.30);
+
+  /* Jenis preview */
+  --jenis-preview-bg:     rgba(255, 255, 255, 0.02);
+  --jenis-preview-border: rgba(255, 255, 255, 0.06);
+  --jenis-preview-name:   #ffffff;
+
+  /* Submit button: disabled state */
+  --submit-disabled-bg:   rgba(255, 255, 255, 0.06);
+  --submit-disabled-text: rgba(255, 255, 255, 0.30);
+
+  /* History card */
+  --history-card-bg:      rgba(30, 41, 59, 0.60);
+  --history-card-border:  rgba(255, 255, 255, 0.10);
+  --history-date:         rgba(255, 255, 255, 0.50);
+  --history-student:      #ffffff;
+  --history-class:        rgba(255, 255, 255, 0.60);
+
+  /* Misc */
+  --file-size-bg:         rgba(0, 0, 0, 0.70);
+  --file-size-color:      rgba(255, 255, 255, 0.70);
+  --remove-btn-bg:        rgba(0, 0, 0, 0.75);
+  --remove-btn-color:     #ffffff;
+}
+
+/* =========================================
+   LIGHT MODE OVERRIDES
+   ========================================= */
+@media (prefers-color-scheme: light) {
+  :root {
+    --form-input-bg:        #ffffff;
+    --form-input-border:    rgba(15, 23, 42, 0.14);
+    --form-input-border-focus: #0369a1;
+    --form-input-color:     #0f172a;
+    --form-input-placeholder: #94a3b8;
+    --form-input-disabled-opacity: 0.50;
+
+    --form-label-color:     #374151;
+    --form-label-optional:  #94a3b8;
+
+    --select-option-bg:     #ffffff;
+    --select-option-color:  #0f172a;
+
+    --select-chevron:       #64748b;
+
+    --page-title-color:     #0f172a;
+    --page-subtitle-color:  #64748b;
+
+    --back-btn-color:       #475569;
+
+    --icon-badge-red-bg:    #fff1f2;
+    --icon-badge-red-border: #fecdd3;
+
+    --upload-border:        rgba(15, 23, 42, 0.14);
+    --upload-bg:            #f8fafc;
+    --upload-text:          #64748b;
+    --upload-hint:          #94a3b8;
+
+    --summary-bg:           #fff5f5;
+    --summary-border:       #fecaca;
+    --summary-label:        #64748b;
+    --summary-value:        #0f172a;
+    --summary-meta:         #94a3b8;
+
+    --jenis-preview-bg:     #f8fafc;
+    --jenis-preview-border: rgba(15, 23, 42, 0.10);
+    --jenis-preview-name:   #0f172a;
+
+    --submit-disabled-bg:   rgba(15, 23, 42, 0.06);
+    --submit-disabled-text: #94a3b8;
+
+    --history-card-bg:      rgba(255, 255, 255, 0.95);
+    --history-card-border:  rgba(15, 23, 42, 0.10);
+    --history-date:         #64748b;
+    --history-student:      #0f172a;
+    --history-class:        #475569;
+
+    --file-size-bg:         rgba(0, 0, 0, 0.55);
+    --file-size-color:      rgba(255, 255, 255, 0.90);
+    --remove-btn-bg:        rgba(0, 0, 0, 0.65);
+    --remove-btn-color:     #ffffff;
+  }
+}
+
+/* =========================================
+   FORM BASE ELEMENTS
+   ========================================= */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--form-label-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-label-optional {
+  color: var(--form-label-optional);
+  font-weight: 400;
+}
+
+.form-required {
+  color: #ef4444;
+}
+
+.form-input {
+  width: 100%;
+  background: var(--form-input-bg);
+  border: 1px solid var(--form-input-border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--form-input-color);
+  font-family: inherit;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.form-input::placeholder {
+  color: var(--form-input-placeholder);
+}
+
+.form-input:focus {
+  border-color: var(--form-input-border-focus);
+  box-shadow: 0 0 0 3px rgba(23, 158, 255, 0.15);
+}
+
+/* Select specific */
+.form-input select,
+select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 36px;
+}
+
+select.form-input option {
+  background: var(--select-option-bg);
+  color: var(--select-option-color);
+}
+
+select.form-input:disabled {
+  opacity: var(--form-input-disabled-opacity);
+  cursor: not-allowed;
+}
+
+/* Textarea */
+textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+/* Select wrapper (chevron overlay) */
+.form-select-wrap {
+  position: relative;
+}
+
+.form-select-chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--select-chevron);
+}
+
+/* =========================================
+   PAGE HEADER / TITLE
+   ========================================= */
+.page-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--back-btn-color);
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.page-back-btn:hover {
+  color: var(--accent, #179EFF);
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.page-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.page-icon-badge-red {
+  background: var(--icon-badge-red-bg);
+  border: 1px solid var(--icon-badge-red-border);
+}
+
+.page-title-text h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--page-title-color);
+}
+
+.page-title-text p {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--page-subtitle-color);
+}
+
+/* =========================================
+   UPLOAD ZONE
+   ========================================= */
+.upload-zone {
+  width: 100%;
+  padding: 28px 20px;
+  border-radius: 12px;
+  border: 2px dashed var(--upload-border);
+  background: var(--upload-bg);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--upload-text);
+  transition: border-color 0.2s, background 0.2s;
+  box-sizing: border-box;
+}
+
+.upload-zone:hover:not(:disabled) {
+  border-color: rgba(23, 158, 255, 0.35);
+  background: rgba(23, 158, 255, 0.04);
+}
+
+.upload-zone:disabled {
+  cursor: not-allowed;
+}
+
+.upload-zone-label {
+  font-size: 0.85rem;
+}
+
+.upload-zone-hint {
+  font-size: 0.75rem;
+  color: var(--upload-hint);
+}
+
+/* Photo preview */
+.photo-preview-wrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--form-input-border);
+}
+
+.photo-preview-img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--remove-btn-bg);
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--remove-btn-color);
+}
+
+.photo-size-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 4px 10px;
+  background: var(--file-size-bg);
+  border-radius: 20px;
+  font-size: 0.72rem;
+  color: var(--file-size-color);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* =========================================
+   JENIS PELANGGARAN PREVIEW
+   ========================================= */
+.jenis-preview {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: var(--jenis-preview-bg);
+  border: 1px solid var(--jenis-preview-border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.jenis-preview-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex: 1;
+  color: var(--jenis-preview-name);
+}
+
+.jenis-preview-coins {
+  color: #ef4444;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* =========================================
+   SUMMARY BOX
+   ========================================= */
+.summary-box {
+  padding: 14px 18px;
+  background: var(--summary-bg);
+  border: 1px solid var(--summary-border);
+  border-radius: 12px;
+  font-size: 0.83rem;
+  line-height: 1.8;
+}
+
+.summary-title {
+  font-weight: 600;
+  color: #EF4444;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-row {
+  color: var(--form-label-color);
+}
+
+.summary-row-label {
+  color: var(--summary-label);
+}
+
+.summary-row-value {
+  color: var(--summary-value);
+  font-weight: 600;
+}
+
+.summary-row-meta {
+  color: var(--summary-meta);
+}
+
+.summary-penalty {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+/* =========================================
+   SUBMIT BUTTON
+   ========================================= */
+.submit-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.submit-btn-active {
+  background: rgba(239, 68, 68, 0.90);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.submit-btn-active:hover {
+  background: rgba(239, 68, 68, 1);
+}
+
+.submit-btn-success {
+  background: rgba(16, 185, 129, 0.85);
+  color: #ffffff;
+  cursor: default;
+}
+
+.submit-btn-disabled {
+  background: var(--submit-disabled-bg);
+  color: var(--submit-disabled-text);
+  cursor: not-allowed;
+}
+
+/* =========================================
+   HISTORY CARD
+   ========================================= */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-card {
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--history-card-bg);
+  border: 1px solid var(--history-card-border);
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.h-date { color: var(--history-date); }
+
+.h-status {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.h-status.pending   { background: rgba(245, 158, 11, 0.20); color: #fbbf24; }
+.h-status.processed { background: rgba(16, 185, 129, 0.20); color: #34d399; }
+
+.h-student { margin: 0; font-size: 16px; font-weight: 700; color: var(--history-student); }
+.h-class   { margin: 0 0 12px; font-size: 13px; color: var(--history-class); }
+
+.h-violation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f87171;
+  font-weight: 600;
+  font-size: 14px;
+  background: rgba(239, 68, 68, 0.10);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+/* =========================================
+   LOADING SPINNER (reuse from dashboard)
+   ========================================= */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}

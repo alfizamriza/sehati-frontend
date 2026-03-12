@@ -1,0 +1,588 @@
+/* =========================================
+   THEME TOKENS — Light (default) & Dark
+   ========================================= */
+
+:root {
+  /* ── Surface ── */
+  --tr-bg-page:         #eef2fb;
+  --tr-bg-header:       rgba(255, 255, 255, 0.82);
+  --tr-bg-panel:        #ffffff;
+  --tr-bg-panel-inner:  #f8fafd;
+  --tr-bg-input:        #f1f5f9;
+  --tr-bg-cart-item:    rgba(15, 23, 42, 0.025);
+  --tr-bg-tab:          #f1f5f9;
+  --tr-bg-scan-btn:     rgba(23, 158, 255, 0.10);
+  --tr-bg-qty:          #e8edf5;
+  --tr-bg-qty-btn:      #cbd5e1;
+
+  /* ── Border ── */
+  --tr-border-base:     rgba(15, 23, 42, 0.08);
+  --tr-border-strong:   rgba(15, 23, 42, 0.14);
+  --tr-border-panel:    rgba(15, 23, 42, 0.07);
+  --tr-border-input:    rgba(15, 23, 42, 0.14);
+  --tr-border-divider:  rgba(15, 23, 42, 0.10);
+  --tr-border-total:    rgba(15, 23, 42, 0.15);
+
+  /* ── Text ── */
+  --tr-text-primary:    #0f172a;
+  --tr-text-secondary:  #334155;
+  --tr-text-muted:      #64748b;
+  --tr-text-dimmed:     #94a3b8;
+  --tr-text-label:      #64748b;
+
+  /* ── Shadow ── */
+  --tr-shadow-card:     0 1px 6px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  --tr-shadow-header:   0 1px 0 rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.06);
+
+  /* ── Status ── */
+  --tr-class-bg:        rgba(16, 185, 129, 0.10);
+  --tr-class-color:     #047857;
+  --tr-class-border:    rgba(16, 185, 129, 0.22);
+
+  /* ── Ambient gradient blobs ── */
+  --tr-blob-1: rgba(23,158,255,0.06);
+  --tr-blob-2: rgba(139,92,246,0.04);
+}
+
+[data-theme="dark"] {
+  --tr-bg-page:         #070c18;
+  --tr-bg-header:       rgba(13, 20, 37, 0.88);
+  --tr-bg-panel:        #0d1425;
+  --tr-bg-panel-inner:  #111b30;
+  --tr-bg-input:        rgba(255,255,255,0.06);
+  --tr-bg-cart-item:    rgba(255,255,255,0.025);
+  --tr-bg-tab:          rgba(30, 41, 59, 0.65);
+  --tr-bg-scan-btn:     rgba(23, 158, 255, 0.10);
+  --tr-bg-qty:          #0f172a;
+  --tr-bg-qty-btn:      #334155;
+
+  --tr-border-base:     rgba(255,255,255,0.07);
+  --tr-border-strong:   rgba(255,255,255,0.12);
+  --tr-border-panel:    rgba(255,255,255,0.07);
+  --tr-border-input:    rgba(255,255,255,0.10);
+  --tr-border-divider:  rgba(255,255,255,0.08);
+  --tr-border-total:    rgba(255,255,255,0.14);
+
+  --tr-text-primary:    rgba(255,255,255,0.93);
+  --tr-text-secondary:  rgba(255,255,255,0.70);
+  --tr-text-muted:      rgba(255,255,255,0.45);
+  --tr-text-dimmed:     rgba(255,255,255,0.25);
+  --tr-text-label:      rgba(255,255,255,0.40);
+
+  --tr-shadow-card:     0 2px 14px rgba(0,0,0,0.35);
+  --tr-shadow-header:   0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.30);
+
+  --tr-class-bg:        rgba(16, 185, 129, 0.14);
+  --tr-class-color:     #34d399;
+  --tr-class-border:    rgba(16, 185, 129, 0.28);
+
+  --tr-blob-1: rgba(23,158,255,0.09);
+  --tr-blob-2: rgba(139,92,246,0.06);
+}
+
+/* =========================================
+   1. LAYOUT UTAMA
+   ========================================= */
+
+.trans-page {
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background: var(--tr-bg-page);
+  color: var(--tr-text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.trans-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(ellipse at 0% 0%, var(--tr-blob-1) 0%, transparent 55%),
+    radial-gradient(ellipse at 100% 100%, var(--tr-blob-2) 0%, transparent 55%);
+  transition: opacity 0.3s ease;
+}
+
+/* =========================================
+   2. HEADER
+   ========================================= */
+
+.he-container {
+  display: grid;
+  gap: 24px;
+  padding: 20px 24px 0;
+  max-width: 1400px;
+  margin: 0 auto 15px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.header-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--tr-bg-header);
+  padding: 13px 20px;
+  border-radius: 18px;
+  border: 1px solid var(--tr-border-base);
+  box-shadow: var(--tr-shadow-header);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.page-title h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tr-text-primary);
+  transition: color 0.3s ease;
+}
+
+/* ── Filter / back button ── */
+.filter-btn {
+  background: var(--tr-bg-input);
+  border: 1px solid var(--tr-border-base);
+  color: var(--tr-text-muted);
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.filter-btn:hover {
+  background: rgba(23,158,255,0.08);
+  border-color: rgba(23,158,255,0.25);
+  color: #179EFF;
+}
+
+/* ── Theme Toggle ── */
+.btn-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--tr-bg-input);
+  border: 1px solid var(--tr-border-base);
+  color: var(--tr-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.25s;
+}
+.btn-theme-toggle:hover {
+  background: rgba(245,158,11,0.10);
+  border-color: rgba(245,158,11,0.28);
+  color: #f59e0b;
+  transform: rotate(20deg);
+}
+
+/* =========================================
+   3. MAIN GRID
+   ========================================= */
+
+.trans-container {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  padding: 0 24px 24px;
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================================
+   4. PANEL KIRI
+   ========================================= */
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--tr-bg-panel);
+  border: 1px solid var(--tr-border-panel);
+  box-shadow: var(--tr-shadow-card);
+  overflow: hidden;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ── Scanner ── */
+.scanner-section {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.scan-trigger-btn {
+  background: var(--tr-bg-scan-btn);
+  border: 1px solid rgba(23,158,255,0.28);
+  color: #179EFF;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+.scan-trigger-btn:hover {
+  background: rgba(23,158,255,0.18);
+  border-color: #179EFF;
+  transform: scale(1.05);
+}
+
+/* ── Input NIS ── */
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+.input-group label {
+  font-size: 10px;
+  color: var(--tr-text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+.input-group input {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--tr-border-input);
+  color: var(--tr-text-primary);
+  font-size: 15px;
+  padding: 4px 0;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+  transition: border-color 0.2s, color 0.3s ease;
+}
+.input-group input::placeholder {
+  color: var(--tr-text-dimmed);
+}
+.input-group input:focus {
+  border-bottom-color: #179EFF;
+}
+
+/* ── Student card ── */
+.student-card-mini {
+  background: var(--tr-bg-panel-inner);
+  padding: 12px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--tr-border-base);
+  animation: fadeIn 0.25s ease;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.student-card-mini .info h4 {
+  margin: 0;
+  color: var(--tr-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+.student-card-mini .info p {
+  margin: 2px 0 4px;
+  color: var(--tr-text-muted);
+  font-size: 11px;
+  transition: color 0.3s ease;
+}
+
+.class-badge {
+  background: var(--tr-class-bg);
+  color: var(--tr-class-color);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--tr-class-border);
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.student-placeholder {
+  text-align: center;
+  color: var(--tr-text-dimmed);
+  font-size: 13px;
+  font-style: italic;
+  padding: 10px;
+  border: 1px dashed var(--tr-border-strong);
+  border-radius: 10px;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid var(--tr-border-divider);
+  margin: 14px 0;
+  transition: border-color 0.3s ease;
+}
+
+/* ── Cart ── */
+.cart-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 14px;
+  padding-right: 4px;
+}
+.cart-list::-webkit-scrollbar { width: 3px; }
+.cart-list::-webkit-scrollbar-thumb {
+  background: var(--tr-border-strong);
+  border-radius: 3px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 9px;
+  color: var(--tr-text-primary);
+  font-size: 13px;
+  background: var(--tr-bg-cart-item);
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--tr-border-base);
+  transition: background 0.3s, border-color 0.3s;
+}
+.item-name {
+  display: flex;
+  flex-direction: column;
+  width: 40%;
+}
+.item-name span {
+  font-weight: 600;
+  color: var(--tr-text-primary);
+  transition: color 0.3s;
+}
+
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--tr-bg-qty);
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+.qty-control button {
+  background: var(--tr-bg-qty-btn);
+  border: none;
+  color: var(--tr-text-primary);
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.qty-control button:hover { background: #179EFF; color: #fff; }
+.qty-control .qty-val {
+  font-weight: 700;
+  width: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--tr-text-primary);
+  transition: color 0.3s;
+}
+
+.item-price {
+  font-weight: 700;
+  width: 25%;
+  text-align: right;
+  font-feature-settings: "tnum";
+  color: var(--tr-text-primary);
+  transition: color 0.3s;
+}
+
+/* ── Checkout footer ── */
+.checkout-footer { margin-top: auto; }
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: var(--tr-text-muted);
+  font-size: 13px;
+  transition: color 0.3s;
+}
+
+.total-rp {
+  font-size: 17px;
+  color: var(--tr-text-primary);
+  font-weight: 800;
+  margin-top: 10px;
+  margin-bottom: 14px;
+  padding-top: 10px;
+  border-top: 1.5px dashed var(--tr-border-total);
+  transition: color 0.3s, border-color 0.3s;
+}
+.val-rp { color: #179EFF; }
+
+.action-buttons { display: flex; gap: 10px; }
+
+.btn-pay {
+  flex: 1;
+  border: none;
+  padding: 13px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  transition: transform 0.12s, opacity 0.2s, box-shadow 0.2s;
+}
+.btn-pay:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.14);
+}
+.btn-pay:active { transform: scale(0.96); }
+.btn-pay:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: saturate(0.5);
+}
+.btn-pay.cash    { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 3px 12px rgba(16,185,129,0.20); }
+.btn-pay.voucher { background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 3px 12px rgba(59,130,246,0.20); }
+
+/* =========================================
+   5. PANEL KANAN
+   ========================================= */
+
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.catalog-tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: var(--tr-bg-tab);
+  border: 1px solid var(--tr-border-base);
+  color: var(--tr-text-muted);
+  padding: 12px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: inherit;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.tab-btn:hover:not(.active) {
+  background: rgba(23,158,255,0.07);
+  border-color: rgba(23,158,255,0.18);
+  color: #179EFF;
+}
+.tab-btn.active {
+  background: #179EFF;
+  color: #fff;
+  border-color: #179EFF;
+  box-shadow: 0 4px 16px rgba(23,158,255,0.28);
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 14px;
+  overflow-y: auto;
+  padding-bottom: 20px;
+  padding-right: 4px;
+}
+.product-grid::-webkit-scrollbar { width: 3px; }
+.product-grid::-webkit-scrollbar-thumb {
+  background: var(--tr-border-strong);
+  border-radius: 3px;
+}
+
+/* =========================================
+   6. ANIMATIONS
+   ========================================= */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   7. RESPONSIVE — TABLET
+   ========================================= */
+
+@media (max-width: 1024px) {
+  .trans-page {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+  .he-container {
+    padding: 14px 16px 0;
+    margin-bottom: 10px;
+  }
+  .trans-container {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+    gap: 14px;
+    padding: 0 16px 20px;
+  }
+  .left-panel, .right-panel { overflow: visible; }
+  .cart-list { max-height: 260px; }
+  .product-grid { overflow: visible; }
+}
+
+/* =========================================
+   8. RESPONSIVE — MOBILE
+   ========================================= */
+
+@media (max-width: 640px) {
+  .header-section {
+    padding: 11px 14px;
+    border-radius: 14px;
+    gap: 8px;
+  }
+  .page-title h1 { font-size: 17px; }
+  .trans-container { padding: 0 12px 16px; }
+  .left-panel { padding: 14px; border-radius: 14px; }
+  .scanner-section { flex-direction: column; align-items: stretch; }
+  .scan-trigger-btn { width: 100%; height: 44px; border-radius: 12px; }
+  .action-buttons { flex-direction: column; }
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .tab-btn { padding: 10px 8px; font-size: 12px; }
+  .btn-theme-toggle { width: 32px; height: 32px; }
+}

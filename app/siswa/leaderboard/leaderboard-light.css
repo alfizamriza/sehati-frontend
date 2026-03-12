@@ -1,0 +1,442 @@
+/* ================================================================
+   LEADERBOARD — Page-specific styles only
+   Requires: siswa-tokens.css imported BEFORE this file
+
+   Usage in page:
+     import "@/styles/siswa-tokens.css";
+     import "./leaderboard.css";
+   ================================================================ */
+
+/* ================================================================
+   TABS
+   ================================================================ */
+.lb-tabs-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.lb-tabs-wrapper::-webkit-scrollbar { display: none; }
+
+.lb-tabs-container {
+  display: inline-flex;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 16px;
+  white-space: nowrap;
+  min-width: 100%;
+}
+
+.lb-tab {
+  padding: 8px 16px;
+  border-radius: 11px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.lb-tab:hover {
+  background: var(--color-primary-hover);
+  color: var(--text-primary);
+}
+.lb-tab.active {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 4px 12px var(--color-primary-glow);
+}
+
+/* ================================================================
+   "POSISI SAYA" CARD
+   ================================================================ */
+.my-position-card {
+  padding: 14px 18px;
+  background: linear-gradient(135deg, var(--color-primary-soft), transparent) !important;
+  border-color: var(--border-primary) !important;
+}
+.my-pos-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.70rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+.my-pos-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.my-pos-rank {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.my-pos-info { flex: 1; }
+.my-pos-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+}
+.my-pos-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: block;
+}
+.my-pos-coins {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--streak-color);
+  background: var(--streak-bg);
+  border: 1px solid var(--streak-border);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   PODIUM
+   ================================================================ */
+.podium-section {
+  padding: 4px 0 8px;
+}
+.lb-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 0 4px;
+}
+.podium-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.crown-top {
+  position: absolute;
+  top: -26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Avatar circles */
+.p-avatar-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface-input);
+  border: 2.5px solid var(--border-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  transition: border-color 0.2s;
+}
+.podium-box.r-1 .p-avatar-circle {
+  width: 68px;
+  height: 68px;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(217,119,6,0.18), 0 6px 20px rgba(217,119,6,0.22);
+}
+.podium-box.r-2 .p-avatar-circle { border-color: var(--silver); }
+.podium-box.r-3 .p-avatar-circle { border-color: var(--bronze); }
+
+/* Base plate */
+.p-base {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-item);
+  padding: 10px 16px 14px;
+  min-width: 90px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+}
+.podium-box.r-1 .p-base {
+  padding-top: 12px;
+  min-width: 110px;
+  border-color: rgba(217,119,6,0.22);
+  background: linear-gradient(180deg, rgba(217,119,6,0.05) 0%, var(--surface-card) 100%);
+}
+.p-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.p-pts {
+  font-size: 0.70rem;
+  color: var(--score-color);
+  font-weight: 700;
+}
+.p-rank-label {
+  position: absolute;
+  bottom: -10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 900;
+  border: 2px solid var(--surface-page);
+}
+.p-rank-label.rank-1 { background: var(--gold);   color: #fff; }
+.p-rank-label.rank-2 { background: var(--silver); color: #fff; }
+.p-rank-label.rank-3 { background: var(--bronze); color: #fff; }
+
+.is-me-podium .p-avatar-circle,
+.bg-primary { background: var(--color-primary-mid) !important; }
+
+/* ================================================================
+   LIST ITEMS
+   ================================================================ */
+.lb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lb-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: var(--radius-item);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  cursor: default;
+}
+.lb-item:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-1px);
+}
+.lb-item.is-me {
+  background: var(--color-primary-soft) !important;
+  border-color: var(--border-primary) !important;
+}
+
+/* Rank column */
+.item-rank {
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.gold-text   { color: var(--gold)   !important; }
+.silver-text { color: var(--silver) !important; }
+.bronze-text { color: var(--bronze) !important; }
+
+/* Avatar */
+.item-avatar-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--surface-input);
+  border: 1.5px solid var(--border-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.item-avatar-circle.kelas-icon,
+.item-avatar-circle.jenjang-icon {
+  border-radius: 12px;
+}
+
+/* Info */
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+.item-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-input);
+  border: 1px solid var(--border-base);
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+
+/* Score */
+.item-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.item-score .pts {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--score-color);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.item-score .pts-label {
+  font-size: 0.60rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* "Kamu" badge */
+.me-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 6px;
+  padding: 1px 7px;
+  letter-spacing: 0.3px;
+}
+
+/* ================================================================
+   ANTAR JENJANG — Summary row
+   ================================================================ */
+.jenjang-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.jenjang-summary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 10px;
+  text-align: center;
+  border-radius: var(--radius-card);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.jenjang-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
+}
+.jc-icon    { line-height: 1; display: flex; align-items: center; }
+.jc-jenjang { font-size: 0.88rem; font-weight: 800; }
+.jc-rank    { font-size: 1.4rem; font-weight: 900; color: var(--score-color); letter-spacing: -1px; line-height: 1; }
+.jc-avg     { font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; }
+.jc-siswa   { font-size: 0.68rem; color: var(--text-muted); display: flex; align-items: center; gap: 3px; }
+
+/* Jenjang item — accent bar */
+.lb-jenjang-item {
+  position: relative;
+  overflow: hidden;
+}
+.lb-jenjang-item::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: currentColor;
+  opacity: 0.35;
+  border-radius: 0 3px 3px 0;
+}
+
+/* ================================================================
+   SKELETON
+   ================================================================ */
+.lb-skeleton { pointer-events: none; }
+
+.skel {
+  background: linear-gradient(
+    90deg,
+    var(--surface-input) 25%,
+    var(--border-base)   50%,
+    var(--surface-input) 75%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.skel-rank   { width: 28px; height: 20px; }
+.skel-avatar { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; }
+.skel-info   { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.skel-name   { height: 14px; width: 55%; }
+.skel-meta   { height: 11px; width: 35%; }
+.skel-score  { width: 48px; height: 22px; border-radius: 10px; }
+
+/* ================================================================
+   EMPTY STATE
+   ================================================================ */
+.lb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 20px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.lb-empty p {
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (min-width: 640px) {
+  .jenjang-summary-row { gap: 14px; }
+  .lb-podium { gap: 16px; }
+}
