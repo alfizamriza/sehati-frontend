@@ -11,7 +11,7 @@ import {
   getKelasList, getSiswaByKelas, getJenisPelanggaranAktif,
   createPelanggaran, updateBuktiFoto, compressImage,
   type KelasItem, type SiswaItem, type JenisPelanggaranItem,
-} from "@/lib/services/guru";
+} from "@/lib/services/laporan-pelanggaran.service";
 import { uploadBuktiPelanggaran } from "@/lib/supabase-client";
 import "../dashboard/dashboard.css";
 import "./laporan.css";

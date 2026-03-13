@@ -6,7 +6,7 @@
 /* ========================================
    CSS VARIABLES
    ======================================== */
-:root {
+.login-page {
   /* Blues */
   --blue-50:  #eff6ff;
   --blue-100: #dbeafe;
@@ -60,7 +60,7 @@
    LIGHT MODE
    ======================================== */
 @media (prefers-color-scheme: light) {
-  :root {
+  .login-page {
     --bg:             #dbeafe;            /* biru muda — bukan putih */
     --surface:        rgba(255,255,255,0.75);
     --surface-border: rgba(23,158,255,0.20);
@@ -766,4 +766,141 @@
     background: linear-gradient(90deg, #179EFF 0%, #0369a1 100%);
     box-shadow: 0 8px 24px rgba(23,158,255,0.30);
   }
+}
+
+/* ========================================
+   MODAL KEBIJAKAN & PRIVASI
+   ======================================== */
+.policy-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modalFadeIn 0.3s ease;
+}
+
+.policy-modal-box {
+  background: var(--bg);
+  border: 1px solid var(--input-border);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: light) {
+  .policy-modal-box {
+    background: #ffffff;
+    box-shadow: 0 25px 50px rgba(15,23,42,0.15);
+  }
+}
+
+.policy-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--input-border);
+}
+
+.policy-modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.policy-modal-close {
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+.policy-modal-close:hover {
+  opacity: 1;
+  color: #ef4444;
+}
+
+.policy-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.policy-modal-body h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  margin: 0 0 12px 0;
+  color: #179EFF;
+}
+
+.policy-modal-body p {
+  margin: 0 0 16px 0;
+}
+
+.policy-modal-body ul {
+  margin: 0 0 16px 0;
+  padding-left: 20px;
+}
+
+.policy-modal-body li {
+  margin-bottom: 6px;
+}
+
+.policy-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--input-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.policy-btn-ok {
+  background: #179EFF;
+  color: #fff;
+  border: 0;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.policy-btn-ok:hover {
+  background: #0d69ab;
+}
+.policy-btn-ok:active {
+  transform: scale(0.97);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import Sidebar from "@/components/admin/Sidebar";
 import Header from "@/components/admin/Header";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import "./admin.css";
 
 // Mapping pathname → title & subtitle
 const PAGE_META: Record<string, { title: string; subtitle: string }> = {

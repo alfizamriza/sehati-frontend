@@ -402,7 +402,7 @@ export default function AnalyticsPage() {
                         <Cell key={i} fill={d.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(v: number) => [v, "transaksi"]} />
+                    <Tooltip formatter={(v: any) => [v, "transaksi"]} />
                     <Legend iconType="circle" iconSize={8}
                       formatter={(v) => <span style={{ fontSize: 11, color: "var(--txt)" }}>{v}</span>} />
                   </PieChart>
@@ -427,7 +427,7 @@ export default function AnalyticsPage() {
                         <Cell key={i} fill={d.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(v: number) => [v, "item"]} />
+                    <Tooltip formatter={(v: any) => [v, "item"]} />
                     <Legend iconType="circle" iconSize={8}
                       formatter={(v) => <span style={{ fontSize: 11, color: "var(--txt)" }}>{v}</span>} />
                   </PieChart>
@@ -468,7 +468,7 @@ export default function AnalyticsPage() {
                     <YAxis type="category" dataKey="name" width={80}
                       tick={{ fill: "var(--txt)", fontSize: 9 }}
                       tickLine={false} axisLine={false} />
-                    <Tooltip formatter={(v: number) => [v, "unit"]} />
+                    <Tooltip formatter={(v: any) => [v, "unit"]} />
                     <Bar dataKey="value" name="Unit" radius={[0, 4, 4, 0]}>
                       {data.topProduk.slice(0, 6).map((_: any, i: number) => (
                         <Cell key={i} fill={`hsl(${210 - i * 18}, 80%, 58%)`} />

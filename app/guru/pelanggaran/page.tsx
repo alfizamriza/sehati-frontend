@@ -474,7 +474,13 @@ export default function JenisPelanggaranPage() {
                             <div>{v.guru.nama}</div>
                             <div className="td-guru-nip">{v.guru.nip}</div>
                           </td>
-                          <td className="td-faint">{v.tanggal}</td>
+                          <td className="td-faint">
+                            {new Date(v.tanggal).toLocaleDateString("id-ID", {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric"
+                            })}
+                          </td>
                           <td>
                             <span className="td-coins-value">
                               <Coins size={13} />-{v.bobotCoins}

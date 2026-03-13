@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Trophy, Medal, Flame, Search, Download, TrendingUp, Users, Crown,
   School, ChevronDown, Building2, GraduationCap, Users2, Award,
-  Coins,
+  Coins, Loader2,
 } from "lucide-react";
 import {
   useLeaderboardKelasSaya, useLeaderboardAntarKelas,
@@ -12,6 +12,7 @@ import {
   useLeaderboardSiswaByJenjang,
   LeaderboardSiswaRow, LeaderboardKelasRow, LeaderboardJenjangRow,
   exportLeaderboardPdf,
+  getKelasDropdown,
 } from "@/lib/services/admin";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -193,8 +194,17 @@ export default function LeaderboardAdminPage() {
   const [q,                 setQuery]             = useState("");
   const [jenjangKelasFilter, setJenjangKelasFilter] = useState("");
   const [jenjangSiswaFilter, setJenjangSiswaFilter] = useState("SD");
+  const [selectedKelas,     setSelectedKelas]     = useState("");
+  const [kelasList,         setKelasList]         = useState<any[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
 
-  const { data: dataKelas,        isLoading: loadKelas        } = useLeaderboardKelasSaya();
+  useEffect(() => {
+    getKelasDropdown()
+      .then((data) => setKelasList(data.map((k) => ({ id: String(k.id), label: k.label }))))
+      .catch(console.error);
+  }, []);
+
+  const { data: dataKelas,        isLoading: loadKelas        } = useLeaderboardKelasSaya(selectedKelas || undefined);
   const { data: dataAntarKelas,   isLoading: loadAntarKelas   } = useLeaderboardAntarKelas(jenjangKelasFilter || undefined);
   const { data: dataSekolah,      isLoading: loadSekolah      } = useLeaderboardSekolah();
   const { data: dataAntarJenjang, isLoading: loadAntarJenjang } = useLeaderboardAntarJenjang();
@@ -284,10 +294,23 @@ export default function LeaderboardAdminPage() {
         {TABS.map((t) => (
           <button key={t.key} type="button"
             className={`lb-tab-btn ${tab === t.key ? "active" : ""}`}
-            onClick={() => { setTab(t.key); setQuery(""); setJenjangKelasFilter(""); }}>
+            onClick={() => { setTab(t.key); setQuery(""); setJenjangKelasFilter(""); setSelectedKelas(""); }}>
             {t.label}
           </button>
         ))}
+
+        {/* Filter Kelas — Kelas Saya */}
+        {tab === "kelas" && (
+          <div style={{ marginLeft: "auto", position: "relative" }}>
+            <select className="lb-filter-select"
+              value={selectedKelas}
+              onChange={(e) => setSelectedKelas(e.target.value)}>
+              <option value="">Semua Kelas</option>
+              {kelasList.map((k) => <option key={k.id} value={k.id}>{k.label}</option>)}
+            </select>
+            <ChevronDown size={13} style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "var(--text-faint)" }} />
+          </div>
+        )}
 
         {/* Jenjang filter — Antar Kelas */}
         {tab === "antarKelas" && (
@@ -375,8 +398,21 @@ export default function LeaderboardAdminPage() {
             <button className="btn btn-secondary" onClick={handleExport}>
               <Download size={15} /> CSV
             </button>
-            <button className="btn btn-secondary" onClick={() => exportLeaderboardPdf({ type: tab, kelas_id: jenjangKelasFilter || undefined, jenjang: jenjangSiswaFilter || undefined })}>
-              <Download size={15} /> PDF
+            <button className="btn btn-secondary" onClick={async () => {
+              if (isExporting || !filteredData.length) return;
+              setIsExporting(true);
+              try {
+                const kisId = tab === "kelas" ? (selectedKelas || undefined) : (jenjangKelasFilter || undefined);
+                await exportLeaderboardPdf({ type: tab, kelas_id: kisId, jenjang: jenjangSiswaFilter || undefined, data: filteredData });
+              } finally {
+                setIsExporting(false);
+              }
+            }} disabled={isExporting || filteredData.length === 0}>
+              {isExporting ? (
+                 <><Loader2 size={15} style={{ animation: "spin 0.6s linear infinite" }} /> PDF...</>
+               ) : (
+                 <><Download size={15} /> PDF</>
+               )}
             </button>
           </div>
         </div>
@@ -527,6 +563,9 @@ export default function LeaderboardAdminPage() {
           </tbody>
         </table>
       </div>
+      <style jsx>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }

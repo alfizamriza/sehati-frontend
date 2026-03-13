@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
@@ -17,7 +17,6 @@ import {
   type TopSiswa, type PelanggaranItem,
 } from "@/lib/services/guru";
 import { ErrorState } from "@/components/common/AsyncState";
-import "./dashboard.css";
 import { logout } from "@/lib/services/shared";
 import BrandLogo from "@/components/common/BrandLogo";
 

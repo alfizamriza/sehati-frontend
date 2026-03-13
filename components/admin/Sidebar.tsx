@@ -18,7 +18,6 @@ import {
   X,
 } from "lucide-react";
 import BrandLogo from "@/components/common/BrandLogo";
-import "@/app/admin/admin.css";
 
 const nav = [
   { href: "/admin/dashboard",   label: "Dashboard",          icon: <LayoutDashboard size={20} /> },

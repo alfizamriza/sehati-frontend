@@ -3,72 +3,28 @@
 import "./login.css";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Shield, User, Users, Recycle, GraduationCap, Store, TriangleAlert } from "lucide-react";
+import { Eye, EyeOff, Shield, User, Users, Recycle, GraduationCap, Store, TriangleAlert, X, ScrollText } from "lucide-react";
 import { loginUser, type LoginRequest } from "@/lib/services/shared";
 import { getAllPengaturan } from "@/lib/services/settings.service";
 import { BackgroundLines } from "@/components/ui/background-lines";
 import BrandLogo from "@/components/common/BrandLogo";
 
-// --- KOMPONEN ROBOT LUCU (SVG Inline) ---
-const CuteRobot = () => (
-  <div className="robot-wrapper">
-    <svg viewBox="0 0 200 160" className="robot-svg">
-      <defs>
-        <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#179EFF" />
-          <stop offset="100%" stopColor="#0d69ab" />
-        </linearGradient>
-        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="5" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
+import Script from "next/script";
 
-      <g className="bot-float">
-        <ellipse cx="100" cy="150" rx="40" ry="6" fill="rgba(0,0,0,0.2)" className="bot-shadow" />
-
-        {/* Tangan Kiri */}
-        <path d="M60 100 Q 50 110 50 120" stroke="#179EFF" strokeWidth="8" strokeLinecap="round" fill="none" />
-        <circle cx="50" cy="120" r="6" fill="#fff" />
-
-        {/* Kaki */}
-        <path d="M85 130 L 85 145" stroke="#334155" strokeWidth="6" strokeLinecap="round" />
-        <path d="M115 130 L 115 145" stroke="#334155" strokeWidth="6" strokeLinecap="round" />
-
-        {/* Badan */}
-        <rect x="70" y="80" width="60" height="50" rx="15" fill="url(#bodyGrad)" filter="url(#glow)" />
-        <rect x="85" y="95" width="30" height="20" rx="4" fill="#0a0e27" />
-        <circle cx="92" cy="105" r="2" fill="#34d399" className="blink-led" />
-        <circle cx="100" cy="105" r="2" fill="#34d399" className="blink-led" style={{ animationDelay: '0.2s' }} />
-        <circle cx="108" cy="105" r="2" fill="#34d399" className="blink-led" style={{ animationDelay: '0.4s' }} />
-
-        {/* Kepala */}
-        <g className="bot-head">
-          <rect x="65" y="35" width="70" height="45" rx="12" fill="#F0F8FF" />
-          <path d="M65 47 L 135 47" stroke="#e2e8f0" strokeWidth="1" />
-          <g className="bot-eyes">
-            <circle cx="85" cy="55" r="5" fill="#0f172a" />
-            <circle cx="115" cy="55" r="5" fill="#0f172a" />
-            <circle cx="87" cy="53" r="1.5" fill="white" />
-            <circle cx="117" cy="53" r="1.5" fill="white" />
-          </g>
-          <path d="M95 68 Q 100 71 105 68" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" fill="none" />
-          <path d="M100 35 L 100 20" stroke="#cbd5e1" strokeWidth="3" />
-          <circle cx="100" cy="15" r="4" fill="#fbbf24" className="antenna-glow" />
-        </g>
-
-        {/* Tangan Kanan (Melambaikan) */}
-        <g className="bot-arm-wave" style={{ transformOrigin: '140px 100px' }}>
-          <path d="M130 100 Q 150 100 155 80" stroke="#179EFF" strokeWidth="8" strokeLinecap="round" fill="none" />
-          <circle cx="155" cy="80" r="7" fill="#fff" />
-        </g>
-      </g>
-    </svg>
-  </div>
-);
+// Define custom elements for TypeScript
+declare global {
+  namespace React {
+    namespace JSX {
+      interface IntrinsicElements {
+        'dotlottie-wc': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+          src?: string;
+          autoplay?: boolean;
+          loop?: boolean;
+        };
+      }
+    }
+  }
+}
 
 const ROLES = [
   { id: "admin", label: "Admin", icon: Shield },
@@ -90,6 +46,10 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [schoolName, setSchoolName] = useState(defaultSchoolName);
+
+  // Policy Modals State
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -164,6 +124,7 @@ export default function LoginPage() {
 
   return (
     <main className="login-page">
+      <Script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.3/dist/dotlottie-wc.js" type="module" strategy="lazyOnload" />
       <BackgroundLines className="login-bg-lines">{null}</BackgroundLines>
       <div className="login-wrap">
         <div className="login-card is-mounted">
@@ -181,7 +142,14 @@ export default function LoginPage() {
             </div>
 
             <div className="hero">
-              <CuteRobot />
+              <div className="robot-wrapper" style={{ width: 200, height: 200, margin: '0 0 -20px -30px' }}>
+                <dotlottie-wc
+                  src="https://lottie.host/190931ce-26a1-4091-98c0-783701cabbcc/NjQ4tyI9mR.lottie"
+                  style={{ width: "200px", height: "200px" }}
+                  autoplay
+                  loop
+                />
+              </div>
 
               <div className="hero-content">
                 <div className="hero-pill">
@@ -317,14 +285,90 @@ export default function LoginPage() {
               </form>
 
               <div className="footer">
-                Aplikasi Sekolah Hijau v2.0 • <span>Ketentuan</span> •{" "}
-                <span>Privasi</span>
+                Aplikasi Sekolah Hijau v2.0 •{" "}
+                <span onClick={() => setShowTerms(true)} tabIndex={0} role="button">Ketentuan</span> •{" "}
+                <span onClick={() => setShowPrivacy(true)} tabIndex={0} role="button">Privasi</span>
               </div>
             </div>
           </section>
 
         </div>
       </div>
+
+      {/* ── SYARAT KETENTUAN ── */}
+      {showTerms && (
+        <div className="policy-modal-overlay" onClick={() => setShowTerms(false)}>
+          <div className="policy-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="policy-modal-head">
+              <div className="policy-modal-title">
+                <ScrollText size={20} color="#179EFF" />
+                Syarat & Ketentuan Penggunaan
+              </div>
+              <button className="policy-modal-close" onClick={() => setShowTerms(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="policy-modal-body">
+              <h3>1. Ketentuan Umum</h3>
+              <p>Selamat datang di Aplikasi SEHATI (Sekolah Hijau dan Edukasi Terintegrasi). Dengan mengakses dan menggunakan aplikasi ini, Anda setuju untuk terikat dengan seluruh syarat dan ketentuan yang berlaku di lingkungan {schoolName}.</p>
+
+              <h3>2. Penggunaan Aplikasi</h3>
+              <ul>
+                <li>Akun bersifat pribadi dan tidak boleh dipindahtangankan kepada orang lain.</li>
+                <li>Pengguna bertanggung jawab atas kerahasiaan kata sandi (password) masing-classing.</li>
+                <li>Segala bentuk penyalahgunaan sistem yang merugikan pihak sekolah akan dikenakan sanksi sesuai aturan yang berlaku.</li>
+              </ul>
+
+              <h3>3. Sistem Peringkat & Coins</h3>
+              <p>Saldo <i>Coins</i> yang terdapat pada aplikasi merupakan representasi poin untuk melihat batas aman dan peringkat kedisiplinan siswa di {schoolName}. Coins ini <b>tidak dapat ditukar</b> dengan barang atau diuangkan, melainkan berfungsi sebagai indikator kedisiplinan dan pembatasan penggunaan kemasan plastik.</p>
+
+              <h3>4. Pelanggaran & Pengurangan Koin</h3>
+              <p>Sekolah berhak mencatat pelanggaran siswa atau melakukan pengurangan <i>Coins</i> setiap kali siswa melakukan kesalahan, seperti pembelian makanan di kantin menggunakan kemasan/sampah plastik. Jika <i>Coins</i> siswa habis atau berada di bawah batas tertentu, sistem dapat memblokir akses ke fitur tertentu atau memberikan sanksi sesuai aturan yang berlaku.</p>
+            </div>
+            <div className="policy-modal-footer">
+              <button className="policy-btn-ok" onClick={() => setShowTerms(false)}>Saya Mengerti</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── KEBIJAKAN PRIVASI ── */}
+      {showPrivacy && (
+        <div className="policy-modal-overlay" onClick={() => setShowPrivacy(false)}>
+          <div className="policy-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="policy-modal-head">
+              <div className="policy-modal-title">
+                <Shield size={20} color="#10b981" />
+                Kebijakan Privasi
+              </div>
+              <button className="policy-modal-close" onClick={() => setShowPrivacy(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="policy-modal-body">
+              <h3>1. Pengumpulan Data</h3>
+              <p>Aplikasi SEHATI mengumpulkan data pribadi yang esensial untuk keperluan akademik dan kedisiplinan, termasuk namun tidak terbatas pada: Nama lengkap, Nomor Induk (NIS/NIP), foto profil, dan riwayat transaksi di lingkungan sekolah.</p>
+
+              <h3>2. Penggunaan Data Pribadi</h3>
+              <ul>
+                <li>Memfasilitasi layanan sistem perpustakaan, absen, dan kantin sekolah.</li>
+                <li>Pencatatan riwayat pelanggaran dan apresiasi/prestasi siswa untuk keperluan konseling (Bimbingan Konseling).</li>
+                <li>Analisis statistik internal sekolah guna meningkatkan mutu pendidikan.</li>
+              </ul>
+
+              <h3>3. Perlindungan & Keamanan Data</h3>
+              <p>Kami berkomitmen untuk melindungi data Anda. Seluruh kata sandi dienkripsi, dan akses terhadap riwayat data sensitif (misal: pelanggaran) hanya diberikan kepada Guru dan staf Konselor yang berwenang.</p>
+
+              <h3>4. Berbagi Informasi (Sharing)</h3>
+              <p>Data pribadi Anda <b>tidak akan pernah dijual</b> kepada pihak ketiga. Data hanya akan dibagikan kepada Dinas Pendidikan terkait jika diwajibkan oleh hukum atau perundang-undangan Negara Kesatuan Republik Indonesia.</p>
+            </div>
+            <div className="policy-modal-footer">
+              <button className="policy-btn-ok" onClick={() => setShowPrivacy(false)}>Saya Mengerti</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }

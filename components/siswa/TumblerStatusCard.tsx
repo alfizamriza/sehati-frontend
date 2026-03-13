@@ -66,20 +66,20 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
 
         {/* Text content */}
         <div className="tumbler-content">
-          <div className="tumbler-status-badge">
+          <div className="tumbler-status-badge text-gray-800 dark:text-white/90">
             <span className={`status-dot ${hadir ? "dot-green" : "dot-red"}`} />
             <span>{hadir ? "Tumbler Terbawa! 🎉" : "Tumbler Terlupa 😞"}</span>
           </div>
 
           {nama && (
-            <p className="tumbler-nama">Hei, <strong>{nama.split(" ")[0]}</strong>!</p>
+            <p className="tumbler-nama text-gray-600 dark:text-white/60">Hei, <strong className="text-gray-900 dark:text-white/90">{nama.split(" ")[0]}</strong>!</p>
           )}
 
           {/* Marquee message */}
-          <div className="tumbler-marquee-wrap">
+          <div className="tumbler-marquee-wrap border-t border-gray-200/60 dark:border-white/10 mt-1">
             <div className="tumbler-marquee-track">
-              <span className="tumbler-marquee-text">{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;</span>
-              <span className="tumbler-marquee-text" aria-hidden>{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;</span>
+              <span className="tumbler-marquee-text text-gray-500 dark:text-white/55">{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;</span>
+              <span className="tumbler-marquee-text text-gray-500 dark:text-white/55" aria-hidden>{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;</span>
             </div>
           </div>
         </div>
@@ -157,7 +157,6 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
             gap: 6px;
             font-size: 0.82rem;
             font-weight: 700;
-            color: rgba(255,255,255,0.9);
             letter-spacing: 0.2px;
           }
           .status-dot {
@@ -184,9 +183,7 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
           .tumbler-nama {
             margin: 0;
             font-size: 0.88rem;
-            color: rgba(255,255,255,0.6);
           }
-          .tumbler-nama strong { color: rgba(255,255,255,0.9); }
 
           /* Marquee */
           .tumbler-marquee-wrap {
@@ -194,8 +191,6 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
             width: 100%;
             border-radius: 8px;
             padding: 6px 0;
-            border-top: 1px solid rgba(255,255,255,0.07);
-            margin-top: 4px;
           }
           .tumbler-marquee-track {
             display: flex;
@@ -205,7 +200,6 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
           .tumbler-marquee-text {
             font-size: 0.77rem;
             font-weight: 600;
-            color: rgba(255,255,255,0.55);
             flex-shrink: 0;
           }
           .tumbler-card-happy .tumbler-marquee-text { color: rgba(16,185,129,0.85); }

@@ -3,7 +3,7 @@ export * from "../analytics.service";
 export * from "../guru.service";
 export * from "../kantin.service";
 export * from "../kelas.service";
-export * from "../leaderboard-sekolah.service";
+export * from "../Leaderboard.service";
 export * from "../settings.service";
 export * from "../siswa.service";
 export * from "../voucher.service";

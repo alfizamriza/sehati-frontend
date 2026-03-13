@@ -2,7 +2,6 @@
 
 import { LogOut, UserRound, ChevronDown, Menu, X, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
-import "@/app/admin/admin.css";
 
 // Import named exports langsung dari auth — BUKAN authService.logout()
 import { logout, getUser } from "@/lib/services/shared";
