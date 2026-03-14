@@ -21,77 +21,71 @@ function toKey(date: Date): string {
 }
 
 const MONTHS_ID = [
-  "Januari","Februari","Maret","April","Mei","Juni",
-  "Juli","Agustus","September","Oktober","November","Desember"
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
 export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarProps) {
   const [month, setMonth] = React.useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
 
+  const todayKey = toKey(new Date());
+
+  // Map status dari backend (sudah include libur masa depan)
   const statusMap = React.useMemo(() => {
     const map = new Map<string, DayStatus>();
     days.forEach((d) => map.set(d.date, d.status));
     return map;
   }, [days]);
 
-  const todayKey = toKey(new Date());
+  // Map keterangan libur untuk tooltip
+  const keteranganMap = React.useMemo(() => {
+    const map = new Map<string, string>();
+    days.forEach((d) => {
+      if ((d as any).keteranganLibur) map.set(d.date, (d as any).keteranganLibur);
+    });
+    return map;
+  }, [days]);
 
   const getStatus = React.useCallback(
-    (date: Date): DayStatus => {
-      const key = toKey(date);
-      return statusMap.get(key) ?? "kosong";
-    },
+    (date: Date): DayStatus => statusMap.get(toKey(date)) ?? "kosong",
     [statusMap],
   );
+
+  const now = new Date();
+  const toMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const handleMonthChange = (newMonth: Date) => {
     setMonth(newMonth);
     onMonthChange?.(newMonth.getFullYear(), newMonth.getMonth() + 1);
   };
 
-  const goToPrevMonth = () => {
-    const prev = new Date(month.getFullYear(), month.getMonth() - 1, 1);
-    handleMonthChange(prev);
-  };
+  const goToPrevMonth = () =>
+    handleMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1));
 
   const goToNextMonth = () => {
     const next = new Date(month.getFullYear(), month.getMonth() + 1, 1);
-    const now = new Date();
-    const toMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     if (next <= toMonth) handleMonthChange(next);
   };
 
-  const isNextDisabled = () => {
-    const now = new Date();
-    return month.getFullYear() === now.getFullYear() && month.getMonth() === now.getMonth();
-  };
+  const isNextDisabled = () =>
+    month.getFullYear() === now.getFullYear() && month.getMonth() === now.getMonth();
 
   const selectedDay = React.useMemo(() => {
     if (!selectedDate) return null;
-    const key = toKey(selectedDate);
-    return days.find((d) => d.date === key) ?? null;
+    return days.find((d) => d.date === toKey(selectedDate)) ?? null;
   }, [days, selectedDate]);
 
-  const now = new Date();
-  const toMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  // Custom caption with styled selects
+  // ─── Custom Caption ──────────────────────────────────────────
   const CustomCaption = () => {
     const currentYear = month.getFullYear();
     const currentMonthIdx = month.getMonth();
     const nowYear = now.getFullYear();
-
     const years = Array.from({ length: 5 }, (_, i) => nowYear - 4 + i);
 
     return (
       <div className="cal-caption-custom">
-        <button
-          className="cal-nav-btn"
-          onClick={goToPrevMonth}
-          aria-label="Bulan sebelumnya"
-          type="button"
-        >
+        <button className="cal-nav-btn" onClick={goToPrevMonth} aria-label="Bulan sebelumnya" type="button">
           <ChevronLeft size={16} />
         </button>
 
@@ -102,19 +96,14 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
               value={currentMonthIdx}
               onChange={(e) => {
                 const newMonth = new Date(currentYear, Number(e.target.value), 1);
-                const maxMonth = new Date(nowYear, now.getMonth(), 1);
-                if (newMonth <= maxMonth) handleMonthChange(newMonth);
+                if (newMonth <= toMonth) handleMonthChange(newMonth);
               }}
             >
-              {MONTHS_ID.map((name, idx) => {
-                const isDisabled =
-                  currentYear === nowYear && idx > now.getMonth();
-                return (
-                  <option key={idx} value={idx} disabled={isDisabled}>
-                    {name}
-                  </option>
-                );
-              })}
+              {MONTHS_ID.map((name, idx) => (
+                <option key={idx} value={idx} disabled={currentYear === nowYear && idx > now.getMonth()}>
+                  {name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="cal-select-wrapper">
@@ -123,16 +112,10 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
               value={currentYear}
               onChange={(e) => {
                 const newMonth = new Date(Number(e.target.value), currentMonthIdx, 1);
-                const maxMonth = new Date(nowYear, now.getMonth(), 1);
-                if (newMonth <= maxMonth) handleMonthChange(newMonth);
-                else handleMonthChange(maxMonth);
+                handleMonthChange(newMonth <= toMonth ? newMonth : toMonth);
               }}
             >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
+              {years.map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
         </div>
@@ -146,6 +129,73 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
         >
           <ChevronRight size={16} />
         </button>
+      </div>
+    );
+  };
+
+  // ─── Detail hari yang dipilih ────────────────────────────────
+  const renderDayDetail = () => {
+    if (!selectedDate) return null;
+
+    const key = toKey(selectedDate);
+    const isFutureDate = key > todayKey;
+    const status = statusMap.get(key);
+    const keterangan = keteranganMap.get(key);
+    const dateLabel = selectedDate.toLocaleDateString("id-ID", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+    });
+
+    // Hari libur (termasuk masa depan)
+    if (status === "libur") {
+      return (
+        <div className="attendance-day-detail">
+          <div className="attendance-day-title">{dateLabel}</div>
+          <div className="attendance-day-meta">
+            <span className="meta-item meta-status-libur">
+              📅 {keterangan ?? "Libur"}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    // Tanggal masa depan yang bukan libur
+    if (isFutureDate) {
+      return (
+        <div className="attendance-day-detail">
+          <div className="attendance-day-title">{dateLabel}</div>
+          <div className="attendance-day-meta">
+            <span className="meta-item" style={{ opacity: 0.55, fontSize: "0.78rem" }}>
+              🗓️ Belum terjadi
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    // Hari lampau / hari ini
+    return (
+      <div className="attendance-day-detail">
+        <div className="attendance-day-title">{dateLabel}</div>
+        {selectedDay ? (
+          <div className="attendance-day-meta">
+            <span className={`meta-item meta-status-${selectedDay.status}`}>
+              {selectedDay.status === "hadir" ? "✅ Bawa tumbler"
+                : selectedDay.status === "pelanggaran" ? "⚠️ Pelanggaran"
+                  : selectedDay.status === "plastik" ? "🛍️ Beli plastik"
+                    : "❌ Tidak bawa tumbler"}
+            </span>
+            <span className="meta-item">🧴 Tumbler: {selectedDay.hadir ? "Ya" : "Tidak"}</span>
+            <span className="meta-item">⚠️ Pelanggaran: {selectedDay.pelanggaranCount}</span>
+            <span className="meta-item">🛍️ Plastik: {selectedDay.plastikCount}</span>
+          </div>
+        ) : (
+          <div className="attendance-day-meta">
+            <span className="meta-item meta-status-kosong">❌ Tidak bawa tumbler</span>
+            <span className="meta-item">⚠️ Pelanggaran: 0</span>
+            <span className="meta-item">🛍️ Plastik: 0</span>
+          </div>
+        )}
       </div>
     );
   };
@@ -164,7 +214,6 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
         toMonth={toMonth}
         showOutsideDays
         hideNavigation
-        /* suppress built-in caption so our custom one shows above */
         classNames={{
           root: "attendance-cal-root",
           months: "attendance-cal-months",
@@ -189,6 +238,8 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
           plastik: (d) => getStatus(d) === "plastik",
           libur: (d) => getStatus(d) === "libur",
           kosong: (d) => getStatus(d) === "kosong",
+          // Tanggal masa depan non-libur → tampil redup
+          masaDepan: (d) => toKey(d) > todayKey && getStatus(d) !== "libur",
         }}
         modifiersClassNames={{
           hariIni: "cal-day-today",
@@ -197,46 +248,11 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
           plastik: "cal-day-plastik",
           libur: "cal-day-libur",
           kosong: "cal-day-kosong",
+          masaDepan: "cal-day-future",   // ← CSS baru: opacity redup
         }}
       />
 
-      {/* Day detail */}
-      {selectedDate && (
-        <div className="attendance-day-detail">
-          <div className="attendance-day-title">
-            {selectedDate.toLocaleDateString("id-ID", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </div>
-          {selectedDay ? (
-            <div className="attendance-day-meta">
-              <span className={`meta-item meta-status-${selectedDay.status}`}>
-                {selectedDay.status === "libur"
-                  ? "📅 Libur"
-                  : selectedDay.status === "hadir"
-                  ? "✅ Bawa tumbler"
-                  : selectedDay.status === "pelanggaran"
-                  ? "⚠️ Pelanggaran"
-                  : selectedDay.status === "plastik"
-                  ? "🛍️ Beli plastik"
-                  : "❌ Tidak bawa tumbler"}
-              </span>
-              <span className="meta-item">🧴 Tumbler: {selectedDay.hadir ? "Ya" : "Tidak"}</span>
-              <span className="meta-item">⚠️ Pelanggaran: {selectedDay.pelanggaranCount}</span>
-              <span className="meta-item">🛍️ Plastik: {selectedDay.plastikCount}</span>
-            </div>
-          ) : (
-            <div className="attendance-day-meta">
-              <span className="meta-item meta-status-kosong">❌ Tidak hadir</span>
-              <span className="meta-item">⚠️ Pelanggaran: 0</span>
-              <span className="meta-item">🛍️ Plastik: 0</span>
-            </div>
-          )}
-        </div>
-      )}
+      {renderDayDetail()}
 
       {/* Legend */}
       <div className="attendance-legend">

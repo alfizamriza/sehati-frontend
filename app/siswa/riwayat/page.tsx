@@ -31,7 +31,6 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: "pelanggaran", label: "Pelanggaran", icon: <ShieldAlert size={13} /> },
 ];
 
-// Kategori config — warna tetap pakai var() agar ikut tema
 const KATEGORI_CFG = {
   ringan: {
     color: "var(--gold,#F59E0B)",
@@ -53,12 +52,6 @@ const KATEGORI_CFG = {
   },
 } as const;
 
-const KEMASAN_LABEL: Record<string, string> = {
-  plastik: "Plastik",
-  kertas: "Kertas",
-  tanpa_kemasan: "Tanpa Kemasan",
-};
-
 // ─── PLASTIK WARNING ──────────────────────────────────────────────────────────
 function PlastikWarning({ jumlah }: { jumlah: number }) {
   if (jumlah === 0) return null;
@@ -70,10 +63,7 @@ function PlastikWarning({ jumlah }: { jumlah: number }) {
   }[level];
 
   return (
-    <div
-      className="rw-plastik-warning"
-      style={{ background: cfg.bg, borderColor: cfg.border }}
-    >
+    <div className="rw-plastik-warning" style={{ background: cfg.bg, borderColor: cfg.border }}>
       <AlertTriangle size={15} style={{ color: cfg.color, flexShrink: 0, marginTop: 1 }} />
       <div>
         <div className="rw-plastik-warning-title" style={{ color: cfg.color }}>
@@ -89,48 +79,45 @@ function PlastikWarning({ jumlah }: { jumlah: number }) {
 function SummaryCards({ summary }: { summary: RiwayatSummary }) {
   return (
     <div className="rw-summary-grid">
-      {/* Top 3 */}
-      {[
-        { icon: <Droplets size={16} style={{ color: "var(--status-hadir-text)" }} />, label: "Tumbler", value: summary.totalTumbler, color: "var(--status-hadir-text)" },
-        { icon: <ShoppingBag size={16} style={{ color: "var(--color-primary)" }} />, label: "Belanja", value: summary.totalBelanja, color: "var(--color-primary)" },
-        { icon: <ShieldAlert size={16} style={{ color: "var(--status-pel-text)" }} />, label: "Pelangg.", value: summary.totalPelanggaran, color: "var(--status-pel-text)" },
-      ].map((s) => (
-        <div key={s.label} className="rw-summary-card">
-          <div className="rw-summary-card-icon">{s.icon}</div>
-          <div className="rw-summary-card-value" style={{ color: s.color }}>{s.value}</div>
-          <div className="rw-summary-card-label">{s.label}</div>
+      {/* Counts row */}
+      <div className="rw-summary-counts">
+        <div className="rw-summary-card">
+          <div className="rw-summary-card-value" style={{ color: "var(--status-hadir-text)" }}>{summary.totalTumbler}</div>
+          <div className="rw-summary-card-label">Tumbler</div>
         </div>
-      ))}
+        <div className="rw-summary-card">
+          <div className="rw-summary-card-value" style={{ color: "var(--color-primary)" }}>{summary.totalBelanja}</div>
+          <div className="rw-summary-card-label">Belanja</div>
+        </div>
+        <div className="rw-summary-card">
+          <div className="rw-summary-card-value" style={{ color: "var(--status-pel-text)" }}>{summary.totalPelanggaran}</div>
+          <div className="rw-summary-card-label">Pelanggaran</div>
+        </div>
+      </div>
 
-      {/* Bottom coins bar */}
+      {/* Coins footer row */}
       <div className="rw-summary-footer">
         <div className="rw-summary-footer-item">
-          <TrendingUp size={15} style={{ color: "var(--status-hadir-text)" }} />
+          <TrendingUp size={13} style={{ color: "var(--status-hadir-text)" }} />
           <div>
             <div className="rw-summary-footer-label">Coins Masuk</div>
-            <div className="rw-summary-footer-value" style={{ color: "var(--status-hadir-text)" }}>
-              +{summary.totalCoinsDidapat}
-            </div>
+            <div className="rw-summary-footer-value" style={{ color: "var(--status-hadir-text)" }}>+{summary.totalCoinsDidapat}</div>
           </div>
         </div>
         <div className="rw-summary-divider" />
         <div className="rw-summary-footer-item">
-          <TrendingDown size={15} style={{ color: "var(--status-pel-text)" }} />
+          <TrendingDown size={13} style={{ color: "var(--status-pel-text)" }} />
           <div>
             <div className="rw-summary-footer-label">Coins Keluar</div>
-            <div className="rw-summary-footer-value" style={{ color: "var(--status-pel-text)" }}>
-              -{summary.totalCoinsKeluar}
-            </div>
+            <div className="rw-summary-footer-value" style={{ color: "var(--status-pel-text)" }}>-{summary.totalCoinsKeluar}</div>
           </div>
         </div>
         <div className="rw-summary-divider" />
         <div className="rw-summary-footer-item">
-          <Trash2 size={15} style={{ color: "var(--status-plastik-text)" }} />
+          <Trash2 size={13} style={{ color: "var(--status-plastik-text)" }} />
           <div>
             <div className="rw-summary-footer-label">Plastik</div>
-            <div className="rw-summary-footer-value" style={{ color: "var(--status-plastik-text)" }}>
-              {summary.jumlahPlastik}x
-            </div>
+            <div className="rw-summary-footer-value" style={{ color: "var(--status-plastik-text)" }}>{summary.jumlahPlastik}×</div>
           </div>
         </div>
       </div>
@@ -157,7 +144,7 @@ function Chip({ children, color, bg, border }: {
   );
 }
 
-// ─── ITEM CARDS ───────────────────────────────────────────────────────────────
+// ─── TUMBLER CARD ─────────────────────────────────────────────────────────────
 function TumblerCard({ item, onClick }: { item: RiwayatTumbler; onClick: () => void }) {
   const totalCoins = item.coinsReward + item.streakBonus;
   return (
@@ -207,23 +194,45 @@ function TumblerCard({ item, onClick }: { item: RiwayatTumbler; onClick: () => v
   );
 }
 
+// ─── BELANJA CARD ─────────────────────────────────────────────────────────────
 function BelanjaCard({ item, onClick }: { item: RiwayatBelanja; onClick: () => void }) {
   const isPlastik = item.adaProdukPlastik;
-  const accColor = isPlastik ? "var(--status-plastik-text)" : "var(--color-primary)";
-  const borderAcc = isPlastik ? "var(--status-plastik-border)" : "var(--border-primary)";
-  const payIcon = { coins: <Coins size={9} />, voucher: <Tag size={9} />, tunai: <CreditCard size={9} /> }[item.paymentMethod] ?? <CreditCard size={9} />;
+  const hasReward = item.coinsReward > 0;
+  const hasPenalty = item.coinsPenalty > 0;
+
+  const accColor = isPlastik
+    ? "var(--status-plastik-text)"
+    : hasReward
+      ? "var(--status-hadir-text)"
+      : "var(--color-primary)";
+  const borderAcc = isPlastik
+    ? "var(--status-plastik-border)"
+    : hasReward
+      ? "var(--status-hadir-border)"
+      : "var(--border-primary)";
+
+  const payIcon = {
+    coins: <Coins size={9} />,
+    voucher: <Tag size={9} />,
+    tunai: <CreditCard size={9} />,
+  }[item.paymentMethod] ?? <CreditCard size={9} />;
 
   return (
     <button onClick={onClick} className="rw-card-btn">
       <div className="rw-item-card" style={{ borderLeft: `3px solid ${borderAcc}` }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div className={`rw-icon-box ${isPlastik ? "rw-icon-box-belanja-plastik" : "rw-icon-box-belanja"}`}>
+            <div className={`rw-icon-box ${isPlastik ? "rw-icon-box-belanja-plastik" : hasReward ? "rw-icon-box-tumbler" : "rw-icon-box-belanja"}`}>
               <ShoppingBag size={17} style={{ color: accColor }} />
             </div>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 3 }}>
                 <span className="rw-item-title" style={{ color: accColor }}>Belanja Kantin</span>
+                {hasReward && (
+                  <Chip color="var(--status-hadir-text)" bg="var(--status-hadir-bg)" border="var(--status-hadir-border)">
+                    <Zap size={8} /> +{item.coinsReward} Bonus
+                  </Chip>
+                )}
                 {isPlastik && (
                   <Chip color="var(--status-plastik-text)" bg="var(--status-plastik-bg)" border="var(--status-plastik-border)">
                     <Trash2 size={8} /> Plastik
@@ -235,10 +244,21 @@ function BelanjaCard({ item, onClick }: { item: RiwayatBelanja; onClick: () => v
               </div>
             </div>
           </div>
+          {/* Tampilkan semua coins yang relevan sekaligus */}
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ textAlign: "right" }}>
-              <div className="rw-coins-minus">-{item.coinsUsed}</div>
-              <div className="rw-coins-label">coins</div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+              {hasReward && (
+                <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+                  <span className="rw-coins-plus" style={{ fontSize: "0.82rem" }}>+{item.coinsReward}</span>
+                  <span className="rw-coins-label">reward</span>
+                </div>
+              )}
+              {hasPenalty && (
+                <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+                  <span className="rw-coins-minus" style={{ fontSize: "0.82rem" }}>-{item.coinsPenalty}</span>
+                  <span className="rw-coins-label">penalti</span>
+                </div>
+              )}
             </div>
             <ChevronRight size={13} className="rw-chevron" />
           </div>
@@ -262,6 +282,7 @@ function BelanjaCard({ item, onClick }: { item: RiwayatBelanja; onClick: () => v
   );
 }
 
+// ─── PELANGGARAN CARD ─────────────────────────────────────────────────────────
 function PelanggaranCard({ item, onClick }: { item: RiwayatPelanggaran; onClick: () => void }) {
   const ks = KATEGORI_CFG[item.kategori] ?? KATEGORI_CFG.sedang;
   return (
@@ -326,14 +347,12 @@ function MRow({ label, value, icon }: { label: string; value: React.ReactNode; i
   return (
     <div className="rw-modal-row">
       <span className="rw-modal-row-label">{label}</span>
-      <span className="rw-modal-row-value">
-        {icon}{value}
-      </span>
+      <span className="rw-modal-row-value">{icon}{value}</span>
     </div>
   );
 }
 
-// ─── MODALS ───────────────────────────────────────────────────────────────────
+// ─── MODAL TUMBLER ────────────────────────────────────────────────────────────
 function ModalTumbler({ item, onClose }: { item: RiwayatTumbler; onClose: () => void }) {
   const total = item.coinsReward + item.streakBonus;
   return (
@@ -382,15 +401,28 @@ function ModalTumbler({ item, onClose }: { item: RiwayatTumbler; onClose: () => 
   );
 }
 
+// ─── MODAL BELANJA ────────────────────────────────────────────────────────────
 function ModalBelanja({ item, onClose }: { item: RiwayatBelanja; onClose: () => void }) {
   const isPlastik = item.adaProdukPlastik;
-  const accentColor = isPlastik ? "var(--status-plastik-text)" : "var(--color-primary)";
-  const payIcon = { coins: <Coins size={13} />, voucher: <Tag size={13} />, tunai: <CreditCard size={13} /> }[item.paymentMethod] ?? null;
+  const hasReward = item.coinsReward > 0;
+  const hasPenalty = item.coinsPenalty > 0;
+
+  const accentColor = isPlastik
+    ? "var(--status-plastik-text)"
+    : hasReward
+      ? "var(--status-hadir-text)"
+      : "var(--color-primary)";
+
+  const payIcon = {
+    coins: <Coins size={13} />,
+    voucher: <Tag size={13} />,
+    tunai: <CreditCard size={13} />,
+  }[item.paymentMethod] ?? null;
 
   return (
     <ModalWrapper onClose={onClose} accentColor={accentColor}>
       <div className="rw-modal-header">
-        <div className={`rw-modal-icon-box ${isPlastik ? "rw-icon-box-belanja-plastik" : "rw-icon-box-belanja"}`}>
+        <div className={`rw-modal-icon-box ${isPlastik ? "rw-icon-box-belanja-plastik" : hasReward ? "rw-icon-box-tumbler" : "rw-icon-box-belanja"}`}>
           <ShoppingBag size={22} style={{ color: accentColor }} />
         </div>
         <div>
@@ -400,15 +432,41 @@ function ModalBelanja({ item, onClose }: { item: RiwayatBelanja; onClose: () => 
         </div>
       </div>
 
-      {isPlastik && (
+      {/* Banner coins reward */}
+      {hasReward && (
+        <div style={{
+          background: "var(--status-hadir-bg)",
+          border: "1px solid var(--status-hadir-border)",
+          borderRadius: 10, padding: "10px 14px", marginBottom: 14,
+          display: "flex", alignItems: "center", gap: 10,
+        }}>
+          <Zap size={16} style={{ color: "var(--status-hadir-text)", flexShrink: 0 }} />
+          <div>
+            <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--status-hadir-text)" }}>
+              Dapat Bonus Coins!
+            </div>
+            <div style={{ fontSize: "0.76rem", color: "var(--text-primary)", marginTop: 2 }}>
+              Transaksi ini memberikan reward koin tambahan.
+            </div>
+            <div style={{ marginTop: 6, fontSize: "0.92rem", fontWeight: 800, color: "var(--status-hadir-text)" }}>
+              +{item.coinsReward} Koin
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Banner penalti plastik */}
+      {isPlastik && hasPenalty && (
         <div className="rw-plastik-alert">
           <AlertTriangle size={13} style={{ color: "var(--status-plastik-text)", flexShrink: 0, marginTop: 1 }} />
           <span>
-            Ada <strong style={{ color: "var(--status-plastik-text)" }}>{item.jumlahItemPlastik} produk kemasan plastik</strong>. Yuk pilih alternatif ramah lingkungan! 🌱
+            Ada <strong style={{ color: "var(--status-plastik-text)" }}>{item.jumlahItemPlastik} produk kemasan plastik</strong> — dikenakan penalti{" "}
+            <strong style={{ color: "var(--status-plastik-text)" }}>-{item.coinsPenalty} koin</strong>. Yuk pilih alternatif ramah lingkungan! 🌱
           </span>
         </div>
       )}
 
+      {/* Daftar produk */}
       {item.items.length > 0 && (
         <div className="rw-belanja-items">
           <div className="rw-belanja-items-title">Rincian Pembelian</div>
@@ -439,18 +497,29 @@ function ModalBelanja({ item, onClose }: { item: RiwayatBelanja; onClose: () => 
       <MRow label="Total Harga" value={formatRupiah(item.totalHarga)} />
       <MRow label="Total Bayar" value={<strong>{formatRupiah(item.totalBayar)}</strong>} />
 
-      {item.coinsUsed > 0 && (
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
-          <div style={{ textAlign: "right" }}>
-            <div className="rw-modal-coins-total-label">Coins berkurang</div>
-            <div className="rw-modal-coins-total-minus">-{item.coinsUsed}</div>
-          </div>
-        </div>
+      {/* Ringkasan coins di bawah */}
+      {(hasReward || hasPenalty) && (
+        <div className="rw-modal-divider" />
       )}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+        {hasReward && (
+          <div style={{ textAlign: "right" }}>
+            <div className="rw-modal-coins-total-label">Coins Didapat</div>
+            <div className="rw-modal-coins-total-plus">+{item.coinsReward}</div>
+          </div>
+        )}
+        {hasPenalty && (
+          <div style={{ textAlign: "right" }}>
+            <div className="rw-modal-coins-total-label">Penalti Plastik</div>
+            <div className="rw-modal-coins-total-minus">-{item.coinsPenalty}</div>
+          </div>
+        )}
+      </div>
     </ModalWrapper>
   );
 }
 
+// ─── MODAL PELANGGARAN ────────────────────────────────────────────────────────
 function ModalPelanggaran({ item, onClose }: { item: RiwayatPelanggaran; onClose: () => void }) {
   const ks = KATEGORI_CFG[item.kategori] ?? KATEGORI_CFG.sedang;
   const STATUS_CFG = {
@@ -554,7 +623,6 @@ export default function RiwayatPage() {
 
   useEffect(() => { load(false); }, []); // eslint-disable-line
 
-  // Merged & sorted untuk tab "all"
   type AllItem =
     | { kind: "tumbler"; item: RiwayatTumbler }
     | { kind: "belanja"; item: RiwayatBelanja }
@@ -578,12 +646,8 @@ export default function RiwayatPage() {
     });
   }, [data]);
 
-  // ── Loading state ──
-  if (loading && !data) {
-    return <SehatiLoadingScreen />;
-  }
+  if (loading && !data) return <SehatiLoadingScreen />;
 
-  // ── Error state ──
   if (!data) {
     return (
       <main className="dashboard-page">
@@ -602,14 +666,11 @@ export default function RiwayatPage() {
 
   return (
     <main className="dashboard-page">
-      {/* Modals */}
       {modalTumbler && <ModalTumbler item={modalTumbler} onClose={() => setModalTumbler(null)} />}
       {modalBelanja && <ModalBelanja item={modalBelanja} onClose={() => setModalBelanja(null)} />}
       {modalPelanggaran && <ModalPelanggaran item={modalPelanggaran} onClose={() => setModalPelanggaran(null)} />}
 
       <div className="dashboard-container">
-
-        {/* Header */}
         <header className="dash-header">
           <div className="brand">
             <div className="brand-logo">
@@ -622,7 +683,6 @@ export default function RiwayatPage() {
           </div>
         </header>
 
-        {/* Refreshing bar */}
         {refreshing && (
           <div className="rw-refreshing-bar">
             <Loader2 size={11} style={{ animation: "spin 0.75s linear infinite" }} />
@@ -633,7 +693,6 @@ export default function RiwayatPage() {
         {summary && <SummaryCards summary={summary} />}
         {summary && <PlastikWarning jumlah={summary.jumlahPlastik} />}
 
-        {/* Tabs */}
         <div className="rw-tabs">
           {TABS.map((t) => (
             <button
@@ -646,7 +705,6 @@ export default function RiwayatPage() {
           ))}
         </div>
 
-        {/* List */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {tab === "all" && (
             allItems.length === 0 ? <EmptyState tab="all" /> :
@@ -677,7 +735,6 @@ export default function RiwayatPage() {
               ))
           )}
         </div>
-
       </div>
 
       <BottomNavSiswa />

@@ -1,6 +1,6 @@
 import api from "@/lib/api";
 
-// ─── TYPES (sesuai backend) ───────────────────────────────────────────────────
+// ─── TYPES ────────────────────────────────────────────────────────────────────
 export interface RiwayatTumbler {
   id: string;
   tanggal: string;
@@ -31,10 +31,15 @@ export interface RiwayatBelanja {
   totalDiskon: number;
   totalBayar: number;
   coinsUsed: number;
+  coinsReward: number;     // coins bonus didapat (mis. dari promo)
+  coinsPenalty: number;    // potongan coins karena kemasan plastik
   paymentMethod: string;   // 'coins' | 'voucher' | 'tunai'
   items: DetailBelanja[];
   adaProdukPlastik: boolean;
   jumlahItemPlastik: number;
+  dicatatOleh: string;
+  verifiedAt: string | null;
+  status: "pending" | "approved" | "rejected";
 }
 
 export interface RiwayatPelanggaran {
@@ -106,9 +111,6 @@ export function labelMethod(m: string): string {
 }
 
 // ─── IN-MEMORY CACHE ─────────────────────────────────────────────────────────
-// Hidup selama sesi SPA — tidak reset saat navigasi antar halaman.
-// Reset hanya saat: user tekan refresh, logout, atau clearRiwayatCache() dipanggil.
-
 const CACHE_DURATION = 3 * 60 * 1000; // 3 menit
 
 interface CacheEntry { data: RiwayatAll; timestamp: number }
@@ -133,11 +135,6 @@ export function isRiwayatCached(): boolean {
 }
 
 // ─── API CALLS ────────────────────────────────────────────────────────────────
-
-/**
- * Jika cache valid → kembalikan cache tanpa request.
- * Jika cache expired / forceRefresh=true → fetch dari server.
- */
 export async function getRiwayatAll(
   limit = 50,
   forceRefresh = false,

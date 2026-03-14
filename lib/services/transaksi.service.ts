@@ -32,6 +32,7 @@ export interface ProdukItem {
 
 export interface CartItem extends ProdukItem {
   qty: number;
+  isByoc: boolean;
 }
 
 export interface KemasPenaltyDetail {
@@ -44,7 +45,7 @@ export interface KemasPenaltyDetail {
 
 export interface TransaksiPayload {
   nis: string;
-  items: { produkId: number; quantity: number }[];
+  items: { produkId: number; quantity: number, isByoc?: boolean }[];
   paymentMethod: "voucher" | "tunai";
   voucherId?: number;
 }
@@ -56,6 +57,8 @@ export interface TransaksiResult {
   totalDiskon: number;
   totalBayar: number;
   coinsUsed: number;
+  isByoc: boolean;
+  coinsReward: number;
   coinsPenaltyTotal: number;
   coinsPenaltyDetail: KemasPenaltyDetail[];
   paymentMethod: string;
@@ -68,7 +71,7 @@ export interface CekVoucherResult {
   message: string;
 }
 
-// ─── CACHE katalog (5 menit) ─────────────────────────────────────────────────
+// ─── CACHE ────────────────────────────────────────────────────────────────────
 const PRODUK_CACHE_TTL = 5 * 60 * 1000;
 let _produkCache: { data: ProdukItem[]; ts: number } | null = null;
 
@@ -135,7 +138,7 @@ export async function createTransaksi(payload: TransaksiPayload): Promise<Transa
   return data;
 }
 
-// ─── CART HELPERS ─────────────────────────────────────────────────────────────
+// ─── CART HELPERS ────────────────────────────────────────────────────────────────
 
 export function addToCart(cart: CartItem[], produk: ProdukItem): CartItem[] {
   const existing = cart.find((c) => c.id === produk.id);
@@ -144,7 +147,7 @@ export function addToCart(cart: CartItem[], produk: ProdukItem): CartItem[] {
       c.id === produk.id ? { ...c, qty: Math.min(c.qty + 1, c.stok) } : c
     );
   }
-  return [...cart, { ...produk, qty: 1 }];
+  return [...cart, { ...produk, qty: 1, isByoc: false }];
 }
 
 export function updateCartQty(cart: CartItem[], produkId: number, delta: number): CartItem[] {
@@ -157,7 +160,13 @@ export function getCartTotal(cart: CartItem[]): number {
   return cart.reduce((s, c) => s + c.harga * c.qty, 0);
 }
 
-// ── Hitung total penalti koin kemasan untuk cart saat ini ──────────────────
+export function toggleCartByoc(cart: CartItem[], produkId: number): CartItem[] {
+  return cart.map((c) =>
+    c.id === produkId ? { ...c, isByoc: !c.isByoc } : c
+  );
+}
+
+// ── Hitung total penalti koin kemasan untuk cart saat ini ─────────────────────
 // Dipakai frontend untuk preview sebelum transaksi dikonfirmasi
 export function getCartCoinsPenalty(cart: CartItem[]): {
   total: number;
@@ -167,15 +176,15 @@ export function getCartCoinsPenalty(cart: CartItem[]): {
   let total = 0;
 
   cart.forEach((c) => {
-    if (c.coinsPenaltyPerItem > 0) {
+    if (c.coinsPenaltyPerItem > 0 && !c.isByoc) {
       const t = c.coinsPenaltyPerItem * c.qty;
       total += t;
       detail.push({
-        nama:    c.nama,
+        nama: c.nama,
         kemasan: c.jenisKemasan ?? "-",
-        qty:     c.qty,
+        qty: c.qty,
         perItem: c.coinsPenaltyPerItem,
-        total:   t,
+        total: t,
       });
     }
   });
@@ -191,13 +200,13 @@ export function buildPayload(
 ): TransaksiPayload {
   return {
     nis,
-    items: cart.map((c) => ({ produkId: c.id, quantity: c.qty })),
+    items: cart.map((c) => ({ produkId: c.id, quantity: c.qty, isByoc: c.isByoc })),
     paymentMethod: method,
     ...extra,
   };
 }
 
-// ─── DISPLAY HELPERS ──────────────────────────────────────────────────────────
+// ─── DISPLAY HELPERS ────────────────────────────────────────────────────────────────
 
 export function hitungDiskon(voucher: VoucherInfo, total: number): number {
   if (voucher.tipeVoucher === "percentage") {
@@ -230,11 +239,11 @@ export function kemasanInfo(kemasan: string | null): {
     case "plastik":
       return { label: "Plastik", icon: "🛍️", color: "#EF4444", warning: true };
     case "kertas":
-      return { label: "Kertas",  icon: "📦", color: "#F59E0B", warning: true };
+      return { label: "Kertas", icon: "📄", color: "#F59E0B", warning: true };
     case "tanpa_kemasan":
-      return { label: "Eco",     icon: "✅", color: "#10b981", warning: false };
+      return { label: "Eco", icon: "♻️", color: "#10b981", warning: false };
     default:
-      return { label: "",        icon: "",   color: "transparent", warning: false };
+      return { label: "", icon: "", color: "transparent", warning: false };
   }
 }
 

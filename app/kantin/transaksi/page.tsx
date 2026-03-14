@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   ArrowLeft, ScanLine, User, Plus, Minus,
   Wallet, X, Check, TicketPercent,
-  Loader2, ShoppingCart, AlertTriangle,
+  Loader2, ShoppingCart, AlertTriangle, Coins,
 } from "lucide-react";
 import BrandLogo from "@/components/common/BrandLogo";
 import { Scanner } from "@yudiel/react-qr-scanner";
@@ -15,6 +15,7 @@ import {
   buildPayload, hitungDiskon, formatVoucherLabel,
   kelompokkanProduk, kemasanInfo,
   clearProdukCache, // Added for cache clearing on transaction success
+  toggleCartByoc,
   type SiswaInfo, type CartItem, type VoucherInfo,
   type TransaksiResult,
 } from "@/lib/services/kantin";
@@ -403,10 +404,11 @@ function KalkulatorTunai({ totalBayar, onUangChange }: {
 
 // ─── MODAL: KONFIRMASI ────────────────────────────────────────────────────────
 
-function ModalKonfirmasi({ siswa, cart, voucher, metodeBayar, onKonfirmasi, onClose, loading }: {
+function ModalKonfirmasi({ siswa, cart, voucher, metodeBayar, onKonfirmasi, onClose, loading, onToggleByoc }: {
   siswa: SiswaInfo; cart: CartItem[]; voucher: VoucherInfo | null;
   metodeBayar: "tunai" | "voucher";
   onKonfirmasi: () => void; onClose: () => void; loading: boolean;
+  onToggleByoc: (p: CartItem) => void;
 }) {
   const [uangDiterima, setUangDiterima] = useState(0);
 
@@ -422,6 +424,8 @@ function ModalKonfirmasi({ siswa, cart, voucher, metodeBayar, onKonfirmasi, onCl
   const btnDisabled = loading || !bisaBayar;
   const btnLabel = loading ? "Memproses..." : uangKurang ? `Kurang Rp ${Math.abs(kembalian).toLocaleString("id-ID")}` : "Bayar Sekarang";
 
+  const selectedWadahCount = cart.filter((c) => c.isByoc).length;
+
   return (
     <ModalSheet onClose={onClose} title="Konfirmasi Pembayaran" accentColor={accent}>
       {/* Siswa */}
@@ -436,14 +440,27 @@ function ModalKonfirmasi({ siswa, cart, voucher, metodeBayar, onKonfirmasi, onCl
       {/* Items */}
       <div style={{ marginBottom: 14 }}>
         {cart.map((c) => (
-          <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "7px 0", borderBottom: "1px solid var(--tr-border-divider)", fontSize: "0.82rem" }}>
-            <div>
-              <span style={{ color: "var(--tr-text-primary)" }}>{c.nama} ×{c.qty}</span>
-              {c.jenisKemasan && c.jenisKemasan !== "tanpa_kemasan" && (
-                <KemasanChip kemasan={c.jenisKemasan} penalty={c.coinsPenaltyPerItem} />
+          <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "10px 0", borderBottom: "1px solid var(--tr-border-divider)", fontSize: "0.82rem" }}>
+            <div style={{ flex: 1 }}>
+              <span style={{ color: "var(--tr-text-primary)", fontWeight: 600 }}>{c.nama} ×{c.qty}</span>
+              <div style={{ marginTop: 4, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                {c.jenisKemasan && c.jenisKemasan !== "tanpa_kemasan" && (
+                  <KemasanChip kemasan={c.jenisKemasan} penalty={c.coinsPenaltyPerItem} />
+                )}
+                {c.coinsPenaltyPerItem > 0 && (
+                  <span style={{ fontSize: "0.7rem", color: c.isByoc ? S.green : S.red, fontWeight: 700 }}>
+                    {c.isByoc ? "🌱 Bawa Wadah" : `⚠️ Penalti -${c.coinsPenaltyPerItem * c.qty}`}
+                  </span>
+                )}
+              </div>
+              {c.coinsPenaltyPerItem > 0 && (
+                <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontSize: "0.75rem", cursor: "pointer", userSelect: "none" }}>
+                  <input type="checkbox" checked={c.isByoc} onChange={() => onToggleByoc(c)} style={{ accentColor: S.green, width: 14, height: 14, cursor: "pointer" }} />
+                  Pilih opsi Bawa Wadah (BYOC)
+                </label>
               )}
             </div>
-            <span style={{ fontWeight: 600, flexShrink: 0 }}>Rp {(c.harga * c.qty).toLocaleString("id-ID")}</span>
+            <span style={{ fontWeight: 700, flexShrink: 0, marginLeft: 16 }}>Rp {(c.harga * c.qty).toLocaleString("id-ID")}</span>
           </div>
         ))}
       </div>
@@ -451,6 +468,7 @@ function ModalKonfirmasi({ siswa, cart, voucher, metodeBayar, onKonfirmasi, onCl
       {/* Price summary */}
       <div style={{ background: "var(--tr-bg-panel-inner)", borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}>
         <SummaryRow label="Subtotal" value={`Rp ${total.toLocaleString("id-ID")}`} />
+        {selectedWadahCount > 0 && <SummaryRow label="🌱 Bawa Wadah (BYOC)" value={`${selectedWadahCount} item (Reward dikalkulasi)`} color={S.green} small />}
         {diskon > 0 && <SummaryRow label={`Diskon ${voucher?.namaVoucher}`} value={`-Rp ${diskon.toLocaleString("id-ID")}`} color={S.green} />}
         <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid var(--tr-border-divider)", fontWeight: 800, fontSize: "1.05rem" }}>
           <span>Total Bayar</span>
@@ -490,6 +508,15 @@ function ModalKonfirmasi({ siswa, cart, voucher, metodeBayar, onKonfirmasi, onCl
         </>
       )}
 
+      {selectedWadahCount > 0 && (
+        <div style={{ background: `${S.green}14`, border: `1px solid ${S.green}40`, borderRadius: 12, padding: "10px 14px", marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.82rem", fontWeight: 700 }}>
+            <span style={{ color: S.green }}>🌱 BYOC Aktif ({selectedWadahCount} item)</span>
+            <span style={{ color: "var(--tr-text-primary)" }}>Bebas penalti & Dapat Reward</span>
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
       <div style={{ display: "flex", gap: 10 }}>
         <button onClick={onClose} style={{ flex: 1, padding: "12px", borderRadius: 12, background: "var(--tr-bg-input)", border: "1px solid var(--tr-border-strong)", color: "var(--tr-text-secondary)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", fontSize: "0.86rem" }}>
@@ -527,6 +554,14 @@ function ModalSukses({ result, kembalian, onLagi }: {
             <span style={{ fontSize: "1.1rem", fontWeight: 800, color: S.green }}>Rp {kembalian.toLocaleString("id-ID")}</span>
           </div>
         )}
+
+        {result.isByoc && result.coinsReward > 0 && (
+          <div style={{ background: `${S.green}14`, border: `1px solid ${S.green}40`, borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: "0.78rem" }}>
+            <div style={{ color: S.green, fontWeight: 800, marginBottom: 4 }}>🌱 Reward Bawa Wadah (BYOC)</div>
+            <div style={{ color: "var(--tr-text-primary)", fontWeight: 600 }}>+{result.coinsReward} koin</div>
+          </div>
+        )}
+
         {penaltyTotal > 0 && (
           <div style={{ background: `${S.amber}14`, border: `1px solid ${S.amber}40`, borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: "0.78rem" }}>
             <div style={{ color: S.amber, fontWeight: 700 }}>Total koin terpotong: -{penaltyTotal} koin</div>
@@ -620,6 +655,9 @@ export default function TransaksiPage() {
   const [loadingProduk, setLoadingProduk] = useState(true);
   const [loadingSiswa, setLoadingSiswa] = useState(false);
   const [loadingBayar, setLoadingBayar] = useState(false);
+
+  // ── Count BYOC selected items
+  const selectedWadahCount = cart.filter(c => c.isByoc).length;
 
   // ── Modal visibility
   const [modalScanner, setModalScanner] = useState(false);
@@ -742,6 +780,7 @@ export default function TransaksiPage() {
       {modalKonfirmasi && siswa && (
         <ModalKonfirmasi siswa={siswa} cart={cart} voucher={selectedVoucher}
           metodeBayar={metodeBayar} loading={loadingBayar}
+          onToggleByoc={(p) => setCart(toggleCartByoc(cart, p.id))}
           onKonfirmasi={handleKonfirmasi} onClose={() => setModalKonfirmasi(false)} />
       )}
       {modalSukses && <ModalSukses result={modalSukses.result} kembalian={modalSukses.kembalian} onLagi={resetSemua} />}
@@ -806,7 +845,7 @@ export default function TransaksiPage() {
                 <p>{siswa.nis}</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                   <span className="class-badge">{siswa.kelas}</span>
-                  <span style={{ fontSize: "0.68rem", color: S.amber }}>🪙 {siswa.coins.toLocaleString("id-ID")}</span>
+                  <span style={{ fontSize: "0.68rem", color: S.amber }}><Coins size={12} /> {siswa.coins.toLocaleString("id-ID")}</span>
                   {siswa.voucherAktif.length > 0 && (
                     <span style={{ fontSize: "0.68rem", color: S.violet, background: `${S.violet}1a`, padding: "1px 5px", borderRadius: 6, border: `1px solid ${S.violet}40` }}>
                       {siswa.voucherAktif.length} voucher
@@ -862,9 +901,15 @@ export default function TransaksiPage() {
 
           {/* Checkout footer */}
           <div className="checkout-footer">
+            {/* Removed global BYOC toggle from here */}
             {penaltyTotal > 0 && (
               <div className="summary-row" style={{ color: S.red, fontSize: "0.75rem" }}>
                 <span>⚠️ Penalti kemasan</span><span>−{penaltyTotal} koin</span>
+              </div>
+            )}
+            {selectedWadahCount > 0 && (
+              <div className="summary-row" style={{ color: S.green, fontSize: "0.75rem" }}>
+                <span>🌱 Item Bawa Wadah</span><span>{selectedWadahCount} item</span>
               </div>
             )}
             {selectedVoucher && (

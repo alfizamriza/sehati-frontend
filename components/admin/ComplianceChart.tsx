@@ -28,7 +28,7 @@ function getCSSVar(name: string, fallback: string): string {
 }
 
 // ── Custom tooltip ────────────────────────────────────────────────────────────
-function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
+function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const val = payload[0]?.value ?? 0;
   return (

@@ -21,10 +21,10 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@/services/*": ["lib/services/*"],
-      "@/components/*": ["components/*"],
-      "@/types/*": ["types/*"],
-      "@/docs/*": ["docs/*"]
+      "@/services/*": ["./lib/services/*"],
+      "@/components/*": ["./components/*"],
+      "@/types/*": ["./types/*"],
+      "@/docs/*": ["./docs/*"]
     }
   },
   "include": [
