@@ -4231,7 +4231,7 @@ select.form-input option {
     border: 1px solid var(--border-glass);
     border-radius: var(--r-lg);
     gap: 8px;
-    z-index: 120;
+    z-index: 80;
     box-shadow: var(--shadow-sm);
   }
 
