@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+﻿import { useState, useMemo } from "react";
 import { QrCode, Download, Loader2, CheckSquare, Square, X } from "lucide-react";
 import { generateQRCodePDF, type SiswaQR } from "@/lib/qrcode-generator";
 import type { Siswa } from "@/lib/services/admin";
@@ -27,7 +27,7 @@ export default function QRDownloadModal({ siswaList, onClose }: QRDownloadModalP
     siswaList.forEach((s) => {
       if (s.kelas) {
         kelasSet.add(s.kelas);
-        // Extract tingkat from kelas (e.g., "XI-RPL" → "XI")
+        // Extract tingkat from kelas (e.g., "XI-RPL" â†’ "XI")
         const tingkat = s.kelas.split("-")[0];
         if (tingkat) tingkatSet.add(tingkat);
       }
@@ -108,10 +108,10 @@ export default function QRDownloadModal({ siswaList, onClose }: QRDownloadModalP
         setProgress({ current, total });
       });
 
-      alert(`✅ QR Code berhasil di-download! Total: ${selectedSiswa.length} siswa`);
+      alert(`âœ… QR Code berhasil di-download! Total: ${selectedSiswa.length} siswa`);
       onClose();
     } catch (error: any) {
-      alert(`❌ Gagal generate QR Code: ${error.message}`);
+      alert(`âŒ Gagal generate QR Code: ${error.message}`);
     } finally {
       setIsGenerating(false);
     }
@@ -124,7 +124,7 @@ export default function QRDownloadModal({ siswaList, onClose }: QRDownloadModalP
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal-content"
+        className="modal-content qr-modal"
         onClick={(e) => e.stopPropagation()}
         style={{ maxWidth: 700, maxHeight: "85vh", display: "flex", flexDirection: "column" }}
       >
@@ -137,14 +137,11 @@ export default function QRDownloadModal({ siswaList, onClose }: QRDownloadModalP
                 Download QR Code Siswa
               </h3>
               <p style={{ fontSize: 12, opacity: 0.6, margin: 0 }}>
-                Format: PDF A4 • Size: 4x4 cm per QR
+                Format: PDF A4 â€¢ Size: 4x4 cm per QR
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{ background: "none", border: "none", color: "#fff", cursor: "pointer" }}
-          >
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}>
             <X size={24} />
           </button>
         </div>
@@ -157,49 +154,19 @@ export default function QRDownloadModal({ siswaList, onClose }: QRDownloadModalP
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <button
                 onClick={() => setFilterMode("all")}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: 8,
-                  border: "1px solid",
-                  borderColor: filterMode === "all" ? "#179EFF" : "rgba(255,255,255,0.1)",
-                  background: filterMode === "all" ? "rgba(23,158,255,0.1)" : "rgba(255,255,255,0.03)",
-                  color: filterMode === "all" ? "#179EFF" : "#fff",
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
+                className={`filter-chip ${filterMode === "all" ? "active" : ""}`}
               >
                 Semua Siswa
               </button>
               <button
                 onClick={() => setFilterMode("tingkat")}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: 8,
-                  border: "1px solid",
-                  borderColor: filterMode === "tingkat" ? "#179EFF" : "rgba(255,255,255,0.1)",
-                  background: filterMode === "tingkat" ? "rgba(23,158,255,0.1)" : "rgba(255,255,255,0.03)",
-                  color: filterMode === "tingkat" ? "#179EFF" : "#fff",
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
+                className={`filter-chip ${filterMode === "tingkat" ? "active" : ""}`}
               >
                 Per Tingkat
               </button>
               <button
                 onClick={() => setFilterMode("kelas")}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: 8,
-                  border: "1px solid",
-                  borderColor: filterMode === "kelas" ? "#179EFF" : "rgba(255,255,255,0.1)",
-                  background: filterMode === "kelas" ? "rgba(23,158,255,0.1)" : "rgba(255,255,255,0.03)",
-                  color: filterMode === "kelas" ? "#179EFF" : "#fff",
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
+                className={`filter-chip ${filterMode === "kelas" ? "active" : ""}`}
               >
                 Per Kelas
               </button>
@@ -261,106 +228,35 @@ export default function QRDownloadModal({ siswaList, onClose }: QRDownloadModalP
               {selectedNis.size} dari {filteredSiswa.length} siswa dipilih
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button
-                onClick={selectAll}
-                style={{
-                  padding: "6px 12px",
-                  fontSize: 12,
-                  borderRadius: 6,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  background: "rgba(16,185,129,0.1)",
-                  color: "#10b981",
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={selectAll} className="bulk-btn positive">
                 Pilih Semua
               </button>
-              <button
-                onClick={deselectAll}
-                style={{
-                  padding: "6px 12px",
-                  fontSize: 12,
-                  borderRadius: 6,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  background: "rgba(239,68,68,0.1)",
-                  color: "#ef4444",
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={deselectAll} className="bulk-btn negative">
                 Hapus Pilihan
               </button>
             </div>
           </div>
 
           {/* Siswa List */}
-          <div style={{
-            maxHeight: 300,
-            overflowY: "auto",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 12,
-            background: "rgba(255,255,255,0.02)",
-          }}>
+          <div className="siswa-list">
             {filteredSiswa.length === 0 ? (
-              <div style={{
-                padding: 40,
-                textAlign: "center",
-                color: "rgba(255,255,255,0.4)",
-              }}>
+              <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>
                 Tidak ada siswa di filter ini
               </div>
             ) : (
               filteredSiswa.map((siswa) => (
-                <div
-                  key={siswa.nis}
-                  onClick={() => toggleSiswa(siswa.nis)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "12px 16px",
-                    borderBottom: "1px solid rgba(255,255,255,0.05)",
-                    cursor: "pointer",
-                    transition: "background 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "transparent";
-                  }}
-                >
-                  {/* Checkbox */}
+                <div key={siswa.nis} onClick={() => toggleSiswa(siswa.nis)} className="siswa-row">
                   <div style={{ flexShrink: 0 }}>
                     {selectedNis.has(siswa.nis) ? (
                       <CheckSquare size={20} color="#179EFF" />
                     ) : (
-                      <Square size={20} color="rgba(255,255,255,0.3)" />
+                      <Square size={20} color="var(--text-faint)" />
                     )}
                   </div>
-
-                  {/* Avatar */}
-                  <div style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    background: "#179EFF",
-                    display: "grid",
-                    placeItems: "center",
-                    fontWeight: "bold",
-                    fontSize: 14,
-                    flexShrink: 0,
-                  }}>
-                    {siswa.nama.charAt(0).toUpperCase()}
-                  </div>
-
-                  {/* Info */}
+                  <div className="siswa-avatar">{siswa.nama.charAt(0).toUpperCase()}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>
-                      {siswa.nama}
-                    </div>
-                    <div style={{ fontSize: 12, opacity: 0.6 }}>
-                      {siswa.nis} • {siswa.kelas}
-                    </div>
+                    <div className="siswa-name">{siswa.nama}</div>
+                    <div className="siswa-meta">{siswa.nis} • {siswa.kelas}</div>
                   </div>
                 </div>
               ))
@@ -369,37 +265,18 @@ export default function QRDownloadModal({ siswaList, onClose }: QRDownloadModalP
 
           {/* Progress Bar */}
           {isGenerating && (
-            <div style={{
-              marginTop: 20,
-              padding: 16,
-              background: "rgba(23,158,255,0.1)",
-              borderRadius: 12,
-              border: "1px solid rgba(23,158,255,0.3)",
-            }}>
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                marginBottom: 8,
-              }}>
+            <div className="progress-box">
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
                 <Loader2 size={18} className="spinner" />
                 <span style={{ fontSize: 13, fontWeight: 600 }}>
                   Generating PDF... ({progress.current}/{progress.total} halaman)
                 </span>
               </div>
-              <div style={{
-                width: "100%",
-                height: 6,
-                background: "rgba(255,255,255,0.1)",
-                borderRadius: 3,
-                overflow: "hidden",
-              }}>
-                <div style={{
-                  width: `${progress.total > 0 ? (progress.current / progress.total) * 100 : 0}%`,
-                  height: "100%",
-                  background: "#179EFF",
-                  transition: "width 0.3s",
-                }} />
+              <div className="progress-track">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${progress.total > 0 ? (progress.current / progress.total) * 100 : 0}%` }}
+                />
               </div>
             </div>
           )}
@@ -442,3 +319,4 @@ export default function QRDownloadModal({ siswaList, onClose }: QRDownloadModalP
     </div>
   );
 }
+

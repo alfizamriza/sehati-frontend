@@ -155,6 +155,12 @@ function VoucherBadge({ voucher }: { voucher: ProfilVoucher }) {
     voucher.tipeVoucher === "percentage"
       ? `${voucher.nominalVoucher}%`
       : `Rp ${voucher.nominalVoucher.toLocaleString("id-ID")}`;
+  const formatTanggal = (str: string) =>
+    new Date(str).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
 
   return (
     <div className="profil-voucher-item">
@@ -173,8 +179,7 @@ function VoucherBadge({ voucher }: { voucher: ProfilVoucher }) {
       <div className="profil-voucher-bottom">
         <div className="profil-voucher-nominal">{nominalLabel}</div>
         <div className="profil-voucher-date">
-          {new Date(voucher.tanggalBerlaku).toLocaleDateString("id-ID")} –{" "}
-          {new Date(voucher.tanggalBerakhir).toLocaleDateString("id-ID")}
+          {formatTanggal(voucher.tanggalBerlaku)} – {formatTanggal(voucher.tanggalBerakhir)}
         </div>
       </div>
     </div>

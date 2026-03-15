@@ -40,6 +40,12 @@ function formatCurrency(amount: number, type: string) {
     : new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(amount);
 }
 
+function formatDateId(dateStr: string) {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
+}
+
 function useToast() {
   const [toast, setToast] = useState<{ show: boolean; msg: string; type: "success" | "error" }>(
     { show: false, msg: "", type: "success" }
@@ -115,7 +121,7 @@ function VoucherCard({ voucher, onEdit, onDelete, onCopy }: {
           </div>
           <div className="voucher-info-row">
             <Calendar size={12} className="voucher-info-icon" />
-            {voucher.tanggalBerlaku} – {voucher.tanggalBerakhir}
+            {formatDateId(voucher.tanggalBerlaku)} – {formatDateId(voucher.tanggalBerakhir)}
           </div>
         </div>
       </div>
