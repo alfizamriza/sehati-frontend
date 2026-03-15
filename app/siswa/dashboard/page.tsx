@@ -123,8 +123,30 @@ export default function DashboardSiswaPage() {
           ? getUndisplayedAchievements()
           : Promise.resolve([]),
       ]);
+      // Ensure calendar has today's status in case cache/UTC drift
+      const todayKey = new Date();
+      const todayStr = `${todayKey.getFullYear()}-${String(todayKey.getMonth() + 1).padStart(2, "0")}-${String(todayKey.getDate()).padStart(2, "0")}`;
+      const cal = [...dashData.calendarDays];
+      const idxToday = cal.findIndex((d) => d.date === todayStr);
+      if (dashData.streak.isActiveToday) {
+        if (idxToday >= 0) {
+          cal[idxToday] = { ...cal[idxToday], status: "hadir", hadir: true, isToday: true };
+        } else {
+          cal.push({
+            date: todayStr,
+            label: String(todayKey.getDate()),
+            dayName: todayKey.toLocaleDateString("id-ID", { weekday: "short" }),
+            status: "hadir",
+            isToday: true,
+            isWeekend: [0, 6].includes(todayKey.getDay()),
+            hadir: true,
+            pelanggaranCount: 0,
+            plastikCount: 0,
+          });
+        }
+      }
       setDashboardData(dashData);
-      setCalendarDays(dashData.calendarDays);
+      setCalendarDays(cal);
       setAchievements(achievementData);
       setLoadError(null);
       if (achievementData.length > 0) setTimeout(() => setShowAchievementPopup(true), 800);
