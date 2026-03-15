@@ -36,15 +36,22 @@ function HeatmapGrid({ data }: { data: any[] }) {
   });
   const containerRef = React.useRef<HTMLDivElement>(null);
 
+  const safeData = Array.isArray(data) ? data : [];
+
   const grid = React.useMemo(() => {
     const g = Array.from({ length: 7 }, () => Array(24).fill(0));
-    data.forEach((c: any) => { g[c.day][c.hour] = c.count; });
+    safeData.forEach((c: any) => {
+      const d = Number.isFinite(c?.day) ? Math.min(6, Math.max(0, c.day)) : null;
+      const h = Number.isFinite(c?.hour) ? Math.min(23, Math.max(0, c.hour)) : null;
+      if (d === null || h === null) return;
+      g[d][h] = Number(c?.count ?? 0);
+    });
     return g;
-  }, [data]);
+  }, [safeData]);
 
   const max = React.useMemo(
-    () => Math.max(...data.map((c: any) => c.count), 1),
-    [data],
+    () => Math.max(...safeData.map((c: any) => Number(c?.count ?? 0)), 1),
+    [safeData],
   );
 
   function handleMouseEnter(
