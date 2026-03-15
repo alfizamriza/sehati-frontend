@@ -167,8 +167,12 @@ export default function DashboardSiswaPage() {
   }, []);
 
   const todayStatus = useMemo(() => {
-    return calendarDays.find((d) => d.date === todayKey)?.status ?? null;
-  }, [calendarDays, todayKey]);
+    const status = calendarDays.find((d) => d.date === todayKey)?.status ?? null;
+    // Fallback: jika streak hari ini aktif tapi calendar belum tersinkron,
+    // anggap status hadir supaya kartu tumbler tetap muncul.
+    if (!status && dashboardData?.streak?.isActiveToday) return "hadir";
+    return status;
+  }, [calendarDays, todayKey, dashboardData?.streak?.isActiveToday]);
 
   // Tampilkan TumblerStatusCard hanya jika hari kerja & ada data hari ini
   const showTumblerCard = todayStatus !== null && todayStatus !== "libur";
