@@ -26,7 +26,7 @@ import { useEffect, useCallback } from "react";
 
 export interface ShortcutHandlers {
   // Ref
-  nisInputRef: React.RefObject<HTMLInputElement>;
+  nisInputRef: React.RefObject<HTMLInputElement | null>;
 
   // State yang dibutuhkan untuk guard
   hasSiswa: boolean;

@@ -28,6 +28,7 @@ export interface ProdukItem {
   kategori: string;
   jenisKemasan: "plastik" | "kertas" | "tanpa_kemasan" | null;
   coinsPenaltyPerItem: number;
+  isPinned?: boolean;
 }
 
 export interface CartItem extends ProdukItem {

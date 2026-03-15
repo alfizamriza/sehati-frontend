@@ -9,6 +9,7 @@ export interface ProdukItem {
   stok: number;
   kategori: string;
   jenisKemasan: "plastik" | "kertas" | "tanpa_kemasan" | null;
+  isPinned?: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

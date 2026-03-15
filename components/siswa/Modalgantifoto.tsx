@@ -211,7 +211,8 @@ export default function ModalGantiFoto({ fotoUrl, nama, onClose, onSuccess }: Pr
 
     // ── Pointer drag ────────────────────────────────────────────────────────
     function onPointerDown(e: PointerEvent<HTMLCanvasElement>) {
-        if (e.touches?.length === 2) return; // handled by onTouchStart
+        // Ignore secondary touch pointers; pinch handled via touch events
+        if (e.pointerType === "touch" && !e.isPrimary) return;
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
         drag.current = { active: true, startX: e.clientX, startY: e.clientY, ox: offset.x, oy: offset.y };
     }
