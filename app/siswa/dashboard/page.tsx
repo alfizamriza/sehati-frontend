@@ -5,12 +5,11 @@ import { QRCodeCanvas } from "qrcode.react";
 import {
   Coins, Trophy, Medal, QrCode, X,
   TrendingUp, ShieldAlert, CalendarDays, Loader2, LogOut, User, ChevronDown,
-  Flame,
+  Flame, Info, Zap, Gift, Star,
 } from "lucide-react";
-// import "../siswa.css";                     // ← ganti ke CSS baru yang sudah diupdate
-import "./siswa-dashboard.css";           // ← ganti ke CSS baru yang sudah diupdate
+import "./siswa-dashboard.css";
 import { AttendanceCalendar } from "@/components/siswa/AttendanceCalendar";
-import TumblerStatusCard from "@/components/siswa/TumblerStatusCard";   // ← BARU
+import TumblerStatusCard from "@/components/siswa/TumblerStatusCard";
 import BottomNavSiswa from "@/components/siswa/BottomNavSiswa";
 import AchievementPopup from "@/components/siswa/AchievementPopup";
 import { ErrorState } from "@/components/common/AsyncState";
@@ -22,6 +21,75 @@ import {
 import { getUndisplayedAchievements, type Achievement } from "@/lib/services/achievement.service";
 import { logout } from "@/lib/services/shared";
 import SehatiLoadingScreen from "@/components/siswa/SehatiLoadingScreen";
+
+// ─── COINS INFO POPUP ─────────────────────────────────────────────────────────
+function CoinsInfoPopup({ coins, onClose }: { coins: number; onClose: () => void }) {
+  // Close on outside click / Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const INFO_ITEMS = [
+    { icon: <Zap size={15} />, color: "#f59e0b", text: "Coins bertambah setiap kamu membawa tumbler ke sekolah" },
+    { icon: <Star size={15} />, color: "#a78bfa", text: "Semakin rajin membawa tumbler, semakin banyak coins terkumpul" },
+    { icon: <Gift size={15} />, color: "#22c55e", text: "Coins bisa ditukar voucher hadiah di menu Rewards" },
+    { icon: <ShieldAlert size={15} />, color: "#f87171", text: "Pelanggaran membawa kemasan plastik akan mengurangi coins kamu" },
+    { icon: <Trophy size={15} />, color: "#3B9EFF", text: "Kumpulkan coins terbanyak untuk naik peringkat di leaderboard" },
+  ];
+
+  return (
+    <div className="coins-popup-overlay" onClick={onClose}>
+      <div className="coins-popup-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="coins-popup-drag" />
+        <button className="coins-popup-close" onClick={onClose}>
+          <X size={15} />
+        </button>
+
+        {/* Header */}
+        <div className="coins-popup-header">
+          <div className="coins-popup-icon-wrap">
+            <Coins size={24} color="#f59e0b" />
+          </div>
+          <div>
+            <div className="coins-popup-title">Sistem Coins SEHATI</div>
+            <div className="coins-popup-sub">Informasi poin kamu</div>
+          </div>
+        </div>
+
+        {/* Current balance */}
+        <div className="coins-popup-balance">
+          <div className="coins-popup-balance-label">Coins kamu saat ini</div>
+          <div className="coins-popup-balance-val">
+            <Coins size={20} color="#f59e0b" />
+            {coins.toLocaleString("id-ID")}
+          </div>
+        </div>
+
+        {/* Info list */}
+        <div className="coins-popup-list">
+          {INFO_ITEMS.map((item, i) => (
+            <div key={i} className="coins-popup-item">
+              <div
+                className="coins-popup-item-icon"
+                style={{ color: item.color, background: `${item.color}18` }}
+              >
+                {item.icon}
+              </div>
+              <span className="coins-popup-item-text">{item.text}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="coins-popup-note">
+          Coins <strong>tidak dapat</strong> digunakan langsung di kantin.
+          Gunakan QR Code untuk transaksi belanja.
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── PROFILE DROPDOWN ─────────────────────────────────────────────────────────
 function ProfileDropdown({ nama, kelas }: { nama: string; kelas: string }) {
@@ -59,7 +127,6 @@ function ProfileDropdown({ nama, kelas }: { nama: string; kelas: string }) {
           style={{
             transition: "transform 0.2s",
             transform: isOpen ? "rotate(180deg)" : "none",
-            color: "rgba(255,255,255,0.4)",
           }}
         />
       </button>
@@ -93,10 +160,6 @@ function ProfileDropdown({ nama, kelas }: { nama: string; kelas: string }) {
   );
 }
 
-// ─── COINS MARQUEE TEXT ────────────────────────────────────────────────────────
-const COINS_INFO =
-  "Coins tidak dapat ditukar di kantin!  ✦  coins bertambah setiap kamu bawa tumbler  ✦  Semakin rajin, makin banyak coins!  ✦  ";
-
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function DashboardSiswaPage() {
   const [dashboardData, setDashboardData] = useState<SiswaDashboard | null>(null);
@@ -104,6 +167,7 @@ export default function DashboardSiswaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const [showCoinsPopup, setShowCoinsPopup] = useState(false); // ← popup coins
   const [showAchievementPopup, setShowAchievementPopup] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -123,7 +187,6 @@ export default function DashboardSiswaPage() {
           ? getUndisplayedAchievements()
           : Promise.resolve([]),
       ]);
-      // Ensure calendar has today's status in case cache/UTC drift
       const todayKey = new Date();
       const todayStr = `${todayKey.getFullYear()}-${String(todayKey.getMonth() + 1).padStart(2, "0")}-${String(todayKey.getDate()).padStart(2, "0")}`;
       const cal = [...dashData.calendarDays];
@@ -182,7 +245,6 @@ export default function DashboardSiswaPage() {
 
   const qrValue = useMemo(() => dashboardData?.profile?.nis || "", [dashboardData]);
 
-  // Tentukan apakah hari ini sudah bawa tumbler (status "hadir" di calendarDays hari ini)
   const todayKey = useMemo(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -190,19 +252,14 @@ export default function DashboardSiswaPage() {
 
   const todayStatus = useMemo(() => {
     const status = calendarDays.find((d) => d.date === todayKey)?.status ?? null;
-    // Fallback: jika streak hari ini aktif tapi calendar belum tersinkron,
-    // anggap status hadir supaya kartu tumbler tetap muncul.
     if (!status && dashboardData?.streak?.isActiveToday) return "hadir";
     return status;
   }, [calendarDays, todayKey, dashboardData?.streak?.isActiveToday]);
 
-  // Tampilkan TumblerStatusCard hanya jika hari kerja & ada data hari ini
   const showTumblerCard = todayStatus !== null && todayStatus !== "libur";
   const tumblerHadir = todayStatus === "hadir";
 
-  if (isLoading && !dashboardData) {
-    return <SehatiLoadingScreen />;
-  }
+  if (isLoading && !dashboardData) return <SehatiLoadingScreen />;
 
   if (!dashboardData) {
     return (
@@ -266,24 +323,26 @@ export default function DashboardSiswaPage() {
               <div className="welcome-decor"><TrendingUp size={48} strokeWidth={1} /></div>
             </section>
 
-            {/* ── TUMBLER STATUS CARD (hari ini) ── */}
             {/* Stats */}
             <div className="stats-grid-siswa">
-              {/* Coins — dengan marquee info di bawah */}
-              <div className="glass-panel stat-card-mini stat-card-coins">
+
+              {/* ── COINS — klik untuk popup info ── */}
+              <button
+                className="glass-panel stat-card-mini stat-card-coins stat-card-clickable"
+                onClick={() => setShowCoinsPopup(true)}
+                title="Klik untuk info coins"
+              >
                 <Coins color="#F59E0B" size={22} />
                 <div className="stat-info">
                   <span className="stat-label">Coins</span>
                   <span className="stat-value">{profile.coins}</span>
                 </div>
-                {/* Marquee hint */}
-                <div className="coins-marquee-wrap">
-                  <div className="coins-marquee-track">
-                    <span className="coins-marquee-text">{COINS_INFO}{COINS_INFO}</span>
-                    <span className="coins-marquee-text" aria-hidden>{COINS_INFO}{COINS_INFO}</span>
-                  </div>
+                {/* Info hint — menggantikan marquee */}
+                <div className="stat-coins-hint">
+                  <Info size={12} />
+                  <span>Ketuk untuk info</span>
                 </div>
-              </div>
+              </button>
 
               <div className="glass-panel stat-card-mini">
                 <Trophy color="#179EFF" size={22} />
@@ -302,6 +361,7 @@ export default function DashboardSiswaPage() {
               </div>
             </div>
 
+            {/* Tumbler Status */}
             {showTumblerCard && (
               <div className="tumbler-status-wrap">
                 <TumblerStatusCard hadir={tumblerHadir} nama={profile.nama} />
@@ -417,6 +477,14 @@ export default function DashboardSiswaPage() {
             </p>
           </div>
         </div>
+      )}
+
+      {/* COINS INFO POPUP */}
+      {showCoinsPopup && (
+        <CoinsInfoPopup
+          coins={profile.coins}
+          onClose={() => setShowCoinsPopup(false)}
+        />
       )}
 
       {/* ACHIEVEMENT POPUP */}

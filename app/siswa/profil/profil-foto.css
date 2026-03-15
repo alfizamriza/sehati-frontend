@@ -1,0 +1,171 @@
+/* ================================================================
+   PROFIL — Foto crop/compress additions
+   Append to profil.css (or import separately)
+   ================================================================ */
+
+/* ── Drop zone (no image selected yet) ── */
+.foto-drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 36px 20px;
+    border: 2px dashed var(--border-primary);
+    border-radius: 16px;
+    background: var(--color-primary-soft);
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.foto-drop-zone:hover {
+    background: var(--color-primary-mid);
+    border-color: var(--color-primary);
+}
+
+.foto-drop-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-primary-soft);
+    border: 1px solid var(--border-primary);
+    display: grid;
+    place-items: center;
+    color: var(--color-primary);
+    margin-bottom: 4px;
+}
+
+.foto-drop-label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.foto-drop-hint {
+    font-size: 0.70rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* ── Canvas crop area ── */
+.foto-canvas-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.foto-canvas {
+    border-radius: 50%;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    display: block;
+    /*
+    Scale the 400×400 canvas down to fit narrow screens.
+    Max 280 px on mobile so it fits comfortably inside the sheet.
+  */
+    width: min(280px, 100%);
+    height: min(280px, 100%);
+    box-shadow: 0 0 0 3px var(--border-primary), 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+.foto-canvas:active {
+    cursor: grabbing;
+}
+
+.foto-canvas-hint {
+    font-size: 0.67rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* ── Zoom controls ── */
+.foto-zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: var(--surface-input);
+    border: 1px solid var(--border-base);
+    border-radius: 12px;
+}
+
+.foto-zoom-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-base);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.foto-zoom-btn:hover {
+    background: var(--color-primary-soft);
+    border-color: var(--border-primary);
+    color: var(--color-primary);
+}
+
+.foto-zoom-track {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.foto-zoom-slider {
+    width: 100%;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+    height: 4px;
+}
+
+/* ── Size indicator after compress ── */
+.foto-size-info {
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.foto-size-info.ok {
+    background: var(--status-hadir-bg);
+    border: 1px solid var(--status-hadir-border);
+    color: var(--status-hadir-text);
+}
+
+.foto-size-info.warn {
+    background: var(--status-pel-bg);
+    border: 1px solid var(--status-pel-border);
+    color: var(--status-pel-text);
+}
+
+/* ── Change photo link ── */
+.foto-change-link {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    margin-bottom: 14px;
+    padding: 4px 0;
+    font-family: inherit;
+    transition: opacity 0.15s;
+}
+
+.foto-change-link:hover {
+    opacity: 0.75;
+}

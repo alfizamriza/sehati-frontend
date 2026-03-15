@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Coins, Zap, Trophy, Droplets, ShieldAlert,
   Camera, Lock, Eye, EyeOff, X, CheckCircle2,
@@ -10,7 +10,6 @@ import {
 import BottomNavSiswa from "@/components/siswa/BottomNavSiswa";
 import { ErrorState } from "@/components/common/AsyncState";
 import BrandLogo from "@/components/common/BrandLogo";
-import { supabase } from "@/lib/supabase-client";
 import api from "@/lib/api";
 import {
   getProfil, updatePassword,
@@ -20,8 +19,10 @@ import {
 } from "@/lib/services/siswa";
 import { logout } from "@/lib/services/shared";
 import { clearDashboardCache } from "@/lib/services/siswa";
+import ModalGantiFoto from "@/components/siswa/Modalgantifoto";
 import "../siswa-tokens.css";
 import "./profil.css";
+import "./profil-foto.css";
 import SehatiLoadingScreen from "@/components/siswa/SehatiLoadingScreen";
 
 // ─── MODAL SHEET ──────────────────────────────────────────────────────────────
@@ -157,9 +158,7 @@ function VoucherBadge({ voucher }: { voucher: ProfilVoucher }) {
       : `Rp ${voucher.nominalVoucher.toLocaleString("id-ID")}`;
   const formatTanggal = (str: string) =>
     new Date(str).toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
+      day: "2-digit", month: "long", year: "numeric",
     });
 
   return (
@@ -203,108 +202,6 @@ function MenuItem({ icon, label, sublabel, onClick, danger = false }: {
       </div>
       <ChevronRight size={15} className="profil-menu-chevron" />
     </button>
-  );
-}
-
-// ─── MODAL GANTI FOTO ─────────────────────────────────────────────────────────
-function ModalGantiFoto({
-  fotoUrl, nama, nis, onClose, onSuccess,
-}: {
-  fotoUrl: string | null; nama: string; nis: string;
-  onClose: () => void; onSuccess: (url: string) => void;
-}) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (f.size > 2 * 1024 * 1024) { setErr("Ukuran file maksimal 2MB"); return; }
-    if (!f.type.startsWith("image/")) { setErr("Hanya file gambar yang diizinkan"); return; }
-    setErr(null);
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
-  }
-
-  async function handleUpload() {
-    if (!file) return;
-    setUploading(true);
-    setErr(null);
-    try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const filename = `${nis}/avatar.${ext}`;
-
-      const { error: uploadErr } = await supabase.storage
-        .from("profil-siswa")
-        .upload(filename, file, { cacheControl: "3600", upsert: true });
-
-      if (uploadErr) throw new Error(uploadErr.message);
-
-      const { data: publicData } = supabase.storage
-        .from("profil-siswa")
-        .getPublicUrl(filename);
-
-      await api.patch("/profil/foto", { fotoUrl: publicData.publicUrl });
-      onSuccess(publicData.publicUrl);
-    } catch (e: any) {
-      setErr(e.message || "Gagal upload foto");
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  return (
-    <ModalSheet onClose={onClose} title="Ganti Foto Profil" accentColor="var(--color-primary)">
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-        <div className="profil-avatar-wrap">
-          <AvatarDisplay fotoUrl={preview ?? fotoUrl} nama={nama} size={96} />
-          <button
-            className="profil-avatar-edit-btn"
-            onClick={() => fileRef.current?.click()}
-          >
-            <Camera size={14} color="#fff" />
-          </button>
-        </div>
-      </div>
-
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        style={{ display: "none" }}
-      />
-
-      <button
-        className="profil-btn-pick-photo"
-        onClick={() => fileRef.current?.click()}
-      >
-        <Camera size={16} />
-        {preview ? "Pilih foto lain" : "Pilih foto dari galeri"}
-      </button>
-
-      {err && (
-        <div className="profil-error-alert">
-          <AlertTriangle size={14} style={{ color: "var(--status-pel-text)", flexShrink: 0, marginTop: 1 }} />
-          <span className="profil-error-alert-text">{err}</span>
-        </div>
-      )}
-
-      <div className="profil-upload-hint">Format: JPG, PNG · Maks 2MB</div>
-
-      <button
-        className="profil-btn-primary"
-        onClick={handleUpload}
-        disabled={!file || uploading}
-      >
-        {uploading ? (
-          <><Loader2 size={16} style={{ animation: "spin 0.7s linear infinite" }} /> Mengupload...</>
-        ) : "Simpan Foto"}
-      </button>
-    </ModalSheet>
   );
 }
 
@@ -393,11 +290,14 @@ function ModalGantiPassword({ onClose }: { onClose: () => void }) {
         className="profil-btn-primary"
         onClick={handleSubmit}
         disabled={loading}
-        style={{ background: loading ? undefined : "#1878eeff", boxShadow: loading ? undefined : "0 4px 14px rgba(139,92,246,0.35)" }}
+        style={{
+          background: loading ? undefined : "#1878eeff",
+          boxShadow: loading ? undefined : "0 4px 14px rgba(139,92,246,0.35)",
+        }}
       >
-        {loading ? (
-          <><Loader2 size={16} style={{ animation: "spin 0.7s linear infinite" }} /> Menyimpan...</>
-        ) : "Simpan Password"}
+        {loading
+          ? <><Loader2 size={16} style={{ animation: "spin 0.7s linear infinite" }} /> Menyimpan...</>
+          : "Simpan Password"}
       </button>
     </ModalSheet>
   );
@@ -431,8 +331,7 @@ function ModalLogout({ onClose }: { onClose: () => void }) {
           >
             {loading
               ? <Loader2 size={14} style={{ animation: "spin 0.7s linear infinite" }} />
-              : <LogOut size={14} />
-            }
+              : <LogOut size={14} />}
             Keluar
           </button>
         </div>
@@ -473,24 +372,11 @@ export default function ProfilSiswaPage() {
 
   useEffect(() => { load(false); }, []); // eslint-disable-line
 
-  // ── Loading ──
-  if (loading && !profilData) {
-    return <SehatiLoadingScreen />;
-  }
-  // if (loading && !profilData) {
-  //   return (
-  //     <main className="dashboard-page">
-  //       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", flexDirection: "column", gap: 16 }}>
-  //         <Loader2 size={32} style={{ color: "var(--color-primary)", animation: "spin 0.75s linear infinite" }} />
-  //         <span style={{ color: "var(--text-muted)", fontSize: "0.84rem" }}>Memuat profil...</span>
-  //       </div>
-  //     </main>
-  //   );
-  // }
+  if (loading && !profilData) return <SehatiLoadingScreen />;
 
-  const { profil, achievements = [], vouchers = [] } = profilData ?? { profil: null, achievements: [], vouchers: [] };
+  const { profil, achievements = [], vouchers = [] } =
+    profilData ?? { profil: null, achievements: [], vouchers: [] };
 
-  // ── Error ──
   if (!profil) {
     return (
       <main className="dashboard-page">
@@ -507,14 +393,17 @@ export default function ProfilSiswaPage() {
 
   return (
     <main className="dashboard-page">
+
       {/* ── Modals ── */}
       {modalFoto && (
         <ModalGantiFoto
-          fotoUrl={profil.fotoUrl} nama={profil.nama} nis={profil.nis}
+          fotoUrl={profil.fotoUrl}
+          nama={profil.nama}
+          nis={profil.nis}
           onClose={() => setModalFoto(false)}
           onSuccess={(url) => {
             setProfilData((prev) =>
-              prev ? { ...prev, profil: { ...prev.profil, fotoUrl: url } } : prev
+              prev ? { ...prev, profil: { ...prev.profil, fotoUrl: url } } : prev,
             );
             setModalFoto(false);
           }}
@@ -525,7 +414,7 @@ export default function ProfilSiswaPage() {
 
       <div className="dashboard-container">
 
-        {/* Header */}
+        {/* ── Header ── */}
         <header className="dash-header">
           <div className="brand">
             <div className="brand-logo">
@@ -538,7 +427,7 @@ export default function ProfilSiswaPage() {
           </div>
         </header>
 
-        {/* Refreshing bar */}
+        {/* ── Refreshing bar ── */}
         {refreshing && (
           <div className="profil-refreshing-bar">
             <Loader2 size={11} style={{ animation: "spin 0.75s linear infinite" }} />
@@ -627,7 +516,7 @@ export default function ProfilSiswaPage() {
           <MenuItem
             icon={<Camera size={16} />}
             label="Ganti Foto Profil"
-            sublabel="JPG atau PNG, maks 2MB"
+            sublabel="Crop & kompres otomatis"
             onClick={() => setModalFoto(true)}
           />
           <MenuItem

@@ -81,6 +81,7 @@ export {
   kelompokkanProduk,
   kemasanInfo,
   penaltyLabel,
+  listSiswa,
   toggleCartByoc
 } from "../transaksi.service";
 

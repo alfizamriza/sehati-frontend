@@ -27,7 +27,7 @@ export interface ProdukItem {
   stok: number;
   kategori: string;
   jenisKemasan: "plastik" | "kertas" | "tanpa_kemasan" | null;
-  coinsPenaltyPerItem: number; // penalti koin per item (dari pengaturan, diisi backend)
+  coinsPenaltyPerItem: number;
 }
 
 export interface CartItem extends ProdukItem {
@@ -45,9 +45,16 @@ export interface KemasPenaltyDetail {
 
 export interface TransaksiPayload {
   nis: string;
-  items: { produkId: number; quantity: number, isByoc?: boolean }[];
+  items: { produkId: number; quantity: number; isByoc?: boolean }[];
   paymentMethod: "voucher" | "tunai";
   voucherId?: number;
+}
+
+export interface SiswaListItem {
+  nis: string;
+  nama: string;
+  kelas: string;
+  fotoUrl: string | null;
 }
 
 export interface TransaksiResult {
@@ -100,6 +107,20 @@ export async function lookupSiswa(nis: string): Promise<SiswaInfo> {
   return data;
 }
 
+/**
+ * listSiswa
+ * Ambil semua siswa aktif — hanya field minimal untuk autocomplete kasir.
+ * Di-cache 10 menit di NisSearchInput, jadi hanya dipanggil sekali per sesi.
+ * Membutuhkan endpoint GET /transaksi/siswa/list di backend.
+ */
+export async function listSiswa(): Promise<SiswaListItem[]> {
+  const res = await api.get("/transaksi/siswa/list");
+  if (!res.data?.success) throw new Error(res.data?.message ?? "Gagal mengambil daftar siswa");
+  const data = unwrapResponseData<SiswaListItem[]>(res.data);
+  if (!Array.isArray(data)) throw new Error("Format daftar siswa tidak valid");
+  return data;
+}
+
 export async function cekVoucher(kode: string, nis: string): Promise<CekVoucherResult> {
   const res = await api.get(
     `/transaksi/voucher?kode=${encodeURIComponent(kode)}&nis=${encodeURIComponent(nis)}`
@@ -138,7 +159,7 @@ export async function createTransaksi(payload: TransaksiPayload): Promise<Transa
   return data;
 }
 
-// ─── CART HELPERS ────────────────────────────────────────────────────────────────
+// ─── CART HELPERS ─────────────────────────────────────────────────────────────
 
 export function addToCart(cart: CartItem[], produk: ProdukItem): CartItem[] {
   const existing = cart.find((c) => c.id === produk.id);
@@ -166,8 +187,6 @@ export function toggleCartByoc(cart: CartItem[], produkId: number): CartItem[] {
   );
 }
 
-// ── Hitung total penalti koin kemasan untuk cart saat ini ─────────────────────
-// Dipakai frontend untuk preview sebelum transaksi dikonfirmasi
 export function getCartCoinsPenalty(cart: CartItem[]): {
   total: number;
   detail: { nama: string; kemasan: string; qty: number; perItem: number; total: number }[];
@@ -206,7 +225,7 @@ export function buildPayload(
   };
 }
 
-// ─── DISPLAY HELPERS ────────────────────────────────────────────────────────────────
+// ─── DISPLAY HELPERS ──────────────────────────────────────────────────────────
 
 export function hitungDiskon(voucher: VoucherInfo, total: number): number {
   if (voucher.tipeVoucher === "percentage") {
@@ -231,19 +250,14 @@ export function kelompokkanProduk(produk: ProdukItem[]): Record<string, ProdukIt
   }, {} as Record<string, ProdukItem[]>);
 }
 
-// Label & warna kemasan
 export function kemasanInfo(kemasan: string | null): {
   label: string; icon: string; color: string; warning: boolean;
 } {
   switch (kemasan) {
-    case "plastik":
-      return { label: "Plastik", icon: "🛍️", color: "#EF4444", warning: true };
-    case "kertas":
-      return { label: "Kertas", icon: "📄", color: "#F59E0B", warning: true };
-    case "tanpa_kemasan":
-      return { label: "Eco", icon: "♻️", color: "#10b981", warning: false };
-    default:
-      return { label: "", icon: "", color: "transparent", warning: false };
+    case "plastik": return { label: "Plastik", icon: "🛍️", color: "#EF4444", warning: true };
+    case "kertas": return { label: "Kertas", icon: "📄", color: "#F59E0B", warning: true };
+    case "tanpa_kemasan": return { label: "Eco", icon: "♻️", color: "#10b981", warning: false };
+    default: return { label: "", icon: "", color: "transparent", warning: false };
   }
 }
 

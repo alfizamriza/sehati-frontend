@@ -1,0 +1,1627 @@
+/* ================================================================
+   TRANSAKSI — Modal Improvements
+   Tambahkan di bagian bawah transaksi.css
+   ================================================================ */
+
+/* ================================================================
+   MODAL SHELL — responsive bottom-sheet (mobile) + centered (desktop)
+   ================================================================ */
+
+.modal-overlay-base {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: flex-end;
+    /* mobile: sheet dari bawah */
+    justify-content: center;
+    padding: 0;
+}
+
+.modal-sheet-base {
+    width: 100%;
+    max-width: 520px;
+    background: var(--tr-bg-panel);
+    border: 1px solid var(--tr-border-base);
+    border-top: 3px solid;
+    /* accent color di-set via style prop */
+    border-radius: 22px 22px 0 0;
+    padding: 18px 20px 44px;
+    max-height: 92vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalSheetUp 0.24s cubic-bezier(0.34, 1.3, 0.64, 1);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.modal-sheet-wide {
+    max-width: 580px;
+}
+
+@keyframes modalSheetUp {
+    from {
+        transform: translateY(48px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Desktop: centered modal */
+@media (min-width: 600px) {
+    .modal-overlay-base {
+        align-items: center;
+        padding: 20px;
+    }
+
+    .modal-sheet-base {
+        border-radius: 20px;
+        max-height: 88vh;
+        padding: 22px 24px 28px;
+        animation: modalCenterIn 0.22s cubic-bezier(0.34, 1.3, 0.64, 1);
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+    }
+
+    @keyframes modalCenterIn {
+        from {
+            transform: scale(0.94) translateY(10px);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-drag-handle {
+        display: none;
+    }
+
+    /* Sembunyikan drag handle di desktop */
+}
+
+/* Drag handle */
+.modal-drag-handle {
+    width: 34px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--tr-border-strong);
+    margin: 0 auto 14px;
+    flex-shrink: 0;
+}
+
+/* Close button */
+.modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--tr-bg-input);
+    border: 1px solid var(--tr-border-base);
+    color: var(--tr-text-dimmed);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background 0.15s, color 0.15s;
+}
+
+.modal-close-btn:hover {
+    background: rgba(239, 68, 68, 0.14);
+    color: #ef4444;
+}
+
+/* Title */
+.modal-title {
+    font-weight: 700;
+    font-size: 0.97rem;
+    color: var(--tr-text-primary);
+    margin-bottom: 16px;
+    padding-right: 32px;
+    flex-shrink: 0;
+}
+
+/* Body scroll area */
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Section label */
+.modal-section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tr-text-muted);
+    margin-bottom: 10px;
+}
+
+/* Divider */
+.modal-divider {
+    height: 1px;
+    background: var(--tr-border-divider);
+    margin: 14px 0;
+}
+
+/* ================================================================
+   SCANNER MODAL
+   ================================================================ */
+
+.modal-scanner-sheet {
+    max-width: 400px;
+}
+
+.modal-scanner-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.scanner-viewport {
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--tr-bg-panel-inner);
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scanner-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    color: var(--tr-text-primary);
+}
+
+.scanner-hint {
+    text-align: center;
+    font-size: 0.73rem;
+    margin-top: 12px;
+    color: var(--tr-text-muted);
+    margin-bottom: 0;
+}
+
+/* ================================================================
+   BUTTON HELPERS
+   ================================================================ */
+
+.btn-secondary-sm {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    background: var(--tr-bg-input);
+    border: 1px solid var(--tr-border-base);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--tr-text-muted);
+    font-size: 0.78rem;
+    font-family: inherit;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+
+.btn-secondary-sm:hover {
+    background: var(--tr-bg-panel-inner);
+    color: var(--tr-text-primary);
+}
+
+.btn-icon-sm {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--tr-bg-input);
+    border: none;
+    color: var(--tr-text-dimmed);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background 0.15s;
+}
+
+.btn-icon-sm:hover {
+    background: rgba(239, 68, 68, 0.14);
+    color: #ef4444;
+}
+
+/* ================================================================
+   VOUCHER MODAL
+   ================================================================ */
+
+.voucher-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+/* Setiap item voucher adalah tombol penuh — mudah di-tap */
+.voucher-item-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 14px;
+    background: transparent;
+    border: 1px solid var(--tr-border-base);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s, transform 0.12s;
+    min-height: 64px;
+    /* mudah di-tap di mobile */
+}
+
+.voucher-item-btn:hover {
+    transform: translateX(3px);
+    background: rgba(139, 92, 246, 0.06);
+    border-color: rgba(139, 92, 246, 0.30);
+}
+
+.voucher-item-btn:active {
+    transform: scale(0.98);
+}
+
+.voucher-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    border: 1px solid;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.voucher-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.voucher-name {
+    font-weight: 700;
+    font-size: 0.86rem;
+}
+
+.voucher-meta {
+    font-size: 0.70rem;
+    color: var(--tr-text-muted);
+    margin-top: 2px;
+}
+
+.voucher-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.voucher-diskon {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #10b981;
+}
+
+.voucher-pakai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: #8b5cf6;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.voucher-empty {
+    text-align: center;
+    padding: 24px 0 16px;
+    color: var(--tr-text-dimmed);
+    font-size: 0.82rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Manual voucher button */
+.btn-manual-voucher {
+    width: 100%;
+    padding: 13px;
+    background: var(--tr-bg-input);
+    border: 1.5px dashed var(--tr-border-strong);
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.84rem;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--tr-text-muted);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    min-height: 48px;
+}
+
+.btn-manual-voucher:hover {
+    background: rgba(23, 158, 255, 0.06);
+    border-color: rgba(23, 158, 255, 0.40);
+    color: #179EFF;
+}
+
+/* ================================================================
+   INPUT KODE VOUCHER MODAL
+   ================================================================ */
+
+.voucher-input-wrap {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.voucher-input-hint {
+    font-size: 0.82rem;
+    color: var(--tr-text-muted);
+    margin: 0;
+}
+
+.voucher-input-field-wrap {
+    margin-bottom: 12px;
+}
+
+.voucher-code-input {
+    width: 100%;
+    padding: 16px;
+    background: var(--tr-bg-input);
+    border: 1.5px solid var(--tr-border-input);
+    border-radius: 12px;
+    outline: none;
+    box-sizing: border-box;
+    color: var(--tr-text-primary);
+    font-family: inherit;
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 3px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.voucher-code-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.voucher-code-input.input-error {
+    border-color: rgba(239, 68, 68, 0.6);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10);
+}
+
+.voucher-code-input::placeholder {
+    color: var(--tr-text-dimmed);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    font-weight: 400;
+}
+
+.input-err-msg {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: #ef4444;
+    margin-bottom: 12px;
+}
+
+.btn-cek-voucher {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--tr-bg-input);
+    color: var(--tr-text-dimmed);
+    transition: background 0.2s, transform 0.12s;
+    min-height: 50px;
+}
+
+.btn-cek-voucher:not(:disabled) {
+    color: #fff;
+}
+
+.btn-cek-voucher:not(:disabled):hover {
+    opacity: 0.9;
+}
+
+.btn-cek-voucher:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+.btn-cek-voucher:disabled {
+    cursor: not-allowed;
+}
+
+/* ================================================================
+   KALKULATOR TUNAI
+   ================================================================ */
+
+.kalkulator-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.kalk-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tr-text-muted);
+}
+
+.kalk-input-row {
+    position: relative;
+}
+
+.kalk-prefix {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--tr-text-muted);
+    font-weight: 700;
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+
+.kalk-input {
+    width: 100%;
+    padding: 14px 14px 14px 40px;
+    background: var(--tr-bg-input);
+    border: 1.5px solid var(--tr-border-input);
+    border-radius: 12px;
+    outline: none;
+    box-sizing: border-box;
+    color: var(--tr-text-primary);
+    font-family: inherit;
+    font-size: 1.15rem;
+    font-weight: 800;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.kalk-input:focus {
+    box-shadow: 0 0 0 3px rgba(23, 158, 255, 0.10);
+}
+
+/* 2×2 di mobile, 4 kolom di desktop */
+.kalk-nominal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+@media (min-width: 400px) {
+    .kalk-nominal-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.kalk-nominal-btn {
+    padding: 12px 6px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--tr-bg-input);
+    border: 1px solid var(--tr-border-strong);
+    color: var(--tr-text-secondary);
+    min-height: 44px;
+    /* mudah di-tap */
+}
+
+.kalk-nominal-btn:hover {
+    background: rgba(23, 158, 255, 0.08);
+    border-color: rgba(23, 158, 255, 0.30);
+    color: #179EFF;
+}
+
+.kalk-nominal-btn.active {
+    background: rgba(23, 158, 255, 0.18);
+    border-color: #179EFF;
+    color: #179EFF;
+}
+
+.kalk-add-row {
+    display: flex;
+    gap: 6px;
+}
+
+.kalk-add-btn {
+    flex: 1;
+    padding: 9px 4px;
+    border-radius: 8px;
+    font-family: inherit;
+    background: var(--tr-bg-input);
+    border: 1px dashed var(--tr-border-strong);
+    color: var(--tr-text-dimmed);
+    font-weight: 600;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    min-height: 40px;
+}
+
+.kalk-add-btn:hover {
+    background: rgba(16, 185, 129, 0.08);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.30);
+}
+
+.kalk-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.kalk-status-label {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--tr-text-secondary);
+}
+
+.kalk-status-val {
+    font-size: 1.1rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ================================================================
+   MODAL KONFIRMASI — Tab layout
+   ================================================================ */
+
+.konfirm-siswa-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 13px;
+    border-radius: 12px;
+    background: var(--tr-bg-panel-inner);
+    border: 1px solid var(--tr-border-base);
+    margin-bottom: 14px;
+}
+
+.konfirm-siswa-nama {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--tr-text-primary);
+}
+
+.konfirm-siswa-sub {
+    font-size: 0.72rem;
+    color: var(--tr-text-muted);
+    margin-top: 2px;
+}
+
+.konfirm-total-badge {
+    margin-left: auto;
+    font-size: 1.05rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+/* Tab navigation */
+.konfirm-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--tr-border-divider);
+    margin-bottom: 16px;
+    gap: 0;
+}
+
+.konfirm-tab {
+    flex: 1;
+    padding: 10px 8px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--tr-text-muted);
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -1px;
+}
+
+.konfirm-tab:hover:not(.active) {
+    color: var(--tr-text-secondary);
+}
+
+.konfirm-tab.active {
+    color: var(--tr-text-primary);
+    border-bottom-width: 2px;
+}
+
+.konfirm-tab-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Item list in ringkasan */
+.konfirm-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 4px;
+}
+
+.konfirm-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--tr-border-divider);
+    gap: 12px;
+}
+
+.konfirm-item-row:last-child {
+    border-bottom: none;
+}
+
+.konfirm-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.konfirm-item-name {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--tr-text-primary);
+}
+
+.konfirm-item-price {
+    font-weight: 700;
+    font-size: 0.84rem;
+    color: var(--tr-text-primary);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+/* BYOC toggle inline */
+.byoc-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    margin-top: 4px;
+}
+
+/* Summary box */
+.konfirm-summary-box {
+    background: var(--tr-bg-panel-inner);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.konfirm-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--tr-border-divider);
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--tr-text-primary);
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Lanjut button */
+.btn-next-tab {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.15s, transform 0.12s;
+    min-height: 50px;
+}
+
+.btn-next-tab:hover {
+    opacity: 0.9;
+}
+
+.btn-next-tab:active {
+    transform: scale(0.97);
+}
+
+/* Voucher confirm info */
+.voucher-confirm-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid;
+}
+
+/* Action row (batal + bayar) */
+.konfirm-action-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.btn-batal {
+    flex: 1;
+    padding: 13px;
+    border-radius: 12px;
+    background: var(--tr-bg-input);
+    border: 1px solid var(--tr-border-strong);
+    color: var(--tr-text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.86rem;
+    min-height: 50px;
+    transition: background 0.15s;
+}
+
+.btn-batal:hover {
+    background: var(--tr-bg-panel-inner);
+}
+
+.btn-bayar {
+    flex: 2;
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tr-bg-input);
+    color: var(--tr-text-dimmed);
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 50px;
+    transition: background 0.2s, transform 0.12s, opacity 0.2s;
+}
+
+.btn-bayar:not(:disabled) {
+    color: #fff;
+}
+
+.btn-bayar:not(:disabled):hover {
+    opacity: 0.9;
+}
+
+.btn-bayar:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+.btn-bayar:disabled {
+    cursor: not-allowed;
+}
+
+/* ================================================================
+   MODAL SUKSES
+   ================================================================ */
+
+.modal-sukses-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-sukses-card {
+    background: var(--tr-bg-panel);
+    border: 1px solid var(--tr-border-base);
+    border-radius: 24px;
+    padding: 32px 26px 28px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: suksesPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes suksesPop {
+    from {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.sukses-check-wrap {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: #10b981;
+    display: grid;
+    place-items: center;
+    margin-bottom: 8px;
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.14), 0 0 32px rgba(16, 185, 129, 0.30);
+    animation: checkPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+@keyframes checkPop {
+    from {
+        transform: scale(0.6);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+.sukses-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--tr-text-primary);
+}
+
+.sukses-kode {
+    font-size: 0.75rem;
+    color: var(--tr-text-muted);
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+.sukses-total {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #10b981;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+    margin: 4px 0;
+}
+
+/* Kembalian — sangat menonjol */
+.sukses-kembalian-box {
+    width: 100%;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sukses-kembalian-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--tr-text-secondary);
+}
+
+.sukses-kembalian-val {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #10b981;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Info chips (BYOC, penalty) */
+.sukses-info-chip {
+    width: 100%;
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.btn-transaksi-baru {
+    width: 100%;
+    padding: 14px;
+    background: #179EFF;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 8px;
+    transition: opacity 0.15s, transform 0.12s;
+    box-shadow: 0 4px 18px rgba(23, 158, 255, 0.30);
+    min-height: 50px;
+}
+
+.btn-transaksi-baru:hover {
+    opacity: 0.9;
+}
+
+.btn-transaksi-baru:active {
+    transform: scale(0.97);
+}
+
+/* ================================================================
+   RESPONSIVE — small mobile
+   ================================================================ */
+@media (max-width: 380px) {
+    .modal-sheet-base {
+        padding: 16px 16px 40px;
+    }
+
+    .kalk-nominal-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .konfirm-total-badge {
+        font-size: 0.92rem;
+    }
+
+    .sukses-total {
+        font-size: 1.35rem;
+    }
+
+    .sukses-kembalian-val {
+        font-size: 1.1rem;
+    }
+}
+
+/* ================================================================
+   SHORTCUT HINT BAR
+   Bar kecil di bagian bawah halaman — hanya tampil di desktop
+   ================================================================ */
+
+.shortcut-hint-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 6px 20px;
+    background: var(--tr-bg-header);
+    border-top: 1px solid var(--tr-border-base);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    font-size: 0.68rem;
+    color: var(--tr-text-dimmed);
+}
+
+.shortcut-hint-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+}
+
+.shortcut-hint-item kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--tr-bg-input);
+    border: 1px solid var(--tr-border-strong);
+    font-size: 0.65rem;
+    font-family: inherit;
+    font-weight: 700;
+    color: var(--tr-text-secondary);
+    line-height: 1.6;
+}
+
+.shortcut-hint-sep {
+    color: var(--tr-border-strong);
+    margin: 0 2px;
+}
+
+/* Sembunyikan di mobile — tidak relevan untuk layar sentuh */
+@media (max-width: 768px) {
+    .shortcut-hint-bar {
+        display: none;
+    }
+}
+
+/* Padding bawah halaman agar tidak tertutup hint bar */
+@media (min-width: 769px) {
+    .trans-page {
+        padding-bottom: 36px;
+    }
+}
+
+/* ================================================================
+   SHORTCUT FLASH — feedback visual saat produk ditambah via angka
+   ================================================================ */
+
+.shortcut-flash {
+    animation: shortcutFlash 0.22s ease;
+}
+
+@keyframes shortcutFlash {
+    0% {
+        box-shadow: 0 0 0 3px rgba(23, 158, 255, 0.70);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(23, 158, 255, 0);
+    }
+}
+
+/* ================================================================
+   KALKULATOR TUNAI — Improved (numpad + nominal otomatis)
+   ================================================================ */
+
+.kalk-total-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--tr-bg-panel-inner);
+    border: 1px solid var(--tr-border-base);
+    margin-bottom: 4px;
+}
+
+.kalk-total-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--tr-text-muted);
+}
+
+.kalk-total-val {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: var(--tr-text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Mode toggle Quick / Numpad */
+.kalk-mode-toggle {
+    display: flex;
+    gap: 6px;
+    background: var(--tr-bg-input);
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid var(--tr-border-base);
+}
+
+.kalk-mode-btn {
+    flex: 1;
+    padding: 7px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--tr-text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+
+.kalk-mode-btn.active {
+    background: var(--tr-bg-panel);
+    color: var(--tr-text-primary);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* Tombol PAS — full width, sangat menonjol */
+.kalk-btn-pas {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity .15s, transform .12s;
+    min-height: 52px;
+}
+
+.kalk-btn-pas:hover {
+    opacity: .9;
+}
+
+.kalk-btn-pas:active {
+    transform: scale(.97);
+}
+
+/* Nominal grid — 3 kolom, info kembalian di dalam */
+.kalk-nominal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.kalk-nominal-btn {
+    padding: 10px 8px;
+    border-radius: 10px;
+    font-family: inherit;
+    cursor: pointer;
+    background: var(--tr-bg-input);
+    border: 1px solid var(--tr-border-strong);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transition: all .15s;
+    min-height: 52px;
+    justify-content: center;
+}
+
+.kalk-nominal-btn:hover {
+    background: rgba(23, 158, 255, 0.08);
+    border-color: rgba(23, 158, 255, 0.30);
+}
+
+.kalk-nominal-btn.active {
+    background: rgba(23, 158, 255, 0.16);
+    border-color: #179EFF;
+}
+
+.kalk-nominal-rp {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--tr-text-primary);
+}
+
+.kalk-nominal-kembalian {
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--tr-text-dimmed);
+}
+
+/* Numpad on-screen */
+.kalk-display {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--tr-bg-panel-inner);
+    border-radius: 10px;
+    border: 1px solid var(--tr-border-base);
+}
+
+.kalk-display-prefix {
+    font-size: 0.9rem;
+    color: var(--tr-text-muted);
+    font-weight: 700;
+}
+
+.kalk-display-val {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--tr-text-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.03em;
+}
+
+.kalk-numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.kalk-numpad-btn {
+    height: 58px;
+    border-radius: 12px;
+    border: 1px solid var(--tr-border-strong);
+    background: var(--tr-bg-input);
+    color: var(--tr-text-primary);
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .12s, transform .08s;
+    display: grid;
+    place-items: center;
+}
+
+.kalk-numpad-btn:active {
+    transform: scale(.94);
+    background: rgba(23, 158, 255, 0.14);
+}
+
+.kalk-numpad-clear {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+    font-size: 0.85rem;
+}
+
+.kalk-numpad-back {
+    background: rgba(245, 158, 11, 0.10);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #f59e0b;
+}
+
+/* ================================================================
+   PRODUK CARD — shortcut badge & pinned
+   ================================================================ */
+
+/* Flash ring saat shortcut angka ditekan */
+.produk-card-item {
+    position: relative;
+}
+
+.shortcut-flash {
+    animation: shortcutFlash 0.22s ease;
+}
+
+@keyframes shortcutFlash {
+    0% {
+        box-shadow: 0 0 0 3px rgba(23, 158, 255, 0.70);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(23, 158, 255, 0);
+    }
+}
+
+/* ================================================================
+   NIS SEARCH INPUT v2 — Responsive
+   ================================================================ */
+
+/* Root container — flex agar menyesuaikan lebar scanner-section */
+.nis-root {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    /* cegah overflow di flex container */
+}
+
+/* Input wrapper */
+.nis-input-wrap {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: var(--tr-bg-input);
+    border: 1.5px solid var(--tr-border-input);
+    border-radius: 12px;
+    overflow: hidden;
+    /* clip children, bukan visible */
+    transition: border-color .15s, box-shadow .15s;
+    box-sizing: border-box;
+    min-height: 46px;
+}
+
+.nis-input-icon {
+    padding: 0 8px 0 12px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.nis-input-field {
+    flex: 1;
+    min-width: 0;
+    /* penting agar tidak meluap */
+    padding: 11px 6px;
+    background: transparent;
+    border: none;
+    color: var(--tr-text-primary);
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    outline: none;
+    /* Hindari zoom di iOS saat focus (font < 16px menyebabkan zoom) */
+    font-size: max(16px, 0.88rem);
+}
+
+.nis-input-field::placeholder {
+    color: var(--tr-text-dimmed);
+    font-weight: 400;
+    font-size: 0.82rem;
+}
+
+/* Badge NIS+Nama — sembunyikan di layar sangat sempit */
+.nis-cap-badge {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 99px;
+    font-size: 0.60rem;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-right: 4px;
+}
+
+@media (max-width: 400px) {
+    .nis-cap-badge {
+        display: none;
+    }
+}
+
+.nis-clear-btn {
+    padding: 5px 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--tr-text-dimmed);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: 6px;
+    transition: color .15s;
+    min-height: 44px;
+    /* touch target */
+}
+
+.nis-clear-btn:hover {
+    color: var(--tr-text-primary);
+}
+
+.nis-spinner {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid rgba(23, 158, 255, 0.25);
+    border-top-color: #179EFF;
+    animation: spin .7s linear infinite;
+    flex-shrink: 0;
+}
+
+/* Error bar */
+.nis-load-err {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.71rem;
+    color: #f59e0b;
+    padding: 5px 2px;
+    flex-wrap: wrap;
+}
+
+.nis-err-text {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.nis-retry-btn {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(245, 158, 11, 0.14);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: #f59e0b;
+    font-size: 0.68rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .15s;
+    min-height: 28px;
+}
+
+.nis-retry-btn:hover {
+    background: rgba(245, 158, 11, 0.24);
+}
+
+/* Dropdown */
+.nis-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: var(--tr-bg-panel);
+    border: 1px solid var(--tr-border-strong);
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .30);
+    overflow: hidden;
+    animation: dropIn .13s ease;
+    /* Dropdown tidak keluar dari viewport di mobile */
+    max-width: calc(100vw - 24px);
+}
+
+@keyframes dropIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.nis-drop-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px 5px;
+    border-bottom: 1px solid var(--tr-border-divider);
+}
+
+.nis-drop-header-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--tr-text-muted);
+}
+
+.nis-drop-clear-btn {
+    font-size: 0.68rem;
+    color: var(--tr-text-dimmed);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color .15s;
+    min-height: 28px;
+}
+
+.nis-drop-clear-btn:hover {
+    color: #ef4444;
+}
+
+.nis-drop-list {
+    max-height: 260px;
+    overflow-y: auto;
+    /* Smooth scroll di iOS */
+    -webkit-overflow-scrolling: touch;
+}
+
+.nis-drop-loading,
+.nis-drop-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 14px;
+    font-size: 0.82rem;
+    color: var(--tr-text-muted);
+}
+
+/* Item — min-height 52px agar mudah di-tap di HP */
+.nis-drop-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    min-height: 52px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--tr-border-divider);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background .1s;
+    box-sizing: border-box;
+}
+
+.nis-drop-item:last-child {
+    border-bottom: none;
+}
+
+.nis-drop-item:hover,
+.nis-drop-item.active {
+    background: rgba(23, 158, 255, 0.08);
+}
+
+.nis-drop-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.nis-drop-item-nama {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--tr-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nis-drop-item-meta {
+    display: flex;
+    gap: 8px;
+    font-size: 0.70rem;
+    color: var(--tr-text-muted);
+    margin-top: 2px;
+    flex-wrap: wrap;
+}
+
+.nis-drop-item-nis {
+    font-family: monospace;
+    letter-spacing: 0.3px;
+}
+
+.nis-drop-enter-hint {
+    font-size: 0.65rem;
+    color: rgba(23, 158, 255, .7);
+    flex-shrink: 0;
+}
+
+/* Footer hint — hidden di mobile karena tidak relevan untuk touch */
+.nis-drop-footer {
+    display: flex;
+    gap: 10px;
+    padding: 5px 12px;
+    border-top: 1px solid var(--tr-border-divider);
+    font-size: 0.64rem;
+    color: var(--tr-text-dimmed);
+}
+
+@media (max-width: 640px) {
+    .nis-drop-footer {
+        display: none;
+    }
+}

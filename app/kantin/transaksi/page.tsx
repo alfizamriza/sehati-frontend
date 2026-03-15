@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, ScanLine, User, Plus, Minus,
   Wallet, X, Check, TicketPercent,
   Loader2, ShoppingCart, AlertTriangle, Coins, Camera,
+  ChevronRight, CheckCircle2,
 } from "lucide-react";
 import BrandLogo from "@/components/common/BrandLogo";
 import { Scanner } from "@yudiel/react-qr-scanner";
@@ -14,22 +15,24 @@ import {
   addToCart, updateCartQty, getCartTotal, getCartCoinsPenalty,
   buildPayload, hitungDiskon, formatVoucherLabel,
   kelompokkanProduk, kemasanInfo,
-  clearProdukCache, // Added for cache clearing on transaction success
+  clearProdukCache,
   toggleCartByoc,
+  listSiswa,
   type SiswaInfo, type CartItem, type VoucherInfo,
   type TransaksiResult,
 } from "@/lib/services/kantin";
 import type { ProdukItem } from "@/lib/services/transaksi.service";
+import NisSearchInput from "./NisSearchInput";
+import { useKantinShortcuts, ShortcutHintBar } from "./useKantinShortcuts";
 import "../kantin-tokens.css";
 import "../../guru/dashboard/dashboard.css";
 import "./transaksi.css";
+import "./transaksi-modal.css";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
 const NOMINAL_TUNAI = [1_000, 2_000, 5_000, 10_000, 20_000, 50_000, 100_000];
 
-// Shared inline style tokens — values work on both light and dark surfaces
-// (modals always render on a dark sheet, so these remain dark-surface values)
 const S = {
   glass: { background: "var(--tr-bg-panel-inner)", border: "1px solid var(--tr-border-base)" },
   glassCard: { background: "var(--tr-bg-panel)", border: "1px solid var(--tr-border-base)", color: "var(--tr-text-primary)" },
@@ -47,33 +50,26 @@ const S = {
 
 function useTheme() {
   const [dark, setDark] = useState(false);
-
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const sync = () => setDark(media.matches);
-
     sync();
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);
-
   useEffect(() => {
     const root = document.documentElement;
-    if (dark) {
-      root.setAttribute("data-theme", "dark");
-    } else {
-      root.removeAttribute("data-theme");
-    }
+    if (dark) root.setAttribute("data-theme", "dark");
+    else root.removeAttribute("data-theme");
   }, [dark]);
-
   return { dark };
 }
 
-// ─── HELPER: SUMMARY ROW ─────────────────────────────────────────────────────
+// ─── HELPER: SUMMARY ROW ──────────────────────────────────────────────────────
 
-function SummaryRow({
-  label, value, color, small,
-}: { label: React.ReactNode; value: React.ReactNode; color?: string; small?: boolean }) {
+function SummaryRow({ label, value, color, small }: {
+  label: React.ReactNode; value: React.ReactNode; color?: string; small?: boolean;
+}) {
   return (
     <div style={{
       display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -117,22 +113,27 @@ function KemasanChip({ kemasan, penalty }: { kemasan: string | null; penalty: nu
       background: `${info.color}14`, border: `1px solid ${info.color}35`,
       fontSize: "0.64rem", fontWeight: 700, color: info.color,
     }}>
-      <span>{info.icon}</span>
-      <span>{info.label}</span>
+      <span>{info.icon}</span><span>{info.label}</span>
       {penalty > 0 && <span style={{ opacity: 0.75 }}>−{penalty} koin</span>}
     </div>
   );
 }
 
 // ─── MODAL SHELL ─────────────────────────────────────────────────────────────
-
+/*
+  Perbaikan:
+  - Desktop (≥600px): modal centered dengan max-height 90vh + scroll internal
+  - Mobile (<600px): bottom-sheet dengan drag handle
+  - Animasi berbeda: scale-in untuk desktop, slide-up untuk mobile
+*/
 function ModalSheet({
-  children, onClose, title, accentColor = S.cyan,
+  children, onClose, title, accentColor = S.cyan, wide = false,
 }: {
   children: React.ReactNode;
   onClose: () => void;
   title: string;
   accentColor?: string;
+  wide?: boolean;
 }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -142,40 +143,24 @@ function ModalSheet({
   return (
     <div
       onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 9998,
-        background: "rgba(0,0,0,0.8)", backdropFilter: "blur(6px)",
-        display: "flex", alignItems: "flex-end", justifyContent: "center",
-      }}
+      className="modal-overlay-base"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "100%", maxWidth: 520,
-          ...S.glassCard,
-          borderTop: `3px solid ${accentColor}`,
-          borderRight: "none", borderBottom: "none", borderLeft: "none",
-          borderRadius: "22px 22px 0 0",
-          padding: "20px 22px 44px",
-          maxHeight: "90vh", overflowY: "auto",
-          animation: "modalUp 0.25s ease",
-          position: "relative",
-        }}
+        className={`modal-sheet-base ${wide ? "modal-sheet-wide" : ""}`}
+        style={{ borderTopColor: accentColor } as React.CSSProperties}
       >
-        <div style={{ width: 32, height: 4, borderRadius: 2, background: "var(--tr-border-strong)", margin: "0 auto 16px" }} />
-        <button
-          onClick={onClose}
-          style={{
-            position: "absolute", top: 18, right: 18,
-            background: "var(--tr-bg-input)", border: "none",
-            borderRadius: 8, padding: "5px 6px",
-            cursor: "pointer", color: "var(--tr-text-dimmed)", display: "flex",
-          }}
-        >
+        {/* Drag handle — hanya muncul di mobile via CSS */}
+        <div className="modal-drag-handle" />
+
+        <button className="modal-close-btn" onClick={onClose}>
           <X size={15} />
         </button>
-        <div style={{ fontWeight: 700, fontSize: "0.97rem", marginBottom: 18 }}>{title}</div>
-        {children}
+
+        <div className="modal-title">{title}</div>
+        <div className="modal-body">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -189,55 +174,41 @@ function ModalScanner({ onScan, onClose }: {
 }) {
   const [isSecure, setIsSecure] = useState<boolean | null>(null);
   const [cameraFacing, setCameraFacing] = useState<"environment" | "user">("environment");
-  const toggleCamera = () => setCameraFacing((p) => (p === "environment" ? "user" : "environment"));
+
   useEffect(() => { setIsSecure(window.isSecureContext); }, []);
 
   return (
     <div
       onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(0,0,0,0.9)", backdropFilter: "blur(8px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}
+      className="modal-overlay-base"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ ...S.glassCard, borderRadius: 24, padding: 24, width: "90%", maxWidth: 380 }}
+        className="modal-sheet-base modal-scanner-sheet"
+        style={{ borderTopColor: S.cyan } as React.CSSProperties}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <div style={{ fontWeight: 700 }}>Scan QR Siswa</div>
+        <div className="modal-drag-handle" />
+        <div className="modal-scanner-header">
+          <div className="modal-title" style={{ margin: 0 }}>Scan QR Siswa</div>
           <div style={{ display: "flex", gap: 8 }}>
             <button
-              onClick={toggleCamera}
-              style={{
-                background: "var(--tr-bg-input)", border: "1px solid var(--tr-border-base)",
-                borderRadius: 8, padding: "5px 8px", cursor: "pointer",
-                color: "var(--tr-text-dimmed)", display: "flex", alignItems: "center", gap: 6,
-              }}
-              title="Ganti kamera depan/belakang"
+              onClick={() => setCameraFacing((p) => p === "environment" ? "user" : "environment")}
+              className="btn-secondary-sm"
             >
-              <Camera size={15} />
-              <span style={{ fontSize: "0.78rem" }}>
-                {cameraFacing === "environment" ? "Belakang" : "Depan"}
-              </span>
+              <Camera size={14} />
+              <span>{cameraFacing === "environment" ? "Belakang" : "Depan"}</span>
             </button>
-            <button onClick={onClose} style={{ background: "var(--tr-bg-input)", border: "none", borderRadius: 8, padding: "5px 6px", cursor: "pointer", color: "var(--tr-text-dimmed)", display: "flex" }}>
-              <X size={15} />
-            </button>
+            <button onClick={onClose} className="btn-icon-sm"><X size={15} /></button>
           </div>
         </div>
 
-        <div style={{ borderRadius: 16, overflow: "hidden", background: "var(--tr-bg-panel-inner)", height: 280 }}>
+        <div className="scanner-viewport">
           {isSecure === false ? (
-            <div style={{ height: "100%", display: "grid", placeItems: "center", padding: 20, textAlign: "center", color: "var(--tr-text-secondary)" }}>
-              <div>
-                <AlertTriangle size={28} style={{ margin: "0 auto 10px", color: S.amber }} />
-                <div style={{ fontWeight: 700, marginBottom: 8 }}>Kamera butuh koneksi aman</div>
-                <div style={{ fontSize: "0.8rem", lineHeight: 1.6, color: "var(--tr-text-muted)" }}>
-                  Buka halaman ini melalui <b>https</b> atau <b>localhost</b>.{" "}
-                  Jika dibuka dari IP jaringan seperti <code>http://192.168.x.x</code>, browser akan menolak akses kamera.
-                </div>
+            <div className="scanner-error">
+              <AlertTriangle size={28} style={{ color: S.amber, marginBottom: 10 }} />
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>Butuh koneksi aman (HTTPS)</div>
+              <div style={{ fontSize: "0.79rem", color: "var(--tr-text-muted)", lineHeight: 1.6 }}>
+                Buka via <strong>https</strong> atau <strong>localhost</strong> agar kamera bisa diakses.
               </div>
             </div>
           ) : (
@@ -252,9 +223,10 @@ function ModalScanner({ onScan, onClose }: {
             />
           )}
         </div>
-
-        <p style={{ textAlign: "center", fontSize: "0.74rem", marginTop: 12, ...S.muted }}>
-          {isSecure === false ? "Gunakan origin aman agar scanner bisa mengakses kamera." : "Arahkan kamera ke QR Code kartu siswa"}
+        <p className="scanner-hint">
+          {isSecure === false
+            ? "Gunakan origin aman agar scanner bisa mengakses kamera."
+            : "Arahkan kamera ke QR Code kartu siswa"}
         </p>
       </div>
     </div>
@@ -262,44 +234,59 @@ function ModalScanner({ onScan, onClose }: {
 }
 
 // ─── MODAL: PILIH VOUCHER ─────────────────────────────────────────────────────
-
+/*
+  Perbaikan:
+  - List voucher lebih besar dan mudah di-tap (min-height 64px per item)
+  - Tombol "Pakai" lebih lebar dan jelas
+  - Hapus redundansi layout
+*/
 function ModalVoucher({ siswa, total, onPilih, onManual, onClose }: {
   siswa: SiswaInfo; total: number;
   onPilih: (v: VoucherInfo) => void; onManual: () => void; onClose: () => void;
 }) {
   return (
     <ModalSheet onClose={onClose} title="Pilih Voucher" accentColor={S.violet}>
-      {siswa.voucherAktif.length > 0 && (
+      {siswa.voucherAktif.length > 0 ? (
         <>
-          <div style={{ fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 10, ...S.muted }}>
+          <div className="modal-section-label">
             Voucher Tersedia ({siswa.voucherAktif.length})
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+          <div className="voucher-list">
             {siswa.voucherAktif.map((v) => {
               const diskon = hitungDiskon(v, total);
               const tgl = new Date(v.tanggalBerakhir).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
               return (
-                <div key={v.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, background: `${S.violet}14`, border: `1px solid ${S.violet}33` }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: `${S.violet}26`, border: `1px solid ${S.violet}4d`, display: "grid", placeItems: "center" }}>
-                    <TicketPercent size={16} style={{ color: S.violet }} />
+                <button
+                  key={v.id}
+                  className="voucher-item-btn"
+                  onClick={() => onPilih(v)}
+                >
+                  <div className="voucher-icon-wrap" style={{ background: `${S.violet}20`, borderColor: `${S.violet}40` }}>
+                    <TicketPercent size={18} style={{ color: S.violet }} />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: "0.85rem", color: S.violet }}>{v.namaVoucher}</div>
-                    <div style={{ fontSize: "0.7rem", marginTop: 1, ...S.muted }}>{formatVoucherLabel(v)} · s/d {tgl}</div>
+                  <div className="voucher-info">
+                    <div className="voucher-name" style={{ color: S.violet }}>{v.namaVoucher}</div>
+                    <div className="voucher-meta">{formatVoucherLabel(v)} · s/d {tgl}</div>
                   </div>
-                  <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <div style={{ fontSize: "0.8rem", fontWeight: 700, color: S.green }}>-{diskon.toLocaleString("id-ID")}</div>
-                    <button onClick={() => onPilih(v)} style={{ marginTop: 4, padding: "4px 10px", background: S.violet, border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: "0.72rem", cursor: "pointer", fontFamily: "inherit" }}>
-                      Pakai
-                    </button>
+                  <div className="voucher-right">
+                    <div className="voucher-diskon">-Rp {diskon.toLocaleString("id-ID")}</div>
+                    <div className="voucher-pakai-badge">
+                      <Check size={11} /> Pakai
+                    </div>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
+          <div className="modal-divider" />
         </>
+      ) : (
+        <div className="voucher-empty">
+          <TicketPercent size={32} style={{ color: "var(--tr-text-dimmed)", marginBottom: 8 }} />
+          <div>Tidak ada voucher aktif</div>
+        </div>
       )}
-      <button onClick={onManual} style={{ width: "100%", padding: "12px", background: "var(--tr-bg-input)", border: "1px dashed var(--tr-border-strong)", borderRadius: 12, fontWeight: 600, fontSize: "0.84rem", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "var(--tr-text-muted)" }}>
+      <button className="btn-manual-voucher" onClick={onManual}>
         <TicketPercent size={15} /> Input kode voucher manual
       </button>
     </ModalSheet>
@@ -307,13 +294,25 @@ function ModalVoucher({ siswa, total, onPilih, onManual, onClose }: {
 }
 
 // ─── MODAL: INPUT KODE VOUCHER ────────────────────────────────────────────────
-
+/*
+  Perbaikan:
+  - Input auto-focus saat modal terbuka
+  - Keyboard "enter" langsung cek
+  - Input lebih besar dan mudah diketik
+*/
 function ModalInputVoucher({ nis, onPilih, onClose }: {
   nis: string; onPilih: (v: VoucherInfo) => void; onClose: () => void;
 }) {
   const [kode, setKode] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // auto-focus setelah animasi modal selesai
+    const t = setTimeout(() => inputRef.current?.focus(), 200);
+    return () => clearTimeout(t);
+  }, []);
 
   async function handleCek() {
     if (!kode.trim()) { setErr("Masukkan kode voucher"); return; }
@@ -328,96 +327,245 @@ function ModalInputVoucher({ nis, onPilih, onClose }: {
   }
 
   return (
-    <ModalSheet onClose={onClose} title="Input Kode Voucher" accentColor={S.blue}>
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <TicketPercent size={40} style={{ color: S.blue, margin: "0 auto 10px", display: "block" }} />
-        <p style={{ fontSize: "0.82rem", ...S.muted }}>Masukkan kode voucher promo yang berlaku</p>
+    <ModalSheet onClose={onClose} title="Kode Voucher" accentColor={S.blue}>
+      <div className="voucher-input-wrap">
+        <TicketPercent size={36} style={{ color: S.blue, display: "block", margin: "0 auto 8px" }} />
+        <p className="voucher-input-hint">Masukkan kode voucher promo</p>
       </div>
-      <input
-        type="text" placeholder="Contoh: HEMAT5K"
-        value={kode}
-        onChange={(e) => { setKode(e.target.value.toUpperCase()); setErr(null); }}
-        onKeyDown={(e) => e.key === "Enter" && handleCek()}
-        style={{ width: "100%", padding: "14px", background: "var(--tr-bg-input)", border: `1px solid ${err ? `${S.red}80` : "var(--tr-border-strong)"}`, borderRadius: 12, outline: "none", boxSizing: "border-box", color: "var(--tr-text-primary)", fontFamily: "inherit", fontSize: "1.1rem", fontWeight: 700, textAlign: "center", letterSpacing: 2 }}
-      />
+
+      <div className="voucher-input-field-wrap">
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Contoh: HEMAT5K"
+          value={kode}
+          onChange={(e) => { setKode(e.target.value.toUpperCase()); setErr(null); }}
+          onKeyDown={(e) => e.key === "Enter" && handleCek()}
+          className={`voucher-code-input ${err ? "input-error" : ""}`}
+          autoComplete="off"
+          autoCapitalize="characters"
+        />
+      </div>
+
       {err && (
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, fontSize: "0.78rem", color: S.red }}>
+        <div className="input-err-msg">
           <AlertTriangle size={13} /> {err}
         </div>
       )}
-      <button onClick={handleCek} disabled={loading} style={{ width: "100%", padding: "13px", marginTop: 16, background: loading ? "var(--tr-bg-input)" : S.blue, border: "none", borderRadius: 12, color: loading ? "var(--tr-text-dimmed)" : "#fff", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-        {loading ? <><Loader2 size={15} className="spin" /> Mengecek...</> : "Cek Voucher"}
+
+      <button
+        onClick={handleCek}
+        disabled={loading || !kode.trim()}
+        className="btn-cek-voucher"
+        style={{ background: loading || !kode.trim() ? undefined : S.blue }}
+      >
+        {loading
+          ? <><Loader2 size={15} className="spin" /> Mengecek...</>
+          : "Cek Voucher"}
       </button>
     </ModalSheet>
   );
 }
 
 // ─── KALKULATOR TUNAI ─────────────────────────────────────────────────────────
-
-function KalkulatorTunai({ totalBayar, onUangChange }: {
+/*
+  Perbaikan:
+  - Tombol nominal lebih besar (mudah di-tap)
+  - Grid 2×2 di mobile alih-alih 4 kolom sempit
+  - Input Rp auto-focus
+  - Kembalian ditampilkan lebih menonjol
+*/
+function KalkulatorTunai({ totalBayar, onUangChange, externalUang, onExternalUangConsumed }: {
   totalBayar: number; onUangChange: (uang: number) => void;
+  externalUang?: number | null;
+  onExternalUangConsumed?: () => void;
 }) {
   const [uangStr, setUangStr] = useState("");
+  const [mode, setMode] = useState<"quick" | "numpad">("quick");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => inputRef.current?.focus(), 150);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Terima uang dari luar (shortcut Numpad / F8)
+  useEffect(() => {
+    if (externalUang != null && externalUang > 0) {
+      setUangStr(externalUang.toLocaleString("id-ID"));
+      onUangChange(externalUang);
+      onExternalUangConsumed?.();
+    }
+  }, [externalUang]); // eslint-disable-line
 
   const uang = parseInt(uangStr.replace(/\D/g, "") || "0", 10);
   const kembalian = uang - totalBayar;
+  const cukup = uang >= totalBayar;
+  const pas = uang === totalBayar;
 
-  const picks = NOMINAL_TUNAI.filter((n) => n >= totalBayar).slice(0, 4);
-  const nominalTampil = picks.length >= 3 ? picks : [...NOMINAL_TUNAI].reverse().slice(0, 4).reverse();
+  // Nominal otomatis: dibulatkan ke atas ke pecahan terdekat
+  const nominalOtomatis = useMemo(() => {
+    const pecahan = [1_000, 2_000, 5_000, 10_000, 20_000, 50_000, 100_000];
+    // Nominal pas + 3 pilihan di atasnya
+    const diatas = pecahan.filter((n) => n >= totalBayar).slice(0, 3);
+    // Kalau total pas ke pecahan, tidak perlu "pas" terpisah
+    const hasPas = diatas[0] === totalBayar;
+    return { diatas, hasPas };
+  }, [totalBayar]);
 
-  function setNominal(n: number) { setUangStr(n.toLocaleString("id-ID")); onUangChange(n); }
-  function tambah(n: number) { const b = uang + n; setUangStr(b.toLocaleString("id-ID")); onUangChange(b); }
+  function setNominal(n: number) {
+    setUangStr(n.toLocaleString("id-ID"));
+    onUangChange(n);
+  }
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value.replace(/\D/g, "");
     const num = parseInt(raw || "0", 10);
     setUangStr(raw ? num.toLocaleString("id-ID") : "");
     onUangChange(num);
   }
+  // Numpad on-screen
+  function numpadPress(key: string) {
+    if (key === "C") { setUangStr(""); onUangChange(0); return; }
+    if (key === "⌫") {
+      const raw = uangStr.replace(/\D/g, "").slice(0, -1);
+      const num = parseInt(raw || "0", 10);
+      setUangStr(raw ? num.toLocaleString("id-ID") : "");
+      onUangChange(num);
+      return;
+    }
+    const raw = (uangStr.replace(/\D/g, "") + key).replace(/^0+/, "") || "0";
+    const num = parseInt(raw, 10);
+    setUangStr(num.toLocaleString("id-ID"));
+    onUangChange(num);
+  }
 
-  const borderColor = uang > 0 ? (kembalian >= 0 ? `${S.green}80` : `${S.red}66`) : "var(--tr-border-input)";
-  const statusBg = kembalian >= 0 ? `${S.green}14` : `${S.red}14`;
-  const statusBorder = kembalian >= 0 ? `${S.green}40` : `${S.red}40`;
-  const statusColor = kembalian >= 0 ? S.green : S.red;
-  const statusLabel = kembalian === 0 ? "✅ Pas / Kembalian" : kembalian > 0 ? "💰 Kembalian" : "⚠️ Kurang";
-  const statusValue = `Rp ${Math.abs(kembalian).toLocaleString("id-ID")}`;
+  const statusBg = uang === 0 ? "transparent" : cukup ? `${S.green}14` : `${S.red}14`;
+  const statusBorder = uang === 0 ? "transparent" : cukup ? `${S.green}40` : `${S.red}40`;
+  const statusColor = cukup ? S.green : S.red;
 
   return (
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 8, ...S.muted }}>
-        💵 Uang Diterima
+    <div className="kalkulator-wrap">
+
+      {/* ── Total yang harus dibayar (always visible) ── */}
+      <div className="kalk-total-header">
+        <span className="kalk-total-label">Total tagihan</span>
+        <span className="kalk-total-val">Rp {totalBayar.toLocaleString("id-ID")}</span>
       </div>
 
-      <div style={{ position: "relative", marginBottom: 10 }}>
-        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--tr-text-muted)", fontWeight: 700, fontSize: "0.9rem", pointerEvents: "none" }}>Rp</span>
-        <input
-          type="text" inputMode="numeric" placeholder="0"
-          value={uangStr} onChange={handleInput}
-          style={{ width: "100%", padding: "13px 14px 13px 38px", background: "var(--tr-bg-input)", border: `1.5px solid ${borderColor}`, borderRadius: 12, outline: "none", boxSizing: "border-box", color: "var(--tr-text-primary)", fontFamily: "inherit", fontSize: "1.1rem", fontWeight: 700 }}
-        />
+      {/* ── Mode toggle: Quick | Numpad ── */}
+      <div className="kalk-mode-toggle">
+        <button
+          type="button"
+          className={`kalk-mode-btn ${mode === "quick" ? "active" : ""}`}
+          onClick={() => setMode("quick")}
+        >
+          ⚡ Cepat
+        </button>
+        <button
+          type="button"
+          className={`kalk-mode-btn ${mode === "numpad" ? "active" : ""}`}
+          onClick={() => setMode("numpad")}
+        >
+          🔢 Numpad
+        </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, marginBottom: 8 }}>
-        {nominalTampil.map((n) => (
-          <button key={n} type="button" onClick={() => setNominal(n)}
-            style={{ padding: "7px 4px", borderRadius: 9, fontFamily: "inherit", background: uang === n ? `${S.cyan}33` : "var(--tr-bg-input)", border: `1px solid ${uang === n ? `${S.cyan}80` : "var(--tr-border-strong)"}`, color: uang === n ? S.cyan : "var(--tr-text-secondary)", fontWeight: 700, fontSize: "0.72rem", cursor: "pointer", transition: "all 0.15s" }}>
-            {n >= 1_000 ? `${n / 1_000}rb` : n.toLocaleString("id-ID")}
+      {mode === "quick" ? (
+        <>
+          {/* ── Tombol PAS — paling menonjol ── */}
+          <button
+            type="button"
+            className="kalk-btn-pas"
+            onClick={() => setNominal(totalBayar)}
+            style={{
+              background: pas ? S.green : `${S.green}18`,
+              border: `1.5px solid ${S.green}`,
+              color: pas ? "#fff" : S.green,
+            }}
+          >
+            <Check size={16} />
+            Bayar Pas · Rp {totalBayar.toLocaleString("id-ID")}
           </button>
-        ))}
-      </div>
 
-      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-        {[1_000, 5_000, 10_000, 50_000].map((add) => (
-          <button key={add} type="button" onClick={() => tambah(add)}
-            style={{ flex: 1, padding: "6px 4px", borderRadius: 8, fontFamily: "inherit", background: "var(--tr-bg-input)", border: "1px dashed var(--tr-border-strong)", color: "var(--tr-text-dimmed)", fontWeight: 600, fontSize: "0.68rem", cursor: "pointer" }}>
-            +{add >= 1_000 ? `${add / 1_000}rb` : add}
+          {/* ── Nominal otomatis dibulatkan ke atas ── */}
+          <div className="kalk-nominal-grid">
+            {nominalOtomatis.diatas.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setNominal(n)}
+                className={`kalk-nominal-btn ${uang === n ? "active" : ""}`}
+              >
+                <span className="kalk-nominal-rp">
+                  Rp {n >= 1_000 ? `${(n / 1_000).toLocaleString("id-ID")}rb` : n}
+                </span>
+                <span className="kalk-nominal-kembalian" style={{ color: uang === n ? S.cyan : "var(--tr-text-dimmed)" }}>
+                  {n === totalBayar ? "pas" : `kembalian ${((n - totalBayar) / 1_000).toFixed(0)}rb`}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* ── Input manual jika nominal tidak ada ── */}
+          <div className="kalk-input-row">
+            <span className="kalk-prefix">Rp</span>
+            <input
+              ref={inputRef}
+              type="text"
+              inputMode="numeric"
+              placeholder="atau ketik nominal lain..."
+              value={uangStr}
+              onChange={handleInput}
+              className="kalk-input"
+              style={{ borderColor: uang > 0 ? (cukup ? `${S.green}60` : `${S.red}60`) : "var(--tr-border-input)" }}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          {/* ── Numpad layar sentuh besar ── */}
+          <div className="kalk-display">
+            <span className="kalk-display-prefix">Rp</span>
+            <span className="kalk-display-val">{uangStr || "0"}</span>
+          </div>
+          <div className="kalk-numpad-grid">
+            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "⌫"].map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => numpadPress(k)}
+                className={`kalk-numpad-btn ${k === "C" ? "kalk-numpad-clear" : k === "⌫" ? "kalk-numpad-back" : ""}`}
+              >
+                {k}
+              </button>
+            ))}
+          </div>
+          {/* Tombol pas di numpad */}
+          <button
+            type="button"
+            className="kalk-btn-pas"
+            onClick={() => setNominal(totalBayar)}
+            style={{
+              background: S.green,
+              border: `1.5px solid ${S.green}`,
+              color: "#fff",
+            }}
+          >
+            <Check size={16} />
+            Bayar Pas · Rp {totalBayar.toLocaleString("id-ID")}
           </button>
-        ))}
-      </div>
+        </>
+      )}
 
+      {/* ── Status kembalian ── */}
       {uang > 0 && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", borderRadius: 12, background: statusBg, border: `1px solid ${statusBorder}` }}>
-          <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--tr-text-secondary)" }}>{statusLabel}</span>
-          <span style={{ fontSize: "1.05rem", fontWeight: 800, color: statusColor }}>{statusValue}</span>
+        <div className="kalk-status" style={{ background: statusBg, borderColor: statusBorder }}>
+          <span className="kalk-status-label">
+            {pas ? "✅ Pas" : cukup ? "💰 Kembalian" : "⚠️ Kurang"}
+          </span>
+          <span className="kalk-status-val" style={{ color: statusColor, fontSize: "1.2rem" }}>
+            Rp {Math.abs(kembalian).toLocaleString("id-ID")}
+          </span>
         </div>
       )}
     </div>
@@ -425,185 +573,225 @@ function KalkulatorTunai({ totalBayar, onUangChange }: {
 }
 
 // ─── MODAL: KONFIRMASI ────────────────────────────────────────────────────────
-
-function ModalKonfirmasi({ siswa, cart, voucher, metodeBayar, onKonfirmasi, onClose, loading, onToggleByoc }: {
+/*
+  Perbaikan:
+  - Dua tab: "Ringkasan" dan "Pembayaran" — tidak perlu scroll panjang
+  - Tombol Bayar selalu visible di bawah (sticky footer)
+  - BYOC toggle lebih jelas per item
+  - Tampilan lebih compact dan terorganisir
+*/
+function ModalKonfirmasi({ siswa, cart, voucher, metodeBayar, onKonfirmasi, onClose, loading, onToggleByoc, externalUang, onExternalUangConsumed }: {
   siswa: SiswaInfo; cart: CartItem[]; voucher: VoucherInfo | null;
   metodeBayar: "tunai" | "voucher";
   onKonfirmasi: () => void; onClose: () => void; loading: boolean;
   onToggleByoc: (p: CartItem) => void;
+  externalUang?: number | null;
+  onExternalUangConsumed?: () => void;
 }) {
+  // Skip tab ringkasan kalau keranjang kecil (≤2 item unik) — langsung ke bayar
+  const skipRingkasan = cart.length <= 2;
+  const [tab, setTab] = useState<"ringkasan" | "bayar">(skipRingkasan ? "bayar" : "ringkasan");
   const [uangDiterima, setUangDiterima] = useState(0);
 
   const total = getCartTotal(cart);
   const diskon = voucher ? hitungDiskon(voucher, total) : 0;
   const bayar = Math.max(0, total - diskon);
   const { total: penaltyTotal, detail: penaltyDetail } = getCartCoinsPenalty(cart);
-
+  const selectedWadahCount = cart.filter((c) => c.isByoc).length;
   const kembalian = uangDiterima - bayar;
   const uangKurang = metodeBayar === "tunai" && uangDiterima > 0 && kembalian < 0;
   const bisaBayar = metodeBayar !== "tunai" || uangDiterima >= bayar;
   const accent = metodeBayar === "voucher" ? S.violet : S.green;
   const btnDisabled = loading || !bisaBayar;
-  const btnLabel = loading ? "Memproses..." : uangKurang ? `Kurang Rp ${Math.abs(kembalian).toLocaleString("id-ID")}` : "Bayar Sekarang";
-
-  const selectedWadahCount = cart.filter((c) => c.isByoc).length;
 
   return (
-    <ModalSheet onClose={onClose} title="Konfirmasi Pembayaran" accentColor={accent}>
-      {/* Siswa */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, marginBottom: 16, ...S.glass }}>
+    <ModalSheet onClose={onClose} title="Konfirmasi Pembayaran" accentColor={accent} wide>
+      {/* ── Siswa info ── */}
+      <div className="konfirm-siswa-row">
         <AvatarMini fotoUrl={siswa.fotoUrl} nama={siswa.nama} />
         <div>
-          <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>{siswa.nama}</div>
-          <div style={{ fontSize: "0.72rem", marginTop: 1, ...S.muted }}>{siswa.kelas} · {siswa.nis}</div>
+          <div className="konfirm-siswa-nama">{siswa.nama}</div>
+          <div className="konfirm-siswa-sub">{siswa.kelas} · {siswa.nis}</div>
+        </div>
+        <div className="konfirm-total-badge" style={{ color: accent }}>
+          Rp {bayar.toLocaleString("id-ID")}
         </div>
       </div>
 
-      {/* Items */}
-      <div style={{ marginBottom: 14 }}>
-        {cart.map((c) => (
-          <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "10px 0", borderBottom: "1px solid var(--tr-border-divider)", fontSize: "0.82rem" }}>
-            <div style={{ flex: 1 }}>
-              <span style={{ color: "var(--tr-text-primary)", fontWeight: 600 }}>{c.nama} ×{c.qty}</span>
-              <div style={{ marginTop: 4, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                {c.jenisKemasan && c.jenisKemasan !== "tanpa_kemasan" && (
-                  <KemasanChip kemasan={c.jenisKemasan} penalty={c.coinsPenaltyPerItem} />
-                )}
-                {c.coinsPenaltyPerItem > 0 && (
-                  <span style={{ fontSize: "0.7rem", color: c.isByoc ? S.green : S.red, fontWeight: 700 }}>
-                    {c.isByoc ? "🌱 Bawa Wadah" : `⚠️ Penalti -${c.coinsPenaltyPerItem * c.qty}`}
-                  </span>
-                )}
-              </div>
-              {c.coinsPenaltyPerItem > 0 && (
-                <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontSize: "0.75rem", cursor: "pointer", userSelect: "none" }}>
-                  <input type="checkbox" checked={c.isByoc} onChange={() => onToggleByoc(c)} style={{ accentColor: S.green, width: 14, height: 14, cursor: "pointer" }} />
-                  Pilih opsi Bawa Wadah (BYOC)
-                </label>
-              )}
-            </div>
-            <span style={{ fontWeight: 700, flexShrink: 0, marginLeft: 16 }}>Rp {(c.harga * c.qty).toLocaleString("id-ID")}</span>
-          </div>
-        ))}
+      {/* ── Tab nav ── */}
+      <div className="konfirm-tabs">
+        <button
+          className={`konfirm-tab ${tab === "ringkasan" ? "active" : ""}`}
+          onClick={() => setTab("ringkasan")}
+          style={tab === "ringkasan" ? { borderBottomColor: accent, color: "var(--tr-text-primary)" } : {}}
+        >
+          Ringkasan
+        </button>
+        <button
+          className={`konfirm-tab ${tab === "bayar" ? "active" : ""}`}
+          onClick={() => setTab("bayar")}
+          style={tab === "bayar" ? { borderBottomColor: accent, color: "var(--tr-text-primary)" } : {}}
+        >
+          {metodeBayar === "tunai" ? "💵 Kalkulator Tunai" : "🎟️ Voucher"}
+        </button>
       </div>
 
-      {/* Price summary */}
-      <div style={{ background: "var(--tr-bg-panel-inner)", borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}>
-        <SummaryRow label="Subtotal" value={`Rp ${total.toLocaleString("id-ID")}`} />
-        {selectedWadahCount > 0 && <SummaryRow label="🌱 Bawa Wadah (BYOC)" value={`${selectedWadahCount} item (Reward dikalkulasi)`} color={S.green} small />}
-        {diskon > 0 && <SummaryRow label={`Diskon ${voucher?.namaVoucher}`} value={`-Rp ${diskon.toLocaleString("id-ID")}`} color={S.green} />}
-        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid var(--tr-border-divider)", fontWeight: 800, fontSize: "1.05rem" }}>
-          <span>Total Bayar</span>
-          <span style={{ color: accent }}>Rp {bayar.toLocaleString("id-ID")}</span>
-        </div>
-      </div>
-
-      {metodeBayar === "tunai" && <KalkulatorTunai totalBayar={bayar} onUangChange={setUangDiterima} />}
-
-      {/* Penalty */}
-      {penaltyTotal > 0 && (
-        <>
-          <div style={{ background: `${S.red}0f`, border: `1px solid ${S.red}33`, borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, fontSize: "0.8rem", color: S.red, marginBottom: 8 }}>
-              <AlertTriangle size={13} /> Penalti Kemasan Plastik/Kertas
-            </div>
-            {penaltyDetail.map((d, i) => {
-              const ki = kemasanInfo(d.kemasan);
-              return (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.76rem", marginBottom: 4, ...S.dimmed }}>
-                  <span>{ki.icon} {d.nama} ×{d.qty}</span>
-                  <span style={{ color: S.red, fontWeight: 600 }}>−{d.total} koin</span>
+      {/* ── Tab: Ringkasan ── */}
+      {tab === "ringkasan" && (
+        <div className="konfirm-tab-content">
+          {/* Item list */}
+          <div className="konfirm-items">
+            {cart.map((c) => (
+              <div key={c.id} className="konfirm-item-row">
+                <div className="konfirm-item-info">
+                  <span className="konfirm-item-name">{c.nama} ×{c.qty}</span>
+                  {c.jenisKemasan && c.jenisKemasan !== "tanpa_kemasan" && (
+                    <KemasanChip kemasan={c.jenisKemasan} penalty={c.coinsPenaltyPerItem} />
+                  )}
+                  {/* BYOC toggle inline */}
+                  {c.coinsPenaltyPerItem > 0 && (
+                    <label className="byoc-toggle-label">
+                      <input
+                        type="checkbox"
+                        checked={c.isByoc}
+                        onChange={() => onToggleByoc(c)}
+                        style={{ accentColor: S.green }}
+                      />
+                      <span style={{ color: c.isByoc ? S.green : "var(--tr-text-muted)" }}>
+                        {c.isByoc ? "🌱 Bawa Wadah (BYOC)" : "Bawa Wadah?"}
+                      </span>
+                    </label>
+                  )}
                 </div>
-              );
-            })}
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", fontWeight: 700, paddingTop: 8, borderTop: `1px solid ${S.red}26`, marginTop: 4 }}>
-              <span style={{ ...S.muted }}>Total penalti koin</span>
-              <span style={{ color: S.red }}>−{penaltyTotal} koin</span>
-            </div>
+                <span className="konfirm-item-price">Rp {(c.harga * c.qty).toLocaleString("id-ID")}</span>
+              </div>
+            ))}
           </div>
-          <div style={{ background: `${S.amber}14`, border: `1px solid ${S.amber}40`, borderRadius: 12, padding: "10px 14px", marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", fontWeight: 700 }}>
-              <span style={{ color: "var(--tr-text-primary)" }}>Total koin dipotong</span>
-              <span style={{ color: S.amber }}>-{penaltyTotal} koin</span>
-            </div>
-          </div>
-        </>
-      )}
 
-      {selectedWadahCount > 0 && (
-        <div style={{ background: `${S.green}14`, border: `1px solid ${S.green}40`, borderRadius: 12, padding: "10px 14px", marginBottom: 14 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.82rem", fontWeight: 700 }}>
-            <span style={{ color: S.green }}>🌱 BYOC Aktif ({selectedWadahCount} item)</span>
-            <span style={{ color: "var(--tr-text-primary)" }}>Bebas penalti & Dapat Reward</span>
+          {/* Price summary */}
+          <div className="konfirm-summary-box">
+            <SummaryRow label="Subtotal" value={`Rp ${total.toLocaleString("id-ID")}`} />
+            {diskon > 0 && <SummaryRow label={`Diskon ${voucher?.namaVoucher}`} value={`-Rp ${diskon.toLocaleString("id-ID")}`} color={S.green} />}
+            {penaltyTotal > 0 && <SummaryRow label="⚠️ Penalti koin" value={`-${penaltyTotal} koin`} color={S.red} small />}
+            {selectedWadahCount > 0 && <SummaryRow label="🌱 BYOC aktif" value={`${selectedWadahCount} item`} color={S.green} small />}
+            <div className="konfirm-total-row">
+              <span>Total Bayar</span>
+              <span style={{ color: accent }}>Rp {bayar.toLocaleString("id-ID")}</span>
+            </div>
           </div>
+
+          {/* Lanjut ke bayar */}
+          <button
+            className="btn-next-tab"
+            style={{ background: accent }}
+            onClick={() => setTab("bayar")}
+          >
+            Lanjut ke Pembayaran <ChevronRight size={16} />
+          </button>
         </div>
       )}
 
-      {/* Actions */}
-      <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={onClose} style={{ flex: 1, padding: "12px", borderRadius: 12, background: "var(--tr-bg-input)", border: "1px solid var(--tr-border-strong)", color: "var(--tr-text-secondary)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", fontSize: "0.86rem" }}>
-          Batal
-        </button>
-        <button onClick={onKonfirmasi} disabled={btnDisabled} title={!bisaBayar && metodeBayar === "tunai" ? "Uang belum cukup" : undefined}
-          style={{ flex: 2, padding: "12px", border: "none", borderRadius: 12, background: btnDisabled ? "var(--tr-bg-input)" : accent, color: btnDisabled ? "var(--tr-text-dimmed)" : "#fff", fontWeight: 700, cursor: btnDisabled ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          {loading ? <><Loader2 size={15} className="spin" /> {btnLabel}</> : btnLabel}
-        </button>
-      </div>
+      {/* ── Tab: Bayar ── */}
+      {tab === "bayar" && (
+        <div className="konfirm-tab-content">
+          {metodeBayar === "tunai" ? (
+            <KalkulatorTunai
+              totalBayar={bayar}
+              onUangChange={setUangDiterima}
+              externalUang={externalUang}
+              onExternalUangConsumed={onExternalUangConsumed}
+            />
+          ) : (
+            <div className="voucher-confirm-info" style={{ borderColor: `${S.violet}40`, background: `${S.violet}0f` }}>
+              <TicketPercent size={20} style={{ color: S.violet }} />
+              <div>
+                <div style={{ fontWeight: 700, color: S.violet }}>{voucher?.namaVoucher}</div>
+                <div style={{ fontSize: "0.78rem", color: "var(--tr-text-muted)" }}>
+                  Diskon Rp {diskon.toLocaleString("id-ID")} · Total Rp {bayar.toLocaleString("id-ID")}
+                </div>
+              </div>
+              <CheckCircle2 size={20} style={{ color: S.green, marginLeft: "auto" }} />
+            </div>
+          )}
+
+          {/* Tombol bayar — sticky di dalam tab */}
+          <div className="konfirm-action-row">
+            <button
+              className="btn-batal"
+              onClick={onClose}
+            >
+              Batal
+            </button>
+            <button
+              className="btn-bayar"
+              onClick={onKonfirmasi}
+              disabled={btnDisabled}
+              style={{ background: btnDisabled ? undefined : accent }}
+              title={!bisaBayar && metodeBayar === "tunai" ? "Uang belum cukup" : undefined}
+            >
+              {loading
+                ? <><Loader2 size={15} className="spin" /> Memproses...</>
+                : uangKurang
+                  ? `Kurang Rp ${Math.abs(kembalian).toLocaleString("id-ID")}`
+                  : "Bayar Sekarang"}
+            </button>
+          </div>
+        </div>
+      )}
     </ModalSheet>
   );
 }
 
 // ─── MODAL: SUKSES ────────────────────────────────────────────────────────────
-
+/*
+  Perbaikan:
+  - Layout lebih compact
+  - Kembalian ditampilkan sangat menonjol
+  - Animasi checkmark
+*/
 function ModalSukses({ result, kembalian, onLagi }: {
   result: TransaksiResult; kembalian: number; onLagi: () => void;
 }) {
   const penaltyTotal = result.coinsPenaltyTotal ?? 0;
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ ...S.glassCard, borderRadius: 24, padding: "32px 28px", width: "90%", maxWidth: 380, textAlign: "center" }}>
-        <div style={{ width: 72, height: 72, borderRadius: "50%", background: S.green, display: "grid", placeItems: "center", margin: "0 auto 20px", boxShadow: `0 0 40px ${S.green}66` }}>
-          <Check size={36} color="#ffffff" strokeWidth={3} />
+    <div className="modal-sukses-overlay">
+      <div className="modal-sukses-card">
+        <div className="sukses-check-wrap">
+          <Check size={38} color="#ffffff" strokeWidth={3} />
         </div>
-        <div style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 6, color: "var(--tr-text-primary)" }}>Transaksi Berhasil!</div>
-        <div style={{ fontSize: "0.8rem", marginBottom: 4, ...S.muted }}>Kode: {result.kodeTransaksi}</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 700, color: S.green, marginBottom: kembalian > 0 ? 8 : 16 }}>
+        <div className="sukses-title">Transaksi Berhasil!</div>
+        <div className="sukses-kode">{result.kodeTransaksi}</div>
+
+        {/* Total bayar */}
+        <div className="sukses-total">
           Rp {result.totalBayar.toLocaleString("id-ID")}
         </div>
+
+        {/* Kembalian — sangat menonjol */}
         {kembalian > 0 && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", borderRadius: 12, marginBottom: 14, background: `${S.green}1a`, border: `1px solid ${S.green}4d` }}>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600, ...S.dimmed }}>💵 Kembalian</span>
-            <span style={{ fontSize: "1.1rem", fontWeight: 800, color: S.green }}>Rp {kembalian.toLocaleString("id-ID")}</span>
+          <div className="sukses-kembalian-box">
+            <div className="sukses-kembalian-label">💵 Kembalian</div>
+            <div className="sukses-kembalian-val">
+              Rp {kembalian.toLocaleString("id-ID")}
+            </div>
           </div>
         )}
 
+        {/* BYOC reward */}
         {result.isByoc && result.coinsReward > 0 && (
-          <div style={{ background: `${S.green}14`, border: `1px solid ${S.green}40`, borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: "0.78rem" }}>
-            <div style={{ color: S.green, fontWeight: 800, marginBottom: 4 }}>🌱 Reward Bawa Wadah (BYOC)</div>
-            <div style={{ color: "var(--tr-text-primary)", fontWeight: 600 }}>+{result.coinsReward} koin</div>
+          <div className="sukses-info-chip" style={{ borderColor: `${S.green}40`, background: `${S.green}14`, color: S.green }}>
+            🌱 +{result.coinsReward} koin (BYOC)
           </div>
         )}
 
+        {/* Penalty */}
         {penaltyTotal > 0 && (
-          <div style={{ background: `${S.amber}14`, border: `1px solid ${S.amber}40`, borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: "0.78rem" }}>
-            <div style={{ color: S.amber, fontWeight: 700 }}>Total koin terpotong: -{penaltyTotal} koin</div>
+          <div className="sukses-info-chip" style={{ borderColor: `${S.red}33`, background: `${S.red}14`, color: S.red }}>
+            ⚠️ -{penaltyTotal} koin penalti kemasan
           </div>
         )}
-        {result.coinsPenaltyTotal > 0 && (
-          <div style={{ background: `${S.red}14`, border: `1px solid ${S.red}33`, borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: "0.78rem" }}>
-            <div style={{ color: S.red, fontWeight: 700, marginBottom: 4 }}>🛍️ −{result.coinsPenaltyTotal} koin penalti kemasan</div>
-            {result.coinsPenaltyDetail.map((d, i) => {
-              const ki = kemasanInfo(d.jenisKemasan);
-              return (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", ...S.muted }}>
-                  <span>{ki.icon} {d.namaProduk} ×{d.qty}</span>
-                  <span>−{d.totalPenalty} koin</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        <button onClick={onLagi} style={{ width: "100%", padding: "13px", background: S.cyan, border: "none", borderRadius: 12, color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: "0.92rem", marginTop: 10 }}>
+
+        <button className="btn-transaksi-baru" onClick={onLagi}>
           Transaksi Baru
         </button>
       </div>
@@ -613,31 +801,81 @@ function ModalSukses({ result, kembalian, onLagi }: {
 
 // ─── PRODUK CARD ──────────────────────────────────────────────────────────────
 
-function ProdukCard({ p, qty, onAdd, onMinus, disabled }: {
-  p: ProdukItem; qty: number; onAdd: () => void; onMinus: () => void; disabled: boolean;
+function ProdukCard({ p, qty, onAdd, onMinus, disabled, shortcutNum, pinned }: {
+  p: ProdukItem; qty: number; onAdd: () => void; onMinus: () => void;
+  disabled: boolean; shortcutNum?: number; pinned?: boolean;
 }) {
   const isSelected = qty > 0;
   const hasWarning = p.coinsPenaltyPerItem > 0;
 
   return (
     <div
+      className="produk-card-item"
       onClick={!disabled ? onAdd : undefined}
       style={{
         padding: "14px 12px", borderRadius: 16, position: "relative",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.45 : 1,
         transition: "all 0.15s",
-        background: isSelected ? `${S.cyan}12` : "var(--tr-bg-product, rgba(30,41,59,0.6))",
-        border: `1px solid ${isSelected ? `${S.cyan}4d` : hasWarning ? `${S.red}26` : "var(--tr-border-product, rgba(255,255,255,0.06))"}`,
+        background: isSelected
+          ? `${S.cyan}12`
+          : pinned
+            ? "rgba(245,158,11,0.06)"
+            : "var(--tr-bg-product, rgba(30,41,59,0.6))",
+        border: `1px solid ${isSelected
+          ? `${S.cyan}4d`
+          : pinned
+            ? "rgba(245,158,11,0.28)"
+            : hasWarning
+              ? `${S.red}26`
+              : "var(--tr-border-product, rgba(255,255,255,0.06))"}`,
         display: "flex", flexDirection: "column", gap: 6,
       }}
     >
+      {/* Shortcut number badge (keyboard) */}
+      {shortcutNum !== undefined && !isSelected && (
+        <div style={{
+          position: "absolute", top: 7, left: 7,
+          width: 17, height: 17, borderRadius: 5,
+          background: "var(--tr-border-strong)",
+          color: "var(--tr-text-dimmed)",
+          display: "grid", placeItems: "center",
+          fontSize: "0.6rem", fontWeight: 800,
+        }}>
+          {shortcutNum}
+        </div>
+      )}
+
+      {/* Pinned badge */}
+      {pinned && !isSelected && (
+        <div style={{
+          position: "absolute", top: 6, right: 6,
+          fontSize: "0.58rem", fontWeight: 700,
+          color: S.amber, opacity: 0.8,
+        }}>
+          ★
+        </div>
+      )}
+
+      {/* Qty badge */}
       {isSelected && (
-        <div style={{ position: "absolute", top: 8, right: 8, width: 20, height: 20, borderRadius: "50%", background: S.cyan, color: "#fff", display: "grid", placeItems: "center", fontSize: "0.7rem", fontWeight: 800 }}>
+        <div style={{
+          position: "absolute", top: 8, right: 8,
+          width: 20, height: 20, borderRadius: "50%",
+          background: S.cyan, color: "#fff",
+          display: "grid", placeItems: "center",
+          fontSize: "0.7rem", fontWeight: 800,
+        }}>
           {qty}
         </div>
       )}
-      <div style={{ fontSize: "0.86rem", fontWeight: 700, lineHeight: 1.3, color: "var(--tr-text-primary)", paddingRight: isSelected ? 20 : 0 }}>
+
+      <div style={{
+        fontSize: "0.86rem", fontWeight: 700, lineHeight: 1.3,
+        color: "var(--tr-text-primary)",
+        paddingRight: isSelected ? 20 : 0,
+        paddingLeft: shortcutNum !== undefined && !isSelected ? 18 : 0,
+      }}>
         {p.nama}
       </div>
       <div style={{ fontSize: "0.78rem", fontWeight: 700, color: S.cyan }}>
@@ -666,29 +904,24 @@ function ProdukCard({ p, qty, onAdd, onMinus, disabled }: {
 export default function TransaksiPage() {
   useTheme();
 
-  // ── Data state
   const [produkAll, setProdukAll] = useState<ProdukItem[]>([]);
   const [siswa, setSiswa] = useState<SiswaInfo | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeKat, setActiveKat] = useState<string>("");
   const [nisInput, setNisInput] = useState("");
 
-  // ── Loading state
   const [loadingProduk, setLoadingProduk] = useState(true);
   const [loadingSiswa, setLoadingSiswa] = useState(false);
   const [loadingBayar, setLoadingBayar] = useState(false);
 
-  // ── Count BYOC selected items
-  const selectedWadahCount = cart.filter(c => c.isByoc).length;
+  const selectedWadahCount = cart.filter((c) => c.isByoc).length;
 
-  // ── Modal visibility
   const [modalScanner, setModalScanner] = useState(false);
   const [modalVoucher, setModalVoucher] = useState(false);
   const [modalInputVoucher, setModalInputVoucher] = useState(false);
   const [modalKonfirmasi, setModalKonfirmasi] = useState(false);
   const [modalSukses, setModalSukses] = useState<{ result: TransaksiResult; kembalian: number } | null>(null);
 
-  // ── Payment state
   const [selectedVoucher, setSelectedVoucher] = useState<VoucherInfo | null>(null);
   const [metodeBayar, setMetodeBayar] = useState<"tunai" | "voucher">("tunai");
   const [uangTunai, setUangTunai] = useState(0);
@@ -696,7 +929,6 @@ export default function TransaksiPage() {
   const lookupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // ── Load catalog
   const fetchKatalog = useCallback(() => {
     setLoadingProduk(true);
     getProdukKatalog()
@@ -705,17 +937,12 @@ export default function TransaksiPage() {
       .finally(() => setLoadingProduk(false));
   }, []);
 
-  useEffect(() => {
-    fetchKatalog();
-  }, [fetchKatalog]);
-
-  // ── Cleanup debounce
+  useEffect(() => { fetchKatalog(); }, [fetchKatalog]);
   useEffect(() => () => { if (lookupTimerRef.current) clearTimeout(lookupTimerRef.current); }, []);
 
   const katalog = kelompokkanProduk(produkAll);
   const kategoriList = Object.keys(katalog);
 
-  // ── Lookup siswa
   const doLookup = useCallback(async (raw: string) => {
     if (!raw.trim()) return;
     setLoadingSiswa(true); setSiswa(null);
@@ -737,28 +964,20 @@ export default function TransaksiPage() {
     setNisInput(nis); doLookup(raw); setModalScanner(false);
   }
 
-  // ── Cart
-  const handleAddToCart = (p: ProdukItem) => {
-    if (!siswa) { inputRef.current?.focus(); return; }
-    setCart((prev) => addToCart(prev, p));
-  };
-  const handleUpdateQty = (id: number, delta: number) =>
-    setCart((prev) => updateCartQty(prev, id, delta));
+  const handleAddToCart = (p: ProdukItem) => { if (!siswa) { inputRef.current?.focus(); return; } setCart((prev) => addToCart(prev, p)); };
+  const handleUpdateQty = (id: number, delta: number) => setCart((prev) => updateCartQty(prev, id, delta));
 
-  // ── Totals
   const total = getCartTotal(cart);
   const { total: penaltyTotal } = getCartCoinsPenalty(cart);
   const diskon = selectedVoucher ? hitungDiskon(selectedVoucher, total) : 0;
   const bayar = Math.max(0, total - diskon);
 
-  // ── Voucher handlers
   function handlePilihVoucher(v: VoucherInfo) {
     setSelectedVoucher(v); setMetodeBayar("voucher");
     setModalVoucher(false); setModalInputVoucher(false);
     setModalKonfirmasi(true);
   }
 
-  // ── Confirm
   async function handleKonfirmasi() {
     if (!siswa || !cart.length) return;
     setLoadingBayar(true);
@@ -773,23 +992,73 @@ export default function TransaksiPage() {
     } finally { setLoadingBayar(false); }
   }
 
-  // ── Reset
   function resetSemua() {
-    clearProdukCache(); // Force fetch updated stock
+    clearProdukCache();
     setCart([]); setSiswa(null); setNisInput("");
     setSelectedVoucher(null); setMetodeBayar("tunai");
     setUangTunai(0); setModalSukses(null);
-    fetchKatalog(); // Explicitly reload catalog data
+    fetchKatalog();
     inputRef.current?.focus();
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─── Shortcut: tutup modal aktif (Escape) ─────────────────────────────────
+  function closeActiveModal() {
+    if (modalSukses) { return; } // sukses tidak bisa di-esc, harus klik tombol
+    if (modalKonfirmasi) { setModalKonfirmasi(false); return; }
+    if (modalInputVoucher) { setModalInputVoucher(false); return; }
+    if (modalVoucher) { setModalVoucher(false); return; }
+    if (modalScanner) { setModalScanner(false); return; }
+  }
+
+  // ─── Shortcut: hapus item terakhir ────────────────────────────────────────
+  function removeLastItem() {
+    if (!cart.length) return;
+    const last = cart[cart.length - 1];
+    setCart((prev) => updateCartQty(prev, last.id, -1));
+  }
+
+  // ─── Shortcut: set uang tunai (nominal pas atau Numpad) ───────────────────
+  // State ini perlu di-lift ke parent agar hook bisa set-nya,
+  // lalu pass ke KalkulatorTunai via prop onExternalSet
+  const [externalUang, setExternalUang] = useState<number | null>(null);
+
+  // Produk aktif untuk shortcut 1-9
+  const produkAktif = useMemo(
+    () => (katalog[activeKat] ?? []).map((p) => ({ id: p.id, stok: p.stok })),
+    [katalog, activeKat],
+  );
+
+  const isAnyModalOpen = modalScanner || modalVoucher || modalInputVoucher || modalKonfirmasi || !!modalSukses;
+
+  // ─── Register shortcuts ───────────────────────────────────────────────────
+  useKantinShortcuts({
+    nisInputRef: inputRef,
+    hasSiswa: !!siswa,
+    hasCart: cart.length > 0,
+    isModalOpen: isAnyModalOpen,
+    isModalKonfirmasi: modalKonfirmasi,
+    isModalTunai: modalKonfirmasi && metodeBayar === "tunai",
+    onOpenScanner: () => setModalScanner(true),
+    onOpenTunai: () => { setSelectedVoucher(null); setMetodeBayar("tunai"); setUangTunai(0); setModalKonfirmasi(true); },
+    onOpenVoucher: () => setModalVoucher(true),
+    onKonfirmasi: handleKonfirmasi,
+    onCloseModal: closeActiveModal,
+    onReset: resetSemua,
+    onClearCart: () => setCart([]),
+    onRemoveLastItem: removeLastItem,
+    onSetUangPas: (amount) => setExternalUang(amount),
+    totalBayar: bayar,
+    produkAktif,
+    onAddProduk: (id) => {
+      const p = produkAll.find((x) => x.id === id);
+      if (p) handleAddToCart(p);
+    },
+  });
 
   return (
     <main className="dashboard-page trans-page">
       <div className="bg-blob blob-1" />
 
-      {/* ── Modals ── */}
       {modalScanner && <ModalScanner onScan={handleScan} onClose={() => setModalScanner(false)} />}
       {modalVoucher && siswa && (
         <ModalVoucher siswa={siswa} total={total} onPilih={handlePilihVoucher}
@@ -803,11 +1072,15 @@ export default function TransaksiPage() {
         <ModalKonfirmasi siswa={siswa} cart={cart} voucher={selectedVoucher}
           metodeBayar={metodeBayar} loading={loadingBayar}
           onToggleByoc={(p) => setCart(toggleCartByoc(cart, p.id))}
-          onKonfirmasi={handleKonfirmasi} onClose={() => setModalKonfirmasi(false)} />
+          onKonfirmasi={handleKonfirmasi} onClose={() => setModalKonfirmasi(false)}
+          externalUang={externalUang}
+          onExternalUangConsumed={() => setExternalUang(null)} />
       )}
-      {modalSukses && <ModalSukses result={modalSukses.result} kembalian={modalSukses.kembalian} onLagi={resetSemua} />}
+      {modalSukses && (
+        <ModalSukses result={modalSukses.result} kembalian={modalSukses.kembalian} onLagi={resetSemua} />
+      )}
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="he-container">
         <header className="header-section">
           <Link href="/kantin/dashboard" className="page-title" style={{ textDecoration: "none", color: "inherit" }}>
@@ -816,42 +1089,40 @@ export default function TransaksiPage() {
             </div>
             <h1>Transaksi Baru</h1>
           </Link>
-
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
-            {/* Theme toggle */}
-            {/* <button
-              className="btn-theme-toggle"
-              onClick={toggleTheme}
-              title={dark ? "Mode Terang" : "Mode Gelap"}
-            >
-              {dark ? <Sun size={16} /> : <Moon size={16} />}
-            </button> */}
-
             <BrandLogo size={20} alt="SEHATI Kantin" />
             <span style={{ fontSize: "0.75rem", color: "var(--tr-text-muted)" }}>SEHATI</span>
           </div>
         </header>
       </div>
 
-      {/* ── Main layout ── */}
+      {/* Main layout */}
       <div className="trans-container">
-
-        {/* Left panel */}
         <section className="left-panel glass-panel">
-
+          {/* ── NIS Search ── */}
           <div className="scanner-section">
-            <button className="scan-trigger-btn" onClick={() => setModalScanner(true)}>
+            <button
+              className="scan-trigger-btn"
+              onClick={() => setModalScanner(true)}
+              title="F3 — Scan QR"
+            >
               <ScanLine size={22} />
             </button>
-            <div className="input-group">
-              <label>NIS Siswa</label>
-              <input
-                ref={inputRef} type="text" value={nisInput}
-                onChange={handleNisChange}
-                placeholder="Scan kartu atau ketik NIS..."
-                autoFocus
-              />
-            </div>
+            <NisSearchInput
+              value={nisInput}
+              onChange={(val) => {
+                setNisInput(val);
+                if (!val.trim()) setSiswa(null);
+              }}
+              onSelect={(nis) => doLookup(nis)}
+              loading={loadingSiswa}
+              strategy="local"
+              listAllFn={listSiswa}
+              searchByNisFn={async (nis) => {
+                try { return await lookupSiswa(nis); }
+                catch { return null; }
+              }}
+            />
           </div>
 
           {loadingSiswa && (
@@ -891,7 +1162,6 @@ export default function TransaksiPage() {
 
           <hr className="divider" />
 
-          {/* Cart */}
           <div className="cart-list">
             {cart.length === 0 ? (
               <div className="student-placeholder" style={{ border: "none" }}>
@@ -921,9 +1191,7 @@ export default function TransaksiPage() {
             })}
           </div>
 
-          {/* Checkout footer */}
           <div className="checkout-footer">
-            {/* Removed global BYOC toggle from here */}
             {penaltyTotal > 0 && (
               <div className="summary-row" style={{ color: S.red, fontSize: "0.75rem" }}>
                 <span>⚠️ Penalti kemasan</span><span>−{penaltyTotal} koin</span>
@@ -970,7 +1238,6 @@ export default function TransaksiPage() {
           </div>
         </section>
 
-        {/* Right panel */}
         <section className="right-panel">
           {loadingProduk ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, gap: 10, color: "var(--tr-text-muted)" }}>
@@ -987,13 +1254,17 @@ export default function TransaksiPage() {
                 ))}
               </div>
               <div className="product-grid">
-                {(katalog[activeKat] ?? []).map((p) => {
+                {(katalog[activeKat] ?? []).map((p, idx) => {
                   const qty = cart.find((c) => c.id === p.id)?.qty ?? 0;
                   return (
-                    <ProdukCard key={p.id} p={p} qty={qty}
+                    <ProdukCard
+                      key={p.id} p={p} qty={qty}
                       onAdd={() => handleAddToCart(p)}
                       onMinus={() => handleUpdateQty(p.id, -1)}
-                      disabled={!siswa} />
+                      disabled={!siswa}
+                      shortcutNum={idx < 9 ? idx + 1 : undefined}
+                      pinned={p.isPinned}
+                    />
                   );
                 })}
               </div>
@@ -1001,6 +1272,12 @@ export default function TransaksiPage() {
           )}
         </section>
       </div>
+
+      <ShortcutHintBar
+        hasSiswa={!!siswa}
+        hasCart={cart.length > 0}
+        isModalOpen={isAnyModalOpen}
+      />
 
       <style jsx>{`
         .spin { animation: spin 0.7s linear infinite; }

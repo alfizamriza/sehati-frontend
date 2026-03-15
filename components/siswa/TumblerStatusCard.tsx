@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 
 interface TumblerStatusCardProps {
-  /** true = bawa tumbler hari ini, false = tidak bawa */
   hadir: boolean;
   nama?: string;
 }
@@ -44,10 +43,9 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
       />
 
       <div className={`tumbler-card ${hadir ? "tumbler-card-happy" : "tumbler-card-sad"}`}>
-        {/* Animated background orb */}
         <div className="tumbler-orb" />
 
-        {/* Lottie animation */}
+        {/* Lottie */}
         <div className="tumbler-lottie-wrap">
           {scriptLoaded ? (
             /* @ts-ignore */
@@ -64,22 +62,28 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
           )}
         </div>
 
-        {/* Text content */}
+        {/* Text */}
         <div className="tumbler-content">
-          <div className="tumbler-status-badge text-gray-800 dark:text-white/90">
+          <div className="tumbler-status-badge">
             <span className={`status-dot ${hadir ? "dot-green" : "dot-red"}`} />
             <span>{hadir ? "Tumbler Terbawa! 🎉" : "Tumbler Terlupa 😞"}</span>
           </div>
-
+          {/* 
           {nama && (
-            <p className="tumbler-nama text-gray-600 dark:text-white/60">Hei, <strong className="text-gray-900 dark:text-white/90">{nama.split(" ")[0]}</strong>!</p>
-          )}
+            <p className="tumbler-nama">
+              Hei, <strong>{nama.split(" ")[0]}</strong>!
+            </p>
+          )} */}
 
-          {/* Marquee message */}
-          <div className="tumbler-marquee-wrap border-t border-gray-200/60 dark:border-white/10 mt-1">
+          {/* Marquee */}
+          <div className="tumbler-marquee-wrap">
             <div className="tumbler-marquee-track">
-              <span className="tumbler-marquee-text text-gray-500 dark:text-white/55">{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;</span>
-              <span className="tumbler-marquee-text text-gray-500 dark:text-white/55" aria-hidden>{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;</span>
+              <span className="tumbler-marquee-text">
+                {message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
+              </span>
+              <span className="tumbler-marquee-text" aria-hidden>
+                {message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
+              </span>
             </div>
           </div>
         </div>
@@ -90,7 +94,6 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
             width: 100%;
             max-width: 100%;
             min-width: 0;
-            align-self: stretch;
             box-sizing: border-box;
             border-radius: 20px;
             padding: 16px;
@@ -127,7 +130,7 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
             opacity: 0.3;
           }
           .tumbler-card-happy .tumbler-orb { background: #10b981; }
-          .tumbler-card-sad .tumbler-orb { background: #ef4444; }
+          .tumbler-card-sad  .tumbler-orb { background: #ef4444; }
 
           .tumbler-lottie-wrap {
             flex-shrink: 0;
@@ -147,7 +150,7 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
             min-width: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
           }
 
           .tumbler-status-badge {
@@ -157,7 +160,13 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
             gap: 6px;
             font-size: 0.82rem;
             font-weight: 700;
+            color: rgba(0, 0, 0, 0.88);
             letter-spacing: 0.2px;
+          }
+          @media (prefers-color-scheme: dark){
+            .tumbler-status-badge {
+              color: rgba(255,255,255,0.88);
+            }
           }
           .status-dot {
             width: 8px;
@@ -177,49 +186,74 @@ export default function TumblerStatusCard({ hadir, nama }: TumblerStatusCardProp
           }
           @keyframes dotPulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.7); }
+            50%       { opacity: 0.5; transform: scale(0.7); }
           }
 
           .tumbler-nama {
             margin: 0;
-            font-size: 0.88rem;
+            font-size: 0.84rem;
+            color: rgba(255,255,255,0.6);
+          }
+          .tumbler-nama strong {
+            color: rgba(255,255,255,0.9);
           }
 
-          /* Marquee */
+          /* ── MARQUEE ── */
           .tumbler-marquee-wrap {
             overflow: hidden;
             width: 100%;
-            border-radius: 8px;
-            padding: 6px 0;
+            border-radius: 6px;
+            padding: 5px 0;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin-top: 2px;
           }
           .tumbler-marquee-track {
             display: flex;
             white-space: nowrap;
-            animation: marquee 18s linear infinite;
+            animation: marquee 20s linear infinite;
           }
+          /*
+            FIX: font-size pakai satuan rem yang tetap,
+            tidak inherit dari container yang bisa lebih besar di mobile.
+            0.72rem = 11.5px pada base 16px — konsisten di semua ukuran layar.
+          */
           .tumbler-marquee-text {
-            font-size: 0.77rem;
+            font-size: 0.72rem;
             font-weight: 600;
             flex-shrink: 0;
+            line-height: 1.4;
           }
-          .tumbler-card-happy .tumbler-marquee-text { color: rgba(16,185,129,0.85); }
-          .tumbler-card-sad .tumbler-marquee-text { color: rgba(239,68,68,0.75); }
+          .tumbler-card-happy .tumbler-marquee-text { color: rgba(16,185,129,0.8); }
+          .tumbler-card-sad   .tumbler-marquee-text { color: rgba(239,68,68,0.75); }
 
           @keyframes marquee {
-            0% { transform: translateX(0); }
+            0%   { transform: translateX(0); }
             100% { transform: translateX(-50%); }
           }
 
+          /* Mobile tweaks */
           @media (max-width: 640px) {
             .tumbler-card {
               padding: 14px;
-              grid-template-columns: 78px minmax(0, 1fr);
+              grid-template-columns: 72px minmax(0, 1fr);
               gap: 12px;
             }
-
             .tumbler-lottie-wrap {
-              width: 78px;
-              height: 78px;
+              width: 72px;
+              height: 72px;
+            }
+            .tumbler-lottie-placeholder {
+              font-size: 44px;
+            }
+            /* Teks sedikit lebih kecil di HP kecil */
+            .tumbler-marquee-text {
+              font-size: 0.68rem;
+            }
+          }
+
+          @media (max-width: 380px) {
+            .tumbler-marquee-text {
+              font-size: 0.64rem;
             }
           }
         `}</style>
