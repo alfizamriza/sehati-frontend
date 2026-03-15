@@ -19,9 +19,16 @@ export interface StatCard {
 export interface TrendPoint {
   date: string;
   transaksi: number;
-  coins: number;
+  kemasanPlastik: number;
+  kemasanKertas: number;
   pelanggaran: number;
   siswaAktif: number;
+}
+
+export interface HeatmapCell {
+  day: number;   // 0=Senin ... 6=Minggu
+  hour: number;  // 0-23
+  count: number;
 }
 
 export interface DonutSlice {
@@ -55,6 +62,7 @@ export interface AnalyticsData {
   range: { start: string; end: string };
   stats: StatCard[];
   trend: TrendPoint[];
+  heatmapPelanggaran: HeatmapCell[];
   donutMetodeBayar: DonutSlice[];
   donutKemasan: DonutSlice[];
   topSiswa: RankingItem[];

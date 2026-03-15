@@ -34,9 +34,12 @@ export async function getDashboardData(forceRefresh = false) {
   const data = {
     stats: {
       totalSiswa: Number(payload?.stats?.totalSiswa ?? 0),
+      totalSiswaAktif: Number(payload?.stats?.totalSiswaAktif ?? 0),
       totalGuru: Number(payload?.stats?.totalGuru ?? 0),
+      totalGuruAktif: Number(payload?.stats?.totalGuruAktif ?? 0),
       totalKelas: Number(payload?.stats?.totalKelas ?? 0),
       totalCoins: Number(payload?.stats?.totalCoins ?? 0),
+      totalVoucher: Number(payload?.stats?.totalVoucher ?? 0),
       voucherDiklaim: Number(payload?.stats?.voucherDiklaim ?? 0),
     },
     complianceChart: {

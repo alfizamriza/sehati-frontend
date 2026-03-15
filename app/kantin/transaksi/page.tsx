@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   ArrowLeft, ScanLine, User, Plus, Minus,
   Wallet, X, Check, TicketPercent,
-  Loader2, ShoppingCart, AlertTriangle, Coins,
+  Loader2, ShoppingCart, AlertTriangle, Coins, Camera,
 } from "lucide-react";
 import BrandLogo from "@/components/common/BrandLogo";
 import { Scanner } from "@yudiel/react-qr-scanner";
@@ -188,6 +188,8 @@ function ModalScanner({ onScan, onClose }: {
   onClose: () => void;
 }) {
   const [isSecure, setIsSecure] = useState<boolean | null>(null);
+  const [cameraFacing, setCameraFacing] = useState<"environment" | "user">("environment");
+  const toggleCamera = () => setCameraFacing((p) => (p === "environment" ? "user" : "environment"));
   useEffect(() => { setIsSecure(window.isSecureContext); }, []);
 
   return (
@@ -205,9 +207,25 @@ function ModalScanner({ onScan, onClose }: {
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div style={{ fontWeight: 700 }}>Scan QR Siswa</div>
-          <button onClick={onClose} style={{ background: "var(--tr-bg-input)", border: "none", borderRadius: 8, padding: "5px 6px", cursor: "pointer", color: "var(--tr-text-dimmed)", display: "flex" }}>
-            <X size={15} />
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={toggleCamera}
+              style={{
+                background: "var(--tr-bg-input)", border: "1px solid var(--tr-border-base)",
+                borderRadius: 8, padding: "5px 8px", cursor: "pointer",
+                color: "var(--tr-text-dimmed)", display: "flex", alignItems: "center", gap: 6,
+              }}
+              title="Ganti kamera depan/belakang"
+            >
+              <Camera size={15} />
+              <span style={{ fontSize: "0.78rem" }}>
+                {cameraFacing === "environment" ? "Belakang" : "Depan"}
+              </span>
+            </button>
+            <button onClick={onClose} style={{ background: "var(--tr-bg-input)", border: "none", borderRadius: 8, padding: "5px 6px", cursor: "pointer", color: "var(--tr-text-dimmed)", display: "flex" }}>
+              <X size={15} />
+            </button>
+          </div>
         </div>
 
         <div style={{ borderRadius: 16, overflow: "hidden", background: "var(--tr-bg-panel-inner)", height: 280 }}>
@@ -223,11 +241,15 @@ function ModalScanner({ onScan, onClose }: {
               </div>
             </div>
           ) : (
-            <Scanner onScan={(codes) => {
-              if (!codes.length) return;
-              onScan(codes[0].rawValue);
-              navigator.vibrate?.(150);
-            }} />
+            <Scanner
+              key={cameraFacing}
+              constraints={{ facingMode: cameraFacing }}
+              onScan={(codes) => {
+                if (!codes.length) return;
+                onScan(codes[0].rawValue);
+                navigator.vibrate?.(150);
+              }}
+            />
           )}
         </div>
 
