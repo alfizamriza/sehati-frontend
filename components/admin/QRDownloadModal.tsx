@@ -137,7 +137,7 @@ export default function QRDownloadModal({ siswaList, onClose }: QRDownloadModalP
                 Download QR Code Siswa
               </h3>
               <p style={{ fontSize: 12, opacity: 0.6, margin: 0 }}>
-                Format: PDF A4 â€¢ Size: 4x4 cm per QR
+                Format: PDF A4 | Size: 4x4 cm per QR
               </p>
             </div>
           </div>

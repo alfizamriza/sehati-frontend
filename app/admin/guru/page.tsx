@@ -11,19 +11,22 @@ import {
   Search, Plus, Pencil, Trash2, X, Save, Filter,
   CheckCircle, XCircle, Shield, BookOpen, Heart,
   Loader2, AlertCircle, UserCog,
+  ArrowDownAZ, ArrowUpAZ,
 } from "lucide-react";
+
+type SortField = "nip" | "nama" | "mapel" | "peran" | "status";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const PERAN_LABEL: Record<PeranGuru, string> = {
   guru_mapel: "Guru Mapel",
   wali_kelas: "Wali Kelas",
-  konselor:   "Konselor",
+  konselor: "Konselor",
 };
 
 const PERAN_ICON: Record<PeranGuru, React.ReactNode> = {
   guru_mapel: <BookOpen size={13} />,
-  wali_kelas: <Shield   size={13} />,
-  konselor:   <Heart    size={13} />,
+  wali_kelas: <Shield size={13} />,
+  konselor: <Heart size={13} />,
 };
 
 // ─── SUB-COMPONENTS ───────────────────────────────────────────────────────────
@@ -55,13 +58,13 @@ interface ToastState { show: boolean; msg: string; type: "success" | "error" }
 
 // ─── FORM STATE ───────────────────────────────────────────────────────────────
 interface FormState {
-  nip:           string;
-  nama:          string;
-  password:      string;
+  nip: string;
+  nama: string;
+  password: string;
   mataPelajaran: string;
-  peran:         PeranGuru;
-  kelasWaliId:   number | "";
-  statusAktif:   boolean;
+  peran: PeranGuru;
+  kelasWaliId: number | "";
+  statusAktif: boolean;
 }
 
 const FORM_EMPTY: FormState = {
@@ -72,19 +75,23 @@ const FORM_EMPTY: FormState = {
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function GuruPage() {
-  const [dataGuru,       setDataGuru]       = useState<Guru[]>(() => getCachedGuru() || []);
-  const [kelasTersedia,  setKelasTersedia]  = useState<KelasOption[]>([]);
-  const [query,          setQuery]          = useState("");
-  const [filterPeran,    setFilterPeran]    = useState<"Semua" | PeranGuru>("Semua");
-  const [isLoading,      setIsLoading]      = useState(() => !getCachedGuru());
-  const [isSubmitting,   setIsSubmitting]   = useState(false);
+  const [dataGuru, setDataGuru] = useState<Guru[]>(() => getCachedGuru() || []);
+  const [kelasTersedia, setKelasTersedia] = useState<KelasOption[]>([]);
+  const [query, setQuery] = useState("");
+  const [filterPeran, setFilterPeran] = useState<"Semua" | PeranGuru>("Semua");
+  const [sortConfig, setSortConfig] = useState<{ by: SortField; dir: "asc" | "desc" }>({
+    by: "nama",
+    dir: "asc",
+  });
+  const [isLoading, setIsLoading] = useState(() => !getCachedGuru());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [toast, setToast] = useState<ToastState>({ show: false, msg: "", type: "success" });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode,   setModalMode]   = useState<"add" | "edit">("add");
-  const [currentNip,  setCurrentNip]  = useState<string | null>(null);
-  const [formData,    setFormData]    = useState<FormState>(FORM_EMPTY);
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [currentNip, setCurrentNip] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormState>(FORM_EMPTY);
 
   // ── Toast helper ──
   const showToast = (msg: string, type: "success" | "error") => {
@@ -122,6 +129,55 @@ export default function GuruPage() {
     return matchQ && matchP;
   });
 
+  const sorted = [...filtered].sort((a, b) => {
+    const dir = sortConfig.dir === "asc" ? 1 : -1;
+    switch (sortConfig.by) {
+      case "nip": return dir * a.nip.localeCompare(b.nip, "id");
+      case "nama": return dir * a.nama.localeCompare(b.nama, "id");
+      case "mapel": return dir * (a.mataPelajaran || "").localeCompare(b.mataPelajaran || "", "id");
+      case "peran": return dir * a.peran.localeCompare(b.peran, "id");
+      case "status": return dir * ((a.statusAktif === b.statusAktif) ? 0 : a.statusAktif ? -1 : 1);
+      default: return 0;
+    }
+  });
+
+  const toggleSort = (field: SortField) => {
+    setSortConfig((prev) => {
+      if (prev.by === field) {
+        return { by: field, dir: prev.dir === "asc" ? "desc" : "asc" };
+      }
+      return { by: field, dir: "asc" };
+    });
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    const isActive = sortConfig.by === field;
+    const dir = isActive ? sortConfig.dir : "asc";
+    const icon = dir === "asc" ? <ArrowDownAZ size={14} /> : <ArrowUpAZ size={14} />;
+    return (
+      <button
+        type="button"
+        onClick={() => toggleSort(field)}
+        aria-label={`Urutkan kolom ${field}`}
+        style={{
+          border: "none",
+          background: isActive ? "var(--surface-2, #f5f7fb)" : "transparent",
+          borderRadius: 6,
+          padding: "4px 6px",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "var(--text-muted)",
+          transition: "all 120ms ease",
+          marginLeft: 6,
+        }}
+      >
+        <span style={{ opacity: isActive ? 1 : 0.4 }}>{icon}</span>
+      </button>
+    );
+  };
+
   // ── Modal helpers ──
   const openAdd = async () => {
     setModalMode("add");
@@ -135,13 +191,13 @@ export default function GuruPage() {
     setModalMode("edit");
     setCurrentNip(guru.nip);
     setFormData({
-      nip:           guru.nip,
-      nama:          guru.nama,
-      password:      "",
+      nip: guru.nip,
+      nama: guru.nama,
+      password: "",
       mataPelajaran: guru.mataPelajaran || "",
-      peran:         guru.peran,
-      kelasWaliId:   guru.kelasWali?.id || "",
-      statusAktif:   guru.statusAktif,
+      peran: guru.peran,
+      kelasWaliId: guru.kelasWali?.id || "",
+      statusAktif: guru.statusAktif,
     });
     await loadKelasTersedia(guru.kelasWali?.id);
     setIsModalOpen(true);
@@ -176,23 +232,23 @@ export default function GuruPage() {
     try {
       if (modalMode === "add") {
         const payload: CreateGuruDto = {
-          nip:           formData.nip,
-          nama:          formData.nama,
-          password:      formData.password,
+          nip: formData.nip,
+          nama: formData.nama,
+          password: formData.password,
           mataPelajaran: formData.mataPelajaran || undefined,
-          peran:         formData.peran,
-          kelasWaliId:   formData.peran === "wali_kelas" ? Number(formData.kelasWaliId) : undefined,
-          statusAktif:   formData.statusAktif,
+          peran: formData.peran,
+          kelasWaliId: formData.peran === "wali_kelas" ? Number(formData.kelasWaliId) : undefined,
+          statusAktif: formData.statusAktif,
         };
         await createGuru(payload);
         showToast("Guru berhasil ditambahkan!", "success");
       } else {
         const payload: UpdateGuruDto = {
-          nama:          formData.nama,
+          nama: formData.nama,
           mataPelajaran: formData.mataPelajaran || undefined,
-          peran:         formData.peran,
-          kelasWaliId:   formData.peran === "wali_kelas" ? Number(formData.kelasWaliId) : null,
-          statusAktif:   formData.statusAktif,
+          peran: formData.peran,
+          kelasWaliId: formData.peran === "wali_kelas" ? Number(formData.kelasWaliId) : null,
+          statusAktif: formData.statusAktif,
         };
         if (formData.password) payload.password = formData.password;
         await updateGuru(currentNip!, payload);
@@ -230,15 +286,15 @@ export default function GuruPage() {
           <div
             className="toast-item"
             style={{
-              borderColor:      toast.type === "success" ? "rgba(16,185,129,0.35)" : "rgba(239,68,68,0.35)",
-              background:       toast.type === "success"
+              borderColor: toast.type === "success" ? "rgba(16,185,129,0.35)" : "rgba(239,68,68,0.35)",
+              background: toast.type === "success"
                 ? "linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.08))"
                 : "linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.08))",
             }}
           >
             {toast.type === "success"
               ? <CheckCircle size={16} style={{ color: "var(--green)", flexShrink: 0 }} />
-              : <AlertCircle size={16} style={{ color: "var(--red)",   flexShrink: 0 }} />}
+              : <AlertCircle size={16} style={{ color: "var(--red)", flexShrink: 0 }} />}
             {toast.msg}
           </div>
         )}
@@ -287,11 +343,36 @@ export default function GuruPage() {
             <thead>
               <tr>
                 <th style={{ width: 48 }}>No</th>
-                <th>NIP</th>
-                <th>Nama Guru</th>
-                <th>Mata Pelajaran</th>
-                <th>Peran</th>
-                <th>Status</th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    NIP
+                    <SortIcon field="nip" />
+                  </div>
+                </th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    Nama Guru
+                    <SortIcon field="nama" />
+                  </div>
+                </th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    Mata Pelajaran
+                    <SortIcon field="mapel" />
+                  </div>
+                </th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    Peran
+                    <SortIcon field="peran" />
+                  </div>
+                </th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    Status
+                    <SortIcon field="status" />
+                  </div>
+                </th>
                 <th style={{ textAlign: "right" }}>Aksi</th>
               </tr>
             </thead>
@@ -310,8 +391,8 @@ export default function GuruPage() {
                     ))}
                   </tr>
                 ))
-              ) : filtered.length > 0 ? (
-                filtered.map((guru, idx) => (
+              ) : sorted.length > 0 ? (
+                sorted.map((guru, idx) => (
                   <tr key={guru.nip}>
                     <td className="cell-mono" style={{ opacity: 0.5 }}>{idx + 1}</td>
 

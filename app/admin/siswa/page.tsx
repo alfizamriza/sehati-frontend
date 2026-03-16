@@ -14,7 +14,11 @@ import {
   AlertCircle, QrCode, GraduationCap, Users,
   Flame,
   Coins,
+  ArrowDownAZ,
+  ArrowUpAZ,
 } from "lucide-react";
+
+type SortField = "nis" | "nama" | "kelas" | "status" | "coins" | "streak";
 
 // ─── STATUS BADGE ──────────────────────────────────────────────────────────────
 function StatusBadge({ active }: { active: boolean }) {
@@ -28,24 +32,28 @@ function StatusBadge({ active }: { active: boolean }) {
 
 // ─── MAIN PAGE ─────────────────────────────────────────────────────────────────
 export default function SiswaPage() {
-  const [dataSiswa,    setDataSiswa]    = useState<Siswa[]>(() => getCachedSiswa() || []);
-  const [kelasList,    setKelasList]    = useState<any[]>([]);
+  const [dataSiswa, setDataSiswa] = useState<Siswa[]>(() => getCachedSiswa() || []);
+  const [kelasList, setKelasList] = useState<any[]>([]);
   const [kelasLoading, setKelasLoading] = useState(false);
-  const [kelasError,   setKelasError]   = useState<string | null>(null);
-  const [query,        setQuery]        = useState("");
-  const [filterKelas,  setFilterKelas]  = useState("Semua");
-  const [isLoading,    setIsLoading]    = useState(() => !getCachedSiswa());
+  const [kelasError, setKelasError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [filterKelas, setFilterKelas] = useState("Semua");
+  const [sortConfig, setSortConfig] = useState<{ by: SortField; dir: "asc" | "desc" }>({
+    by: "nama",
+    dir: "asc",
+  });
+  const [isLoading, setIsLoading] = useState(() => !getCachedSiswa());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const kelasReqRef = useRef<Promise<any[]> | null>(null);
 
-  const [isQRModalOpen,     setIsQRModalOpen]     = useState(false);
-  const [isModalOpen,       setIsModalOpen]       = useState(false);
-  const [modalMode,         setModalMode]         = useState<"add" | "edit">("add");
-  const [currentNis,        setCurrentNis]        = useState<string | null>(null);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [currentNis, setCurrentNis] = useState<string | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [importFile,        setImportFile]        = useState<File | null>(null);
-  const [isImporting,       setIsImporting]       = useState(false);
-  const [importResult,      setImportResult]      = useState<any>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importResult, setImportResult] = useState<any>(null);
 
   const [toast, setToast] = useState<{ show: boolean; msg: string; type: "success" | "error" }>(
     { show: false, msg: "", type: "success" }
@@ -107,6 +115,56 @@ export default function SiswaPage() {
     const matchK = filterKelas === "Semua" || s.kelas === filterKelas;
     return matchQ && matchK;
   });
+
+  const sorted = [...filtered].sort((a, b) => {
+    const dir = sortConfig.dir === "asc" ? 1 : -1;
+    switch (sortConfig.by) {
+      case "nis": return dir * a.nis.localeCompare(b.nis, "id");
+      case "nama": return dir * a.nama.localeCompare(b.nama, "id");
+      case "kelas": return dir * (a.kelas || "").localeCompare(b.kelas || "", "id");
+      case "status": return dir * ((a.statusAktif === b.statusAktif) ? 0 : a.statusAktif ? -1 : 1);
+      case "coins": return dir * ((a.coins || 0) - (b.coins || 0));
+      case "streak": return dir * ((a.streak || 0) - (b.streak || 0));
+      default: return 0;
+    }
+  });
+
+  const toggleSort = (field: SortField) => {
+    setSortConfig((prev) => {
+      if (prev.by === field) {
+        return { by: field, dir: prev.dir === "asc" ? "desc" : "asc" };
+      }
+      return { by: field, dir: "asc" };
+    });
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    const isActive = sortConfig.by === field;
+    const dir = isActive ? sortConfig.dir : "asc";
+    const icon = dir === "asc" ? <ArrowDownAZ size={14} /> : <ArrowUpAZ size={14} />;
+    return (
+      <button
+        type="button"
+        onClick={() => toggleSort(field)}
+        aria-label={`Urutkan kolom ${field}`}
+        style={{
+          border: "none",
+          background: isActive ? "var(--surface-2, #f5f7fb)" : "transparent",
+          borderRadius: 6,
+          padding: "4px 6px",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "var(--text-muted)",
+          transition: "all 120ms ease",
+          marginLeft: 6,
+        }}
+      >
+        <span style={{ opacity: isActive ? 1 : 0.4 }}>{icon}</span>
+      </button>
+    );
+  };
 
   // ── Modal helpers ──
   const openAdd = () => {
@@ -267,12 +325,42 @@ export default function SiswaPage() {
             <thead>
               <tr>
                 <th style={{ width: 48 }}>No</th>
-                <th>NIS</th>
-                <th>Nama Siswa</th>
-                <th>Kelas</th>
-                <th>Status</th>
-                <th>Koin</th>
-                <th>Streak</th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    NIS
+                    <SortIcon field="nis" />
+                  </div>
+                </th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    Nama Siswa
+                    <SortIcon field="nama" />
+                  </div>
+                </th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    Kelas
+                    <SortIcon field="kelas" />
+                  </div>
+                </th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    Status
+                    <SortIcon field="status" />
+                  </div>
+                </th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    Koin
+                    <SortIcon field="coins" />
+                  </div>
+                </th>
+                <th>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    Streak
+                    <SortIcon field="streak" />
+                  </div>
+                </th>
                 <th style={{ textAlign: "right" }}>Aksi</th>
               </tr>
             </thead>
@@ -290,8 +378,8 @@ export default function SiswaPage() {
                     ))}
                   </tr>
                 ))
-              ) : filtered.length > 0 ? (
-                filtered.map((s, idx) => (
+              ) : sorted.length > 0 ? (
+                sorted.map((s, idx) => (
                   <tr key={s.nis}>
                     <td className="cell-mono" style={{ opacity: 0.45 }}>{idx + 1}</td>
                     <td><span className="cell-mono">{s.nis}</span></td>
@@ -311,7 +399,7 @@ export default function SiswaPage() {
                     </td>
                     <td>
                       <span className="cell-streak">
-                        <span style={{ fontSize: "0.85em" }}><Flame size={16}/></span>
+                        <span style={{ fontSize: "0.85em" }}><Flame size={16} /></span>
                         {s.streak}
                       </span>
                     </td>
