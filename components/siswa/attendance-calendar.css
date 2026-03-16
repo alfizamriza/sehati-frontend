@@ -1,0 +1,619 @@
+/* =========================================
+   ATTENDANCE CALENDAR
+   Self-contained, dark + light mode
+   ========================================= */
+
+/* ── Wrapper ── */
+.attendance-calendar-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+}
+
+/* =========================================
+   CUSTOM CAPTION (nav + selects)
+   ========================================= */
+.cal-caption-custom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 2px 14px;
+}
+
+.cal-caption-selects {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+}
+
+.cal-select-wrapper {
+    position: relative;
+}
+
+.cal-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--bg-input, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--border-input, rgba(255, 255, 255, 0.14));
+    border-radius: 8px;
+    padding: 6px 26px 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary, #fff);
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.cal-select:hover {
+    background: var(--bg-input-hover, rgba(255, 255, 255, 0.10));
+    border-color: var(--accent-border, rgba(23, 158, 255, 0.32));
+}
+
+.cal-select:focus {
+    border-color: var(--accent, #179EFF);
+    box-shadow: 0 0 0 3px rgba(23, 158, 255, 0.14);
+}
+
+.cal-select option {
+    background: var(--bg-surface-solid, #0f172a);
+    color: var(--text-primary, #fff);
+}
+
+@media (prefers-color-scheme: light) {
+    .cal-select {
+        background: #ffffff;
+        border-color: rgba(15, 23, 42, 0.14);
+        color: #0f172a;
+    }
+
+    .cal-select:hover {
+        background: #f8fafc;
+        border-color: rgba(23, 158, 255, 0.40);
+    }
+
+    .cal-select option {
+        background: #ffffff;
+        color: #0f172a;
+    }
+}
+
+/* Nav buttons */
+.cal-nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border-default, rgba(255, 255, 255, 0.10));
+    background: var(--bg-card, rgba(255, 255, 255, 0.05));
+    color: var(--text-primary, #fff);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background 0.14s, border-color 0.14s;
+    flex-shrink: 0;
+}
+
+.cal-nav-btn:hover {
+    background: var(--bg-card-hover, rgba(255, 255, 255, 0.10));
+}
+
+.cal-nav-btn-disabled {
+    opacity: 0.32;
+    cursor: not-allowed;
+}
+
+@media (prefers-color-scheme: light) {
+    .cal-nav-btn {
+        background: #f8fafc;
+        border-color: rgba(15, 23, 42, 0.12);
+        color: #0f172a;
+    }
+
+    .cal-nav-btn:hover {
+        background: #f1f5f9;
+    }
+}
+
+/* =========================================
+   HIDE DEFAULT DayPicker elements
+   ========================================= */
+.attendance-cal-caption-hidden,
+.attendance-cal-caption-label-hidden,
+.attendance-cal-dropdown-hidden,
+.attendance-cal-nav-hidden {
+    display: none !important;
+}
+
+/* =========================================
+   CALENDAR GRID
+   ========================================= */
+.attendance-cal-root {
+    width: 100%;
+}
+
+.attendance-cal-months {
+    width: 100%;
+}
+
+.attendance-cal-month {
+    width: 100%;
+}
+
+.attendance-cal-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* ── Weekday headers ── */
+.attendance-cal-head-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+}
+
+.attendance-cal-head-cell {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted, rgba(255, 255, 255, 0.40));
+    padding: 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ── Rows & cells ── */
+.attendance-cal-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 3px;
+}
+
+.attendance-cal-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+}
+
+/* ── Day button base ── */
+.attendance-cal-day {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary, #fff);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.13s, transform 0.1s;
+    position: relative;
+    font-family: inherit;
+}
+
+.attendance-cal-day:hover {
+    background: var(--bg-card-hover, rgba(255, 255, 255, 0.10));
+    transform: scale(1.08);
+}
+
+/* Outside & disabled */
+.attendance-cal-day-outside {
+    opacity: 0.22;
+    pointer-events: none;
+}
+
+.attendance-cal-day-disabled {
+    opacity: 0.22;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   STATUS MODIFIERS
+   ========================================= */
+
+/* Today ring */
+.cal-day-today .attendance-cal-day,
+.attendance-cal-day.cal-day-today {
+    outline: 2px solid var(--accent, #179EFF);
+    outline-offset: 1px;
+}
+
+/* Hadir — hijau */
+.cal-day-hadir .attendance-cal-day,
+.attendance-cal-day.cal-day-hadir {
+    background: rgba(16, 185, 129, 0.22);
+    color: #34d399;
+    font-weight: 700;
+}
+
+.cal-day-hadir .attendance-cal-day:hover,
+.attendance-cal-day.cal-day-hadir:hover {
+    background: rgba(16, 185, 129, 0.32);
+}
+
+/* Pelanggaran — merah */
+.cal-day-pelanggaran .attendance-cal-day,
+.attendance-cal-day.cal-day-pelanggaran {
+    background: rgba(239, 68, 68, 0.20);
+    color: #f87171;
+    font-weight: 700;
+}
+
+.cal-day-pelanggaran .attendance-cal-day:hover,
+.attendance-cal-day.cal-day-pelanggaran:hover {
+    background: rgba(239, 68, 68, 0.30);
+}
+
+/* Plastik — amber */
+.cal-day-plastik .attendance-cal-day,
+.attendance-cal-day.cal-day-plastik {
+    background: rgba(245, 158, 11, 0.20);
+    color: #fbbf24;
+    font-weight: 700;
+}
+
+.cal-day-plastik .attendance-cal-day:hover,
+.attendance-cal-day.cal-day-plastik:hover {
+    background: rgba(245, 158, 11, 0.30);
+}
+
+/* Libur — abu */
+.cal-day-libur .attendance-cal-day,
+.attendance-cal-day.cal-day-libur {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-ghost, rgba(255, 255, 255, 0.28));
+    font-style: italic;
+}
+
+/* Izin — biru */
+.cal-day-izin .attendance-cal-day,
+.attendance-cal-day.cal-day-izin {
+    background: rgba(96, 165, 250, 0.18);
+    color: #93c5fd;
+    font-weight: 700;
+}
+
+.cal-day-izin .attendance-cal-day:hover,
+.attendance-cal-day.cal-day-izin:hover {
+    background: rgba(96, 165, 250, 0.28);
+}
+
+/* Kosong — redup */
+.cal-day-kosong .attendance-cal-day,
+.attendance-cal-day.cal-day-kosong {
+    color: var(--text-faint, rgba(255, 255, 255, 0.35));
+}
+
+/* Masa depan (non-libur) — lebih redup */
+.cal-day-future .attendance-cal-day,
+.attendance-cal-day.cal-day-future {
+    opacity: 0.38;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* ── Light mode overrides ── */
+@media (prefers-color-scheme: light) {
+    .attendance-cal-day {
+        color: #0f172a;
+    }
+
+    .attendance-cal-head-cell {
+        color: #94a3b8;
+    }
+
+    .cal-day-hadir .attendance-cal-day,
+    .attendance-cal-day.cal-day-hadir {
+        background: rgba(16, 185, 129, 0.14);
+        color: #059669;
+    }
+
+    .cal-day-pelanggaran .attendance-cal-day,
+    .attendance-cal-day.cal-day-pelanggaran {
+        background: rgba(239, 68, 68, 0.12);
+        color: #dc2626;
+    }
+
+    .cal-day-plastik .attendance-cal-day,
+    .attendance-cal-day.cal-day-plastik {
+        background: rgba(245, 158, 11, 0.14);
+        color: #b45309;
+    }
+
+    .cal-day-libur .attendance-cal-day,
+    .attendance-cal-day.cal-day-libur {
+        background: rgba(15, 23, 42, 0.05);
+        color: #94a3b8;
+    }
+
+    .cal-day-izin .attendance-cal-day,
+    .attendance-cal-day.cal-day-izin {
+        background: rgba(59, 130, 246, 0.12);
+        color: #1d4ed8;
+    }
+
+    .cal-day-kosong .attendance-cal-day,
+    .attendance-cal-day.cal-day-kosong {
+        color: #cbd5e1;
+    }
+
+    .attendance-cal-day-outside {
+        opacity: 0.18;
+    }
+}
+
+/* =========================================
+   DAY DETAIL PANEL
+   ========================================= */
+.attendance-day-detail {
+    margin: 10px 0 6px;
+    padding: 12px 14px;
+    background: var(--bg-card, rgba(255, 255, 255, 0.04));
+    border: 1px solid var(--border-card, rgba(255, 255, 255, 0.08));
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: detailFade 0.18s ease;
+}
+
+@keyframes detailFade {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    .attendance-day-detail {
+        background: #f8fafc;
+        border-color: rgba(15, 23, 42, 0.09);
+    }
+}
+
+.attendance-day-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary, rgba(255, 255, 255, 0.78));
+    margin-bottom: 2px;
+}
+
+@media (prefers-color-scheme: light) {
+    .attendance-day-title {
+        color: #374151;
+    }
+}
+
+.attendance-day-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Meta item pill */
+.meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--bg-card, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+    color: var(--text-secondary, rgba(255, 255, 255, 0.70));
+}
+
+@media (prefers-color-scheme: light) {
+    .meta-item {
+        background: #f1f5f9;
+        border-color: rgba(15, 23, 42, 0.08);
+        color: #475569;
+    }
+}
+
+/* Semantic meta pills */
+.meta-status-hadir {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.28);
+    color: #34d399;
+}
+
+.meta-status-pelanggaran {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.28);
+    color: #f87171;
+}
+
+.meta-status-plastik {
+    background: rgba(245, 158, 11, 0.14);
+    border-color: rgba(245, 158, 11, 0.28);
+    color: #fbbf24;
+}
+
+.meta-status-libur {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.10);
+    color: var(--text-muted, rgba(255, 255, 255, 0.45));
+}
+
+.meta-status-izin {
+    background: rgba(96, 165, 250, 0.14);
+    border-color: rgba(96, 165, 250, 0.28);
+    color: #93c5fd;
+}
+
+.meta-status-kosong {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.20);
+    color: #f87171;
+    opacity: 0.75;
+}
+
+@media (prefers-color-scheme: light) {
+    .meta-status-hadir {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+        color: #059669;
+    }
+
+    .meta-status-pelanggaran {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #dc2626;
+    }
+
+    .meta-status-plastik {
+        background: #fffbeb;
+        border-color: #fde68a;
+        color: #b45309;
+    }
+
+    .meta-status-libur {
+        background: #f1f5f9;
+        border-color: #e2e8f0;
+        color: #94a3b8;
+    }
+
+    .meta-status-izin {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1d4ed8;
+    }
+
+    .meta-status-kosong {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #dc2626;
+    }
+}
+
+/* =========================================
+   LEGEND
+   ========================================= */
+.attendance-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-divider, rgba(255, 255, 255, 0.08));
+}
+
+@media (prefers-color-scheme: light) {
+    .attendance-legend {
+        border-top-color: rgba(15, 23, 42, 0.08);
+    }
+}
+
+.attendance-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-muted, rgba(255, 255, 255, 0.45));
+    font-weight: 500;
+}
+
+@media (prefers-color-scheme: light) {
+    .attendance-legend-item {
+        color: #64748b;
+    }
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-hadir {
+    background: #10b981;
+}
+
+.legend-pelanggaran {
+    background: #ef4444;
+}
+
+.legend-plastik {
+    background: #f59e0b;
+}
+
+.legend-libur {
+    background: rgba(255, 255, 255, 0.20);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.legend-kosong {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.legend-izin {
+    background: #60a5fa;
+}
+
+@media (prefers-color-scheme: light) {
+    .legend-libur {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+    }
+
+    .legend-kosong {
+        background: #f1f5f9;
+        border-color: #e2e8f0;
+    }
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 480px) {
+    .attendance-cal-day {
+        width: 30px;
+        height: 30px;
+        font-size: 11px;
+    }
+
+    .cal-select {
+        font-size: 12px;
+        padding: 5px 22px 5px 9px;
+    }
+
+    .cal-nav-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .meta-item {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    .attendance-legend-item {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 360px) {
+    .attendance-cal-day {
+        width: 26px;
+        height: 26px;
+        font-size: 10px;
+    }
+}

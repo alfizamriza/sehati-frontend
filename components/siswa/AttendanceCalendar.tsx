@@ -5,13 +5,14 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import { id as localeId } from "date-fns/locale";
 import type { CalendarDay } from "@/lib/services/siswa-dashboard.service";
+import "./attendance-calendar.css";
 
 interface AttendanceCalendarProps {
   days: CalendarDay[];
   onMonthChange?: (year: number, month: number) => void;
 }
 
-type DayStatus = "hadir" | "pelanggaran" | "plastik" | "kosong" | "libur";
+type DayStatus = "hadir" | "pelanggaran" | "plastik" | "kosong" | "libur" | "izin";
 
 function toKey(date: Date): string {
   const y = date.getFullYear();
@@ -25,13 +26,30 @@ const MONTHS_ID = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
+// Chevron icon kecil untuk select wrapper
+function SelectChevron() {
+  return (
+    <svg
+      width="12" height="12"
+      viewBox="0 0 12 12"
+      style={{
+        position: "absolute", right: 8, top: "50%",
+        transform: "translateY(-50%)", pointerEvents: "none",
+        opacity: 0.5,
+      }}
+    >
+      <path d="M2 4L6 8L10 4" fill="none" stroke="currentColor" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarProps) {
   const [month, setMonth] = React.useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
 
   const todayKey = toKey(new Date());
 
-  // Map status dari backend (sudah include libur masa depan)
   const statusMap = React.useMemo(() => {
     const map = new Map<string, DayStatus>();
     days.forEach((d) => map.set(d.date, d.status));
@@ -43,6 +61,15 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
     const map = new Map<string, string>();
     days.forEach((d) => {
       if ((d as any).keteranganLibur) map.set(d.date, (d as any).keteranganLibur);
+    });
+    return map;
+  }, [days]);
+
+  // Map izin detail langsung dari CalendarDay.izin
+  const izinMap = React.useMemo(() => {
+    const map = new Map<string, { tipe: string; catatan?: string | null }>();
+    days.forEach((d) => {
+      if (d.izin) map.set(d.date, d.izin);
     });
     return map;
   }, [days]);
@@ -76,7 +103,7 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
     return days.find((d) => d.date === toKey(selectedDate)) ?? null;
   }, [days, selectedDate]);
 
-  // ─── Custom Caption ──────────────────────────────────────────
+  // ── Custom Caption ──────────────────────────────────────────
   const CustomCaption = () => {
     const currentYear = month.getFullYear();
     const currentMonthIdx = month.getMonth();
@@ -85,12 +112,18 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
 
     return (
       <div className="cal-caption-custom">
-        <button className="cal-nav-btn" onClick={goToPrevMonth} aria-label="Bulan sebelumnya" type="button">
-          <ChevronLeft size={16} />
+        <button
+          className="cal-nav-btn"
+          onClick={goToPrevMonth}
+          aria-label="Bulan sebelumnya"
+          type="button"
+        >
+          <ChevronLeft size={15} />
         </button>
 
         <div className="cal-caption-selects">
-          <div className="cal-select-wrapper">
+          {/* Select bulan */}
+          <div className="cal-select-wrapper" style={{ position: "relative" }}>
             <select
               className="cal-select"
               value={currentMonthIdx}
@@ -100,13 +133,20 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
               }}
             >
               {MONTHS_ID.map((name, idx) => (
-                <option key={idx} value={idx} disabled={currentYear === nowYear && idx > now.getMonth()}>
+                <option
+                  key={idx}
+                  value={idx}
+                  disabled={currentYear === nowYear && idx > now.getMonth()}
+                >
                   {name}
                 </option>
               ))}
             </select>
+            <SelectChevron />
           </div>
-          <div className="cal-select-wrapper">
+
+          {/* Select tahun */}
+          <div className="cal-select-wrapper" style={{ position: "relative" }}>
             <select
               className="cal-select"
               value={currentYear}
@@ -115,8 +155,11 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
                 handleMonthChange(newMonth <= toMonth ? newMonth : toMonth);
               }}
             >
-              {years.map((y) => <option key={y} value={y}>{y}</option>)}
+              {years.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
             </select>
+            <SelectChevron />
           </div>
         </div>
 
@@ -127,13 +170,13 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
           aria-label="Bulan berikutnya"
           type="button"
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={15} />
         </button>
       </div>
     );
   };
 
-  // ─── Detail hari yang dipilih ────────────────────────────────
+  // ── Detail hari yang dipilih ──────────────────────────────────
   const renderDayDetail = () => {
     if (!selectedDate) return null;
 
@@ -141,6 +184,8 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
     const isFutureDate = key > todayKey;
     const status = statusMap.get(key);
     const keterangan = keteranganMap.get(key);
+    const izinDetail = izinMap.get(key);
+
     const dateLabel = selectedDate.toLocaleDateString("id-ID", {
       weekday: "long", day: "numeric", month: "long", year: "numeric",
     });
@@ -159,13 +204,13 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
       );
     }
 
-    // Tanggal masa depan yang bukan libur
+    // Masa depan non-libur
     if (isFutureDate) {
       return (
         <div className="attendance-day-detail">
           <div className="attendance-day-title">{dateLabel}</div>
           <div className="attendance-day-meta">
-            <span className="meta-item" style={{ opacity: 0.55, fontSize: "0.78rem" }}>
+            <span className="meta-item" style={{ opacity: 0.5, fontSize: "11px" }}>
               🗓️ Belum terjadi
             </span>
           </div>
@@ -183,11 +228,29 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
               {selectedDay.status === "hadir" ? "✅ Bawa tumbler"
                 : selectedDay.status === "pelanggaran" ? "⚠️ Pelanggaran"
                   : selectedDay.status === "plastik" ? "🛍️ Beli plastik"
-                    : "❌ Tidak bawa tumbler"}
+                    : selectedDay.status === "izin" ? "🛏️ Izin / Sakit"
+                      : "❌ Tidak bawa tumbler"}
             </span>
             <span className="meta-item">🧴 Tumbler: {selectedDay.hadir ? "Ya" : "Tidak"}</span>
             <span className="meta-item">⚠️ Pelanggaran: {selectedDay.pelanggaranCount}</span>
             <span className="meta-item">🛍️ Plastik: {selectedDay.plastikCount}</span>
+            {selectedDay.status === "izin" && (
+              <>
+                <span className="meta-item meta-status-izin">
+                  🛏️ Tipe:{" "}
+                  {izinDetail?.tipe === "sakit" ? "Sakit"
+                    : izinDetail?.tipe === "izin" ? "Izin"
+                      : izinDetail?.tipe === "tanpa_keterangan" ? "Tanpa Keterangan"
+                        : "Izin"}
+                </span>
+                {izinDetail?.catatan && (
+                  <span className="meta-item">💬 {izinDetail.catatan}</span>
+                )}
+                <span className="meta-item" style={{ opacity: 0.7 }}>
+                  🔒 Streak tidak putus
+                </span>
+              </>
+            )}
           </div>
         ) : (
           <div className="attendance-day-meta">
@@ -237,8 +300,8 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
           pelanggaran: (d) => getStatus(d) === "pelanggaran",
           plastik: (d) => getStatus(d) === "plastik",
           libur: (d) => getStatus(d) === "libur",
+          izin: (d) => getStatus(d) === "izin",
           kosong: (d) => getStatus(d) === "kosong",
-          // Tanggal masa depan non-libur → tampil redup
           masaDepan: (d) => toKey(d) > todayKey && getStatus(d) !== "libur",
         }}
         modifiersClassNames={{
@@ -247,17 +310,19 @@ export function AttendanceCalendar({ days, onMonthChange }: AttendanceCalendarPr
           pelanggaran: "cal-day-pelanggaran",
           plastik: "cal-day-plastik",
           libur: "cal-day-libur",
+          izin: "cal-day-izin",
           kosong: "cal-day-kosong",
-          masaDepan: "cal-day-future",   // ← CSS baru: opacity redup
+          masaDepan: "cal-day-future",
         }}
       />
 
       {renderDayDetail()}
 
-      {/* Legend */}
+      {/* Legend — sekarang include izin */}
       <div className="attendance-legend">
         {[
           { cls: "legend-hadir", label: "Bawa tumbler" },
+          { cls: "legend-izin", label: "Izin / Sakit" },
           { cls: "legend-pelanggaran", label: "Pelanggaran" },
           { cls: "legend-plastik", label: "Beli plastik" },
           { cls: "legend-libur", label: "Libur" },

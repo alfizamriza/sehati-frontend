@@ -250,12 +250,19 @@ export default function DashboardSiswaPage() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }, []);
 
+  const todayCalDay = useMemo(
+    () => calendarDays.find((d) => d.date === todayKey) ?? null,
+    [calendarDays, todayKey],
+  );
+
   const todayStatus = useMemo(() => {
-    const status = calendarDays.find((d) => d.date === todayKey)?.status ?? null;
+    const status = todayCalDay?.status ?? null;
     if (!status && dashboardData?.streak?.isActiveToday) return "hadir";
     return status;
-  }, [calendarDays, todayKey, dashboardData?.streak?.isActiveToday]);
+  }, [todayCalDay, dashboardData?.streak?.isActiveToday]);
 
+  const isIzinToday = todayStatus === "izin";
+  const izinTipeToday = isIzinToday ? (todayCalDay?.izin?.tipe ?? null) : null;
   const showTumblerCard = todayStatus !== null && todayStatus !== "libur";
   const tumblerHadir = todayStatus === "hadir";
 
@@ -364,7 +371,12 @@ export default function DashboardSiswaPage() {
             {/* Tumbler Status */}
             {showTumblerCard && (
               <div className="tumbler-status-wrap">
-                <TumblerStatusCard hadir={tumblerHadir} nama={profile.nama} />
+                <TumblerStatusCard
+                  hadir={tumblerHadir}
+                  izin={isIzinToday}
+                  izinTipe={izinTipeToday}
+                  nama={profile.nama}
+                />
               </div>
             )}
 
@@ -423,7 +435,7 @@ export default function DashboardSiswaPage() {
 
           {/* LEADERBOARD */}
           <aside className="right-col">
-            <section className="section-group">
+            <section className="">
               <div className="section-title">
                 <Trophy size={20} className="icon-title" />
                 <h3>Leaderboard</h3>

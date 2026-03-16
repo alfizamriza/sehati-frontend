@@ -5,7 +5,7 @@ import api from "@/lib/api";
 ===================================================== */
 export type DashboardMode = "month"; // week dihapus
 
-export type DayStatus = "hadir" | "pelanggaran" | "plastik" | "libur" | "kosong";
+export type DayStatus = "hadir" | "pelanggaran" | "plastik" | "libur" | "izin" | "kosong";
 
 export interface CalendarDay {
   date: string;
@@ -17,6 +17,7 @@ export interface CalendarDay {
   hadir: boolean;
   pelanggaranCount: number;
   plastikCount: number;
+  izin?: { tipe: string; catatan?: string | null } | null;
 }
 
 export interface ComplianceChartItem {
