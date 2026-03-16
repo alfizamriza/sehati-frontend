@@ -1,335 +1,583 @@
-/* --- LAYOUT HALAMAN SCANNER --- */
+/* =========================================
+   SCANNER PAGE — LAYOUT
+   ========================================= */
 .scanner-page {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
 .scanner-container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 980px;
-    width: 100%;
-  }
-  
-  /* Header */
-  .scanner-header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    z-index: 10;
-  }
-  .page-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0;
-    color: var(--text-primary);
-  }
-  .spacer { width: 42px; }
-  
-  /* --- CAMERA FRAME & VIEW --- */
-  .scanner-frame-wrapper {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    margin: 20px 0;
-  }
-  
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 980px;
+  width: 100%;
+}
+
+/* ── Header ── */
+.scanner-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  z-index: 10;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.spacer {
+  width: 42px;
+}
+
+/* =========================================
+   CAMERA FRAME
+   ========================================= */
+.scanner-frame-wrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin: 20px 0;
+}
+
 .camera-view {
-    width: 100%;
-    height: 100%;
-    max-height: 560px;
-    background: #000;
-    border-radius: 24px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-  }
-  
-  .camera-placeholder {
-    width: 100%; height: 100%;
-    display: grid; place-items: center;
-    color: rgba(255,255,255,0.3);
-    background: #1e293b;
-  }
-  
-  /* OVERLAY UI */
-  .scan-overlay {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 250px; height: 250px;
-    z-index: 5;
-  }
-  
-  .scan-corner {
-    position: absolute;
-    width: 40px; height: 40px;
-    border: 4px solid #179EFF;
-    border-radius: 4px;
-  }
-  .top-left { top: 0; left: 0; border-right: none; border-bottom: none; }
-  .top-right { top: 0; right: 0; border-left: none; border-bottom: none; }
-  .bottom-left { bottom: 0; left: 0; border-right: none; border-top: none; }
-  .bottom-right { bottom: 0; right: 0; border-left: none; border-top: none; }
-  
-  .scan-laser {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 2px;
-    background: #179EFF;
-    box-shadow: 0 0 15px #179EFF, 0 0 30px #179EFF;
-    animation: scan-move 2s infinite linear;
-  }
-  
-  @keyframes scan-move {
-    0% { top: 10px; opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { top: 240px; opacity: 0; }
-  }
-  
-  .scan-instruction {
-    position: absolute;
-    bottom: 40px; width: 100%;
-    text-align: center;
-    font-size: 14px;
-    color: rgba(255,255,255,0.8);
-    background: rgba(0,0,0,0.5);
-    padding: 8px;
+  width: 100%;
+  height: 100%;
+  max-height: 560px;
+  background: #000;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.camera-feed {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.camera-feed video {
+  object-fit: cover;
+}
+
+/* ── Scan overlay corners ── */
+.scan-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  z-index: 5;
+}
+
+.scan-corner {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #179EFF;
+  border-radius: 4px;
+}
+
+.top-left {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+}
+
+.top-right {
+  top: 0;
+  right: 0;
+  border-left: none;
+  border-bottom: none;
+}
+
+.bottom-left {
+  bottom: 0;
+  left: 0;
+  border-right: none;
+  border-top: none;
+}
+
+.bottom-right {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+}
+
+.scan-laser {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #179EFF;
+  box-shadow: 0 0 15px #179EFF, 0 0 30px #179EFF;
+  animation: scan-move 2s infinite linear;
+}
+
+@keyframes scan-move {
+  0% {
+    top: 10px;
+    opacity: 0;
   }
 
-  /* ======== FLIP CAMERA BUTTON ======== */
-  .flip-camera-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    z-index: 10;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: #fff;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  10% {
+    opacity: 1;
   }
 
-  .flip-camera-btn:hover {
-    background: rgba(23, 158, 255, 0.5);
-    border-color: rgba(23, 158, 255, 0.6);
-    transform: scale(1.08);
+  90% {
+    opacity: 1;
   }
 
-  .flip-camera-btn:active {
-    transform: scale(0.93) rotate(180deg);
-    transition: transform 0.3s ease;
+  100% {
+    top: 240px;
+    opacity: 0;
+  }
+}
+
+.scan-instruction {
+  position: absolute;
+  bottom: 40px;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px;
+}
+
+/* ── Flip camera button ── */
+.flip-camera-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.flip-camera-btn:hover {
+  background: rgba(23, 158, 255, 0.5);
+  border-color: rgba(23, 158, 255, 0.6);
+  transform: scale(1.08);
+}
+
+.flip-camera-btn:active {
+  transform: scale(0.93) rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.flip-camera-btn.spinning svg {
+  animation: flipSpin 0.4s ease;
+}
+
+@keyframes flipSpin {
+  from {
+    transform: rotate(0deg);
   }
 
-  .flip-camera-btn.spinning svg {
-    animation: flipSpin 0.4s ease;
+  to {
+    transform: rotate(180deg);
+  }
+}
+
+/* ── Camera label badge ── */
+.camera-label-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  text-transform: uppercase;
+}
+
+/* =========================================
+   RESULT CARDS — shared base
+   ========================================= */
+.result-card {
+  width: 90%;
+  max-width: 320px;
+  padding: 32px 24px;
+  border-radius: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popUp {
+  from {
+    transform: scale(0.82);
+    opacity: 0;
   }
 
-  @keyframes flipSpin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(180deg); }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Loading card */
+.loading-card {
+  gap: 12px;
+  padding: 64px 24px;
+}
+
+/* ── Shared title & desc ── */
+.res-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.res-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* =========================================
+   SC-ICON-BADGE  (replaces old .icon-badge)
+   Consistent across all result states
+   ========================================= */
+.sc-icon-badge {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.sc-icon-badge--success {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.06));
+  border: 2px solid rgba(16, 185, 129, 0.35);
+  color: #10b981;
+  box-shadow: 0 0 32px rgba(16, 185, 129, 0.14);
+  animation: sc-float 3s ease-in-out infinite;
+}
+
+.sc-icon-badge--error {
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.18), rgba(239, 68, 68, 0.06));
+  border: 2px solid rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+  box-shadow: 0 0 32px rgba(239, 68, 68, 0.12);
+}
+
+.sc-icon-badge--holiday {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.18), rgba(234, 88, 12, 0.06));
+  border: 2px solid rgba(245, 158, 11, 0.35);
+  color: #F59E0B;
+  box-shadow: 0 0 40px rgba(245, 158, 11, 0.15);
+  animation: sc-float 3s ease-in-out infinite;
+}
+
+.sc-icon-badge--blue {
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.18), rgba(37, 99, 235, 0.06));
+  border: 2px solid rgba(96, 165, 250, 0.35);
+  color: #60a5fa;
+  box-shadow: 0 0 32px rgba(96, 165, 250, 0.14);
+  animation: sc-float 3s ease-in-out infinite;
+}
+
+@keyframes sc-float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
   }
 
-  /* Camera label badge */
-  .camera-label-badge {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    backdrop-filter: blur(8px);
-    text-transform: uppercase;
+  50% {
+    transform: translateY(-8px);
   }
-  
-  /* --- RESULT CARDS (SUCCESS / ERROR) --- */
-  .result-card {
-    width: 90%;
-    max-width: 320px;
-    padding: 32px 24px;
-    border-radius: 24px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  
-  @keyframes popUp {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-  
-  .icon-badge {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    display: grid; place-items: center;
-    margin-bottom: 8px;
-  }
-  .icon-badge.success { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-  .icon-badge.error { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-  
-  .res-title {
-    font-size: 22px;
-    font-weight: 800;
-    margin: 0;
-    color: var(--text-primary);
+}
+
+/* =========================================
+   SC-INFO-BADGE  (replaces holiday-name-badge)
+   Colored pill under the title
+   ========================================= */
+.sc-info-badge {
+  border-radius: 24px;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  border: 1px solid transparent;
+}
+
+.sc-info-badge--amber {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.30);
+  color: #FBBF24;
+}
+
+.sc-info-badge--blue {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.30);
+  color: #93c5fd;
+}
+
+/* =========================================
+   SC-DATE-TEXT
+   ========================================= */
+.sc-date-text {
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 12px;
+  margin: -2px 0;
+  font-style: normal;
+}
+
+/* =========================================
+   SC-NOTICE-BOX  (replaces streak-safe-box)
+   ========================================= */
+.sc-notice-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+}
+
+.sc-notice-box--amber {
+  background: rgba(245, 158, 11, 0.07);
+  border-color: rgba(245, 158, 11, 0.20);
+}
+
+.sc-notice-box--blue {
+  background: rgba(96, 165, 250, 0.07);
+  border-color: rgba(96, 165, 250, 0.20);
+}
+
+/* =========================================
+   STUDENT DETAIL BOX
+   ========================================= */
+.student-detail {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 6px 0 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-divider);
+}
+
+.detail-row .lbl {
+  color: var(--text-muted);
+}
+
+.detail-row .val {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.detail-row .val.coin {
+  color: #F59E0B;
+}
+
+/* Bonus badge */
+.bonus-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.30);
+  color: #F59E0B;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+/* =========================================
+   SPINNER
+   ========================================= */
+.spinner-icon {
+  animation: spin 1s linear infinite;
+  color: #179EFF;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
 
-  .res-desc {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin: 0;
-    line-height: 1.5;
+  to {
+    transform: rotate(360deg);
   }
-  
-  /* Student Detail Box */
-  .student-detail {
-    width: 100%;
-    background: var(--bg-card);
-    border: 1px solid var(--border-card);
-    border-radius: 16px;
-    padding: 16px;
-    margin: 10px 0 20px 0;
-  }
-  .detail-row {
-    display: flex; justify-content: space-between;
-    margin-bottom: 8px; font-size: 14px;
-  }
-  .detail-row:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px solid var(--border-divider); }
-  
-  .detail-row .lbl { color: var(--text-muted); }
-  .detail-row .val { font-weight: 600; color: var(--text-primary); }
-  .detail-row .val.coin { color: #F59E0B; }
-  
-  /* Buttons */
-  .btn-primary {
-    background: #179EFF; border: none; color: white;
-    padding: 14px; border-radius: 14px; font-weight: 600;
-    display: flex; justify-content: center; align-items: center; gap: 8px;
-    cursor: pointer; transition: 0.2s; width: 100%;
-  }
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border-default);
-    color: var(--text-primary);
-    padding: 14px; border-radius: 14px; font-weight: 600;
-    display: flex; justify-content: center; align-items: center; gap: 8px;
-    cursor: pointer; transition: 0.2s; width: 100%;
-  }
-  .btn-primary:active, .btn-outline:active { transform: scale(0.96); }
-  
-  /* --- CONTROLS --- */
-  .scanner-controls {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-    padding-bottom: 20px;
-  }
-  .control-btn {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.1);
-    border: none; color: #fff;
-    display: grid; place-items: center;
-    cursor: pointer;
-  }
-  .control-btn.big-trigger {
-    width: 72px; height: 72px;
-    background: #fff; color: #000;
-    border: 4px solid rgba(255,255,255,0.3);
-  }
-  .control-btn.active-state { color: #F59E0B; background: rgba(245, 158, 11, 0.2); }
-  
-  /* DEV TOOLS */
-  .dev-controls {
-    position: absolute; bottom: 10px; right: 10px;
-    opacity: 0.5; font-size: 10px; text-align: right;
-  }
-  .sim-btn { padding: 4px 8px; margin-left: 5px; font-size: 10px; cursor: pointer; }
-  .sim-btn.success { background: #10b981; border:none; color:#000; }
-  .sim-btn.error { background: #ef4444; border:none; color:#fff; }
+}
 
-  /* FIX KAMERA AGAR FULL */
-  .camera-feed {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0; left: 0;
-    z-index: 1;
-  }
-  .camera-feed video {
-    object-fit: cover;
-  }
+/* =========================================
+   BUTTONS
+   ========================================= */
+.btn-primary {
+  background: #179EFF;
+  border: none;
+  color: white;
+  padding: 14px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: opacity 0.18s, transform 0.12s;
+  width: 100%;
+  font-family: inherit;
+}
 
-  /* Tombol Manual Kapsul */
-  .manual-trigger-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    background: var(--bg-card);
-    border: 1px solid var(--border-card);
-    color: var(--text-primary);
-    padding: 14px 28px;
-    border-radius: 50px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  }
-  
-  .manual-trigger-btn:hover {
-    background: var(--bg-card-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-  }
-  
-  .manual-trigger-btn:active {
-    transform: scale(0.96);
-  }
+.btn-primary:hover {
+  opacity: 0.88;
+}
 
-/* ======== LIGHT MODE OVERRIDES ======== */
+.btn-primary:active {
+  transform: scale(0.96);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  padding: 14px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.12s;
+  width: 100%;
+  font-family: inherit;
+}
+
+.btn-outline:hover {
+  background: var(--bg-card);
+}
+
+.btn-outline:active {
+  transform: scale(0.96);
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* =========================================
+   CONTROLS (manual button)
+   ========================================= */
+.scanner-controls {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding-bottom: 20px;
+}
+
+.manual-trigger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  color: var(--text-primary);
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  font-family: inherit;
+}
+
+.manual-trigger-btn:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.manual-trigger-btn:active {
+  transform: scale(0.96);
+}
+
+/* =========================================
+   LIGHT MODE
+   ========================================= */
 @media (prefers-color-scheme: light) {
   .page-title {
     color: #0f172a;
   }
 
-  /* Kamera tetap gelap (video feed), tapi instruksi disesuaikan */
   .scan-instruction {
     color: #ffffff;
-    background: rgba(0,0,0,0.55);
+    background: rgba(0, 0, 0, 0.55);
   }
 
-  /* Result cards di light mode */
   .res-title {
     color: #0f172a;
   }
@@ -338,13 +586,46 @@
     color: rgba(15, 23, 42, 0.65);
   }
 
+  .sc-date-text {
+    color: rgba(15, 23, 42, 0.50) !important;
+  }
+
+  .sc-notice-box {
+    color: rgba(15, 23, 42, 0.72) !important;
+  }
+
+  .sc-notice-box--amber {
+    background: rgba(245, 158, 11, 0.08) !important;
+    border-color: rgba(245, 158, 11, 0.22) !important;
+  }
+
+  .sc-notice-box--blue {
+    background: rgba(96, 165, 250, 0.08) !important;
+    border-color: rgba(96, 165, 250, 0.22) !important;
+  }
+
+  .sc-info-badge--amber {
+    color: #b45309 !important;
+    background: rgba(245, 158, 11, 0.10) !important;
+  }
+
+  .sc-info-badge--blue {
+    color: #1d4ed8 !important;
+    background: rgba(96, 165, 250, 0.10) !important;
+    border-color: rgba(96, 165, 250, 0.28) !important;
+  }
+
+  .loading-card .res-desc {
+    color: rgba(15, 23, 42, 0.60) !important;
+  }
+
   .student-detail {
     background: rgba(15, 23, 42, 0.04);
-    border: 1px solid rgba(15, 23, 42, 0.10);
+    border-color: rgba(15, 23, 42, 0.10);
   }
 
   .detail-row .lbl {
-    color: rgba(15, 23, 42, 0.55);
+    color: rgba(15, 23, 42, 0.52);
   }
 
   .detail-row .val {
@@ -362,50 +643,37 @@
   }
 
   .btn-outline:hover {
-    background: rgba(255,255,255,1);
-    border-color: rgba(15, 23, 42, 0.3);
+    background: #ffffff;
+    border-color: rgba(15, 23, 42, 0.28);
   }
 
   .manual-trigger-btn {
     background: rgba(255, 255, 255, 0.85);
     border-color: rgba(15, 23, 42, 0.14);
     color: #0f172a;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
   }
 
   .manual-trigger-btn:hover {
     background: #ffffff;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
   }
 
-  /* Flip button tetap gelap karena berada di atas video hitam */
+  /* Flip & label tetap gelap karena di atas video */
   .flip-camera-btn {
-    background: rgba(0, 0, 0, 0.5);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.50);
+    border-color: rgba(255, 255, 255, 0.30);
   }
 
   .camera-label-badge {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.50);
     border-color: rgba(255, 255, 255, 0.25);
-  }
-
-  /* Holiday card adjustments */
-  .holiday-date-text {
-    color: rgba(15, 23, 42, 0.55) !important;
-  }
-
-  .streak-safe-box {
-    color: rgba(15, 23, 42, 0.72) !important;
-    background: rgba(245, 158, 11, 0.08) !important;
-    border-color: rgba(245, 158, 11, 0.2) !important;
-  }
-
-  /* Loading text */
-  .loading-card p {
-    color: rgba(15, 23, 42, 0.65) !important;
   }
 }
 
+/* =========================================
+   RESPONSIVE
+   ========================================= */
 @media (max-width: 768px) {
   .scanner-container {
     max-width: 100%;

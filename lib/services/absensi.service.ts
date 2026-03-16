@@ -29,6 +29,11 @@ export interface SiswaAbsensi {
   streak: number;
   coins: number;
   sudahAbsen: boolean;
+  izinHariIni?: {
+    ada: boolean;
+    tipe: string | null;
+    catatan: string | null;
+  };
 }
 
 export interface KelasItem {

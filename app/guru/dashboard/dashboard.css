@@ -595,6 +595,13 @@
   color: var(--text-secondary);
 }
 
+.action-card.success {
+  background: linear-gradient(135deg, #16a34a 0%, #0f9f6e 100%);
+  border: 1px solid rgba(16, 185, 129, 0.32) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.28);
+}
+
 /* =========================================
    STATISTIK
    ========================================= */

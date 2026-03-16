@@ -6,13 +6,13 @@ import { Scanner } from "@yudiel/react-qr-scanner";
 import {
   ArrowLeft, Keyboard, XCircle, CheckCircle2,
   ScanLine, RotateCcw, Loader2, Zap, CalendarOff,
-  FlipHorizontal2,
+  FlipHorizontal2, FileText,
 } from "lucide-react";
 import "./scanner.css";
 import { scanAbsensi, getInfoHariIni, type HasilAbsensi } from "@/lib/services/absensi.service";
 
-type ViewState = "checking" | "holiday" | "scanning" | "loading" | "success" | "error";
-type CameraFacing = "environment" | "user"; // environment = belakang, user = depan
+type ViewState = "checking" | "holiday" | "scanning" | "loading" | "success" | "error" | "izin";
+type CameraFacing = "environment" | "user";
 
 export default function ScannerPage() {
   const router = useRouter();
@@ -21,17 +21,13 @@ export default function ScannerPage() {
   const [hasilAbsensi, setHasilAbsensi] = useState<HasilAbsensi | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [liburInfo, setLiburInfo] = useState<{ keterangan: string } | null>(null);
+  const [izinInfo, setIzinInfo] = useState<{ nama: string; message: string } | null>(null);
   const [lastScanned, setLastScanned] = useState<string>("");
 
-  // ============================================
-  // STATE KAMERA — default pakai kamera belakang
-  // ============================================
   const [cameraFacing, setCameraFacing] = useState<CameraFacing>("environment");
   const [isFlipping, setIsFlipping] = useState(false);
 
-  // ============================================
-  // CEK HARI LIBUR SAAT HALAMAN DIBUKA
-  // ============================================
+  // ── Cek hari libur saat buka halaman ──
   useEffect(() => {
     async function cekHariIni() {
       try {
@@ -52,13 +48,11 @@ export default function ScannerPage() {
   const handleReset = () => {
     setHasilAbsensi(null);
     setErrorMsg("");
+    setIzinInfo(null);
     setLastScanned("");
     setViewState("scanning");
   };
 
-  // ============================================
-  // TOGGLE KAMERA DEPAN / BELAKANG
-  // ============================================
   const handleFlipCamera = () => {
     setIsFlipping(true);
     setCameraFacing((prev) => (prev === "environment" ? "user" : "environment"));
@@ -76,17 +70,34 @@ export default function ScannerPage() {
       setViewState("success");
     } catch (err: any) {
       const rawMsg = err?.response?.data?.message || err?.message || "";
+      const rawCode = err?.response?.data?.code || "";
 
+      // Coba parse JSON dari message string
+      let code = rawCode;
+      let message = rawMsg;
       try {
         const parsed = JSON.parse(rawMsg);
-        if (parsed?.code === "HARI_LIBUR") {
-          setLiburInfo({ keterangan: parsed.keterangan });
-          setViewState("holiday");
-          return;
-        }
-      } catch {}
+        code = parsed?.code || code;
+        message = parsed?.message || message;
+      } catch { /* bukan JSON, pakai rawMsg langsung */ }
 
-      setErrorMsg(rawMsg || "Terjadi kesalahan");
+      if (code === "HARI_LIBUR") {
+        // Coba ambil keterangan dari response
+        const keterangan = err?.response?.data?.keterangan || "";
+        setLiburInfo({ keterangan });
+        setViewState("holiday");
+        return;
+      }
+
+      if (code === "IZIN_HARI_INI") {
+        // Ekstrak nama dari message: "Alfi Zamriza memiliki izin/sakit hari ini..."
+        const nama = message.split(" memiliki")[0] || "Siswa";
+        setIzinInfo({ nama, message });
+        setViewState("izin");
+        return;
+      }
+
+      setErrorMsg(message || "Terjadi kesalahan");
       setViewState("error");
     }
   };
@@ -111,7 +122,7 @@ export default function ScannerPage() {
 
       <div className="dashboard-container guru-layout-medium scanner-container">
 
-        {/* HEADER */}
+        {/* ── HEADER ── */}
         <header className="scanner-header">
           <button className="btn-icon back-btn" onClick={() => router.back()}>
             <ArrowLeft size={17} />
@@ -126,55 +137,80 @@ export default function ScannerPage() {
           {viewState === "checking" && (
             <div className="result-card loading-card glass-panel">
               <Loader2 size={48} className="spinner-icon" />
-              <p style={{ color: "rgba(255,255,255,0.5)", marginTop: 12 }}>Memeriksa jadwal...</p>
+              <p className="res-desc" style={{ marginTop: 4 }}>Memeriksa jadwal...</p>
             </div>
           )}
 
           {/* HARI LIBUR */}
           {viewState === "holiday" && (
             <div className="result-card holiday-card glass-panel">
-              <div className="icon-badge holiday">
-                <CalendarOff size={52} />
+              <div className="sc-icon-badge sc-icon-badge--holiday">
+                <CalendarOff size={48} />
               </div>
 
               <h2 className="res-title">Hari Libur</h2>
 
               {liburInfo?.keterangan && (
-                <div className="holiday-name-badge">
+                <div className="sc-info-badge sc-info-badge--amber">
                   🎉 {liburInfo.keterangan}
                 </div>
               )}
 
-              <p className="holiday-date-text">{todayStr}</p>
+              <p className="sc-date-text">{todayStr}</p>
 
-              <p className="res-desc" style={{ marginTop: 4 }}>
+              <p className="res-desc">
                 Absensi tumbler tidak dapat dilakukan pada hari libur.
                 <br />
                 Sampai jumpa di hari sekolah berikutnya!
               </p>
 
-              <div className="streak-safe-box">
+              <div className="sc-notice-box sc-notice-box--amber">
                 <Zap size={14} color="#F59E0B" />
                 <span>Streak tidak putus karena hari libur.</span>
               </div>
 
-              <button
-                className="btn-outline full-width"
-                onClick={() => router.back()}
-              >
+              <button className="btn-outline full-width" onClick={() => router.back()}>
                 <ArrowLeft size={16} /> Kembali
               </button>
             </div>
           )}
 
-          {/* KAMERA SCAN */}
+          {/* IZIN / SAKIT */}
+          {viewState === "izin" && izinInfo && (
+            <div className="result-card izin-card glass-panel">
+              <div className="sc-icon-badge sc-icon-badge--blue">
+                <FileText size={48} />
+              </div>
+
+              <h2 className="res-title">Sedang Izin</h2>
+
+              <div className="sc-info-badge sc-info-badge--blue">
+                📋 {izinInfo.nama}
+              </div>
+
+              <p className="sc-date-text">{todayStr}</p>
+
+              <p className="res-desc">
+                Siswa ini sudah tercatat izin atau sakit hari ini.
+                <br />
+                Absensi tumbler tidak diperlukan.
+              </p>
+
+              <div className="sc-notice-box sc-notice-box--blue">
+                <Zap size={14} color="#60a5fa" />
+                <span>Streak tidak putus karena siswa sudah diizinkan.</span>
+              </div>
+
+              <button className="btn-outline full-width" onClick={handleReset}>
+                <ScanLine size={16} /> Scan Berikutnya
+              </button>
+            </div>
+          )}
+
+          {/* SCANNING */}
           {viewState === "scanning" && (
             <div className="camera-view active">
               <div className="camera-feed">
-                {/*
-                  Key diubah setiap ganti kamera supaya Scanner
-                  di-remount dan meminta stream kamera baru.
-                */}
                 <Scanner
                   key={cameraFacing}
                   onScan={handleScan}
@@ -189,10 +225,8 @@ export default function ScannerPage() {
                 />
               </div>
 
-              {/* Label kamera aktif */}
               <div className="camera-label-badge">{cameraLabel}</div>
 
-              {/* Tombol flip kamera */}
               <button
                 className={`flip-camera-btn ${isFlipping ? "spinning" : ""}`}
                 onClick={handleFlipCamera}
@@ -213,7 +247,7 @@ export default function ScannerPage() {
             </div>
           )}
 
-          {/* LOADING PROSES */}
+          {/* LOADING */}
           {viewState === "loading" && (
             <div className="result-card loading-card glass-panel">
               <Loader2 size={56} className="spinner-icon" />
@@ -225,7 +259,7 @@ export default function ScannerPage() {
           {/* SUKSES */}
           {viewState === "success" && hasilAbsensi && (
             <div className="result-card success-card glass-panel">
-              <div className="icon-badge success">
+              <div className="sc-icon-badge sc-icon-badge--success">
                 <CheckCircle2 size={48} />
               </div>
               <h2 className="res-title">Absensi Tercatat!</h2>
@@ -266,7 +300,7 @@ export default function ScannerPage() {
           {/* ERROR */}
           {viewState === "error" && (
             <div className="result-card error-card glass-panel">
-              <div className="icon-badge error">
+              <div className="sc-icon-badge sc-icon-badge--error">
                 <XCircle size={48} />
               </div>
               <h2 className="res-title">Gagal</h2>
@@ -279,7 +313,7 @@ export default function ScannerPage() {
 
         </div>
 
-        {/* TOMBOL MANUAL — hanya saat scanning */}
+        {/* TOMBOL MANUAL */}
         {viewState === "scanning" && (
           <div className="scanner-controls" style={{ justifyContent: "center" }}>
             <button
@@ -292,76 +326,6 @@ export default function ScannerPage() {
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes floatUp {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-
-        .spinner-icon { animation: spin 1s linear infinite; color: #179EFF; }
-
-        .loading-card {
-          display: flex; flex-direction: column; align-items: center;
-          gap: 12px; padding: 64px 24px; text-align: center;
-        }
-
-        /* ======== HOLIDAY CARD ======== */
-        .holiday-card {
-          display: flex; flex-direction: column; align-items: center;
-          gap: 16px; padding: 40px 28px; text-align: center;
-        }
-
-        .icon-badge.holiday {
-          width: 100px; height: 100px; border-radius: 50%;
-          background: radial-gradient(circle, rgba(245,158,11,0.18), rgba(234,88,12,0.08));
-          border: 2px solid rgba(245,158,11,0.35);
-          display: grid; place-items: center;
-          color: #F59E0B;
-          animation: floatUp 3s ease-in-out infinite;
-          box-shadow: 0 0 40px rgba(245,158,11,0.15);
-        }
-
-        .holiday-name-badge {
-          background: rgba(245,158,11,0.12);
-          border: 1px solid rgba(245,158,11,0.3);
-          color: #FBBF24;
-          border-radius: 24px; padding: 8px 20px;
-          font-size: 15px; font-weight: 700;
-          letter-spacing: 0.2px;
-        }
-
-        .holiday-date-text {
-          color: rgba(255,255,255,0.4);
-          font-size: 12px; margin: -4px 0;
-        }
-
-        .streak-safe-box {
-          display: flex; align-items: center; gap: 8px;
-          background: rgba(245,158,11,0.07);
-          border: 1px solid rgba(245,158,11,0.2);
-          border-radius: 12px; padding: 10px 16px;
-          font-size: 12px; color: rgba(255,255,255,0.65);
-          width: 100%; text-align: left;
-        }
-
-        /* ======== BONUS BADGE ======== */
-        .bonus-badge {
-          display: inline-flex; align-items: center; gap: 3px;
-          background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3);
-          color: #F59E0B; border-radius: 6px; padding: 2px 7px;
-          font-size: 10px; font-weight: 700; margin-left: 8px;
-        }
-
-        @media (prefers-color-scheme: light) {
-          .loading-card p { color: rgba(15, 23, 42, 0.72) !important; }
-          .holiday-date-text { color: rgba(15, 23, 42, 0.62) !important; }
-          .streak-safe-box { color: rgba(15, 23, 42, 0.78) !important; }
-          .res-desc { color: rgba(15, 23, 42, 0.74) !important; }
-          .holiday-name-badge { color: #b45309 !important; background: rgba(245,158,11,0.10) !important; }
-        }
-      `}</style>
     </main>
   );
 }

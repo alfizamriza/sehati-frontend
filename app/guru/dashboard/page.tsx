@@ -8,7 +8,7 @@ import {
   Presentation, Trophy, Medal, Coins, LayoutDashboard,
   ChevronDown, RefreshCw, Loader2, ShieldCheck,
   CheckCircle2, XCircle, TrendingUp, Users,
-  CalendarCheck, Star, Tag,
+  CalendarCheck, Star, Tag, FileText,
 } from "lucide-react";
 import {
   getProfilGuru, getKelasList, getStatistikKelas,
@@ -329,6 +329,11 @@ export default function GuruDashboard() {
                     <span className="act-label">Absensi Tumbler</span>
                     <span className="act-desc">Scan QR Siswa</span>
                   </div>
+                </Link>
+
+                <Link href="/guru/izin" className="action-card success">
+                  <FileText size={22} />
+                  <span>Izin / Sakit</span>
                 </Link>
 
                 <Link href="/guru/laporanPelanggaran" className="action-card danger">

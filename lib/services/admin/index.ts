@@ -7,3 +7,4 @@ export * from "../Leaderboard.service";
 export * from "../settings.service";
 export * from "../siswa.service";
 export * from "../voucher.service";
+export * from "../izin.service";

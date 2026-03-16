@@ -4,14 +4,16 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, ChevronDown, ChevronUp, Check,
-  CheckCircle2, Loader2, RefreshCw, Search,
+  CheckCircle2, Loader2, RefreshCw, Search, Users,
 } from "lucide-react";
+import "../../dashboard/dashboard.css";
 import "./manual.css";
 import {
   getKelasList, getSiswaByKelas, bulkManualAbsensi,
   clearSiswaCache, getInfoHariIni,
   type KelasItem, type SiswaAbsensi, type AbsensiMeta,
 } from "@/lib/services/absensi.service";
+import { formatKelasLabel } from "@/lib/utils/kelas";
 
 export default function ManualAttendancePage() {
   const router = useRouter();
@@ -36,23 +38,18 @@ export default function ManualAttendancePage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [saveResult, setSaveResult] = useState<{ berhasil: number; gagal: number } | null>(null);
 
-  // Pencarian
+  // Search
   const [search, setSearch] = useState("");
+
   const safeKelasList = Array.isArray(kelasList) ? kelasList : [];
   const safeSiswaList = Array.isArray(siswaList) ? siswaList : [];
 
-  // ============================================
-  // CEK HARI LIBUR — jika libur, redirect ke
-  // /guru/absensi tanpa render halaman ini
-  // ============================================
+  // ── Cek hari libur ──
   useEffect(() => {
     async function checkHari() {
       try {
         const data = await getInfoHariIni();
-        if (data.isLibur) {
-          router.replace("/guru/absensi");
-          return;
-        }
+        if (data.isLibur) { router.replace("/guru/absensi"); return; }
       } catch (err) {
         console.error("Gagal cek info hari:", err);
       } finally {
@@ -62,9 +59,7 @@ export default function ManualAttendancePage() {
     checkHari();
   }, []);
 
-  // ============================================
-  // LOAD DAFTAR KELAS
-  // ============================================
+  // ── Load kelas ──
   useEffect(() => {
     async function loadKelas() {
       try {
@@ -79,18 +74,16 @@ export default function ManualAttendancePage() {
     loadKelas();
   }, []);
 
-  // ============================================
-  // LOAD SISWA SAAT KELAS DIPILIH
-  // ============================================
+  // ── Pilih kelas ──
   async function handleSelectKelas(kelas: KelasItem) {
     setSelectedKelas(kelas);
     setIsDropdownOpen(false);
     setPendingNis(new Set());
     setSearch("");
     setLoadingSiswa(true);
-
     try {
-      const { siswa, meta } = await getSiswaByKelas(kelas.id);
+      clearSiswaCache(kelas.id);
+      const { siswa, meta } = await getSiswaByKelas(kelas.id, true);
       setSiswaList(siswa);
       setMeta(meta);
     } catch (err) {
@@ -100,9 +93,7 @@ export default function ManualAttendancePage() {
     }
   }
 
-  // ============================================
-  // REFRESH LIST SISWA
-  // ============================================
+  // ── Refresh ──
   async function handleRefresh() {
     if (!selectedKelas) return;
     setLoadingSiswa(true);
@@ -119,34 +110,24 @@ export default function ManualAttendancePage() {
     }
   }
 
-  // ============================================
-  // TOGGLE SISWA (hanya yang belum absen)
-  // ============================================
-  function toggleSiswa(nis: string, sudahAbsen: boolean) {
-    if (sudahAbsen) return;
+  // ── Toggle siswa ──
+  function toggleSiswa(nis: string, sudahAbsen: boolean, izinAda: boolean) {
+    if (sudahAbsen || izinAda) return;
     setPendingNis((prev) => {
       const next = new Set(prev);
-      if (next.has(nis)) next.delete(nis);
-      else next.add(nis);
+      next.has(nis) ? next.delete(nis) : next.add(nis);
       return next;
     });
   }
 
-  // ============================================
-  // SIMPAN — kirim bulk absensi
-  // ============================================
+  // ── Simpan ──
   async function handleSave() {
     if (!selectedKelas || pendingNis.size === 0) return;
     setSaving(true);
-
     try {
       const result = await bulkManualAbsensi(Array.from(pendingNis), selectedKelas.id);
-      setSaveResult({
-        berhasil: result.berhasil.length,
-        gagal: result.gagal.length,
-      });
+      setSaveResult({ berhasil: result.berhasil.length, gagal: result.gagal.length });
       setShowSuccessModal(true);
-
       const { siswa, meta } = await getSiswaByKelas(selectedKelas.id, true);
       setSiswaList(siswa);
       setMeta(meta);
@@ -158,28 +139,23 @@ export default function ManualAttendancePage() {
     }
   }
 
-  // ============================================
-  // FILTER PENCARIAN
-  // ============================================
+  // ── Filter ──
   const filteredSiswa = safeSiswaList.filter((s) =>
-    s.nama.toLowerCase().includes(search.toLowerCase()) ||
-    s.nis.includes(search)
+    s.nama.toLowerCase().includes(search.toLowerCase()) || s.nis.includes(search)
   );
 
   const sudahAbsenCount = safeSiswaList.filter((s) => s.sudahAbsen).length;
+  const izinCount = safeSiswaList.filter((s) => s.izinHariIni?.ada).length;
   const pendingCount = pendingNis.size;
 
-  // Spinner saat cek hari libur berlangsung
+  // ── Checking ──
   if (loadingHari) {
     return (
       <main className="dashboard-page manual-page">
         <div className="bg-blob blob-1" />
-        <div className="bg-blob blob-2" />
-        <div className="dashboard-container guru-layout-medium manual-container">
-          <div className="loading-state glass-panel" style={{ marginTop: 80 }}>
-            <Loader2 size={32} className="spinner-anim" />
-            <p>Memeriksa jadwal hari ini...</p>
-          </div>
+        <div className="loading-state glass-panel" style={{ marginTop: 80 }}>
+          <Loader2 size={32} className="spinner-anim" style={{ color: "#179EFF" }} />
+          <p>Memeriksa jadwal hari ini...</p>
         </div>
       </main>
     );
@@ -192,7 +168,7 @@ export default function ManualAttendancePage() {
 
       <div className="dashboard-container guru-layout-medium manual-container">
 
-        {/* HEADER */}
+        {/* ── Header ── */}
         <header className="dash-header">
           <button className="btn-icon" onClick={() => router.back()} title="Kembali">
             <ArrowLeft size={17} />
@@ -201,7 +177,7 @@ export default function ManualAttendancePage() {
           <div style={{ width: 42 }} />
         </header>
 
-        {/* DROPDOWN KELAS */}
+        {/* ── Dropdown Kelas ── */}
         <div className="dropdown-wrapper">
           <div
             className={`class-selector ${isDropdownOpen ? "active" : ""}`}
@@ -212,14 +188,11 @@ export default function ManualAttendancePage() {
             ) : (
               <span>
                 {selectedKelas
-                  ? `${selectedKelas.tingkat} - ${selectedKelas.nama}`
-                  : "Pilih Kelas..."}
+                  ? formatKelasLabel(selectedKelas)
+                  : <span className="selector-placeholder">Pilih Kelas...</span>}
               </span>
             )}
-            {isDropdownOpen
-              ? <ChevronUp size={20} />
-              : <ChevronDown size={20} />
-            }
+            {isDropdownOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </div>
 
           {isDropdownOpen && (
@@ -235,8 +208,10 @@ export default function ManualAttendancePage() {
                     className={`dropdown-item ${selectedKelas?.id === kelas.id ? "selected" : ""}`}
                     onClick={() => handleSelectKelas(kelas)}
                   >
-                    <span>{kelas.tingkat} - {kelas.nama}</span>
-                    <span className="dropdown-item-sub">{kelas.jenjang}</span>
+                    <span>{formatKelasLabel(kelas)}</span>
+                    {selectedKelas?.id === kelas.id && (
+                      <Check size={14} style={{ color: "var(--accent-text)" }} />
+                    )}
                   </div>
                 ))
               )}
@@ -244,36 +219,51 @@ export default function ManualAttendancePage() {
           )}
         </div>
 
-        {/* LOADING SISWA */}
+        {/* ── Loading siswa ── */}
         {loadingSiswa && (
           <div className="loading-state glass-panel">
-            <Loader2 size={32} className="spinner-anim" />
+            <Loader2 size={30} className="spinner-anim" style={{ color: "#179EFF" }} />
             <p>Memuat data siswa...</p>
           </div>
         )}
 
-        {/* LIST SISWA */}
+        {/* ── List Siswa ── */}
         {selectedKelas && !loadingSiswa && (
           <div className="student-list-card glass-panel fade-in">
 
             {/* Info bar */}
             <div className="list-header-info">
-              <div style={{ display: "flex", gap: 12 }}>
-                <p>Total: <b>{safeSiswaList.length}</b></p>
-                <p>Hadir: <b className="text-green">{sudahAbsenCount}</b></p>
-                <p>Belum: <b className="text-amber">{safeSiswaList.length - sudahAbsenCount}</b></p>
+              <div className="list-header-stats">
+                <div className="stat-pill">
+                  Total <span>{safeSiswaList.length}</span>
+                </div>
+                <div className="stat-pill">
+                  Hadir <span className="c-green">{sudahAbsenCount}</span>
+                </div>
+                {izinCount > 0 && (
+                  <div className="stat-pill">
+                    Izin <span style={{ color: "#60a5fa" }}>{izinCount}</span>
+                  </div>
+                )}
+                <div className="stat-pill">
+                  Belum <span className="c-amber">
+                    {safeSiswaList.length - sudahAbsenCount - izinCount}
+                  </span>
+                </div>
                 {pendingCount > 0 && (
-                  <p>Dipilih: <b className="text-accent">{pendingCount}</b></p>
+                  <div className="stat-pill">
+                    Dipilih <span className="c-accent">{pendingCount}</span>
+                  </div>
                 )}
               </div>
-              <button className="btn-refresh" onClick={handleRefresh} title="Refresh data">
-                <RefreshCw size={14} />
+              <button className="btn-refresh" onClick={handleRefresh} title="Refresh">
+                <RefreshCw size={13} /> Refresh
               </button>
             </div>
 
             {/* Search */}
             <div className="search-wrapper">
-              <Search size={14} className="search-icon" />
+              <Search size={13} className="search-icon" />
               <input
                 type="text"
                 className="search-input"
@@ -283,38 +273,56 @@ export default function ManualAttendancePage() {
               />
             </div>
 
-            {/* Daftar siswa */}
+            {/* Rows */}
             <div className="list-scroll-area">
               {filteredSiswa.length === 0 ? (
                 <div className="list-empty-msg">Tidak ditemukan</div>
               ) : (
                 filteredSiswa.map((siswa) => {
                   const isPending = pendingNis.has(siswa.nis);
-                  const isChecked = siswa.sudahAbsen || isPending;
-                  const isLocked = siswa.sudahAbsen;
+                  const isIzin = Boolean(siswa.izinHariIni?.ada);
+                  const isLocked = siswa.sudahAbsen || isIzin;
+                  const isChecked = siswa.sudahAbsen || isPending || isIzin;
+
+                  // Status label
+                  const statusLabel = isIzin
+                    ? "Izin / Sakit"
+                    : siswa.sudahAbsen
+                      ? "Sudah Hadir"
+                      : isPending
+                        ? "Akan Diabsen"
+                        : "Belum Absen";
+
+                  const statusClass = isIzin
+                    ? "is-izin"
+                    : siswa.sudahAbsen
+                      ? "is-present"
+                      : isPending
+                        ? "is-pending"
+                        : "not-present";
 
                   return (
                     <div
                       key={siswa.nis}
-                      className={`student-row ${isChecked ? "active" : "inactive"} ${isLocked ? "locked" : ""}`}
-                      onClick={() => toggleSiswa(siswa.nis, siswa.sudahAbsen)}
+                      className={`student-row ${isChecked ? "active" : "inactive"} ${isLocked ? "locked" : ""} ${isIzin ? "izin-row" : ""}`}
+                      onClick={() => toggleSiswa(siswa.nis, siswa.sudahAbsen, isIzin)}
                     >
                       <div className="student-info-col">
                         <span className="student-name">{siswa.nama}</span>
                         <span className="student-nis">{siswa.nis}</span>
-                        <span className={`status-text ${isChecked ? "is-present" : "not-present"}`}>
-                          {siswa.sudahAbsen
-                            ? "● Sudah Hadir"
-                            : isPending
-                            ? "◉ Akan Diabsen"
-                            : "○ Belum Absen"}
-                        </span>
+                        {isIzin && (
+                          <span className="izin-chip">
+                            {siswa.izinHariIni?.tipe ?? "izin"}
+                            {siswa.izinHariIni?.catatan ? ` · ${siswa.izinHariIni.catatan}` : ""}
+                          </span>
+                        )}
+                        <span className={`status-text ${statusClass}`}>{statusLabel}</span>
                       </div>
 
                       <div className="student-meta-col">
                         <span className="streak-info">🔥 {siswa.streak}</span>
-                        <div className={`custom-checkbox ${isChecked ? "checked" : ""} ${isLocked ? "locked" : ""}`}>
-                          {isChecked && <Check size={14} strokeWidth={3} />}
+                        <div className={`custom-checkbox ${isChecked ? (isIzin ? "checked-izin" : "checked") : ""} ${isLocked ? "locked" : ""}`}>
+                          {isChecked && <Check size={13} strokeWidth={3} />}
                         </div>
                       </div>
                     </div>
@@ -323,7 +331,7 @@ export default function ManualAttendancePage() {
               )}
             </div>
 
-            {/* Tombol simpan */}
+            {/* Save */}
             <div className="action-area">
               <button
                 className="btn-save-green"
@@ -332,95 +340,45 @@ export default function ManualAttendancePage() {
               >
                 {saving ? (
                   <><Loader2 size={16} className="spinner-anim" /> Menyimpan...</>
+                ) : pendingNis.size > 0 ? (
+                  <><Check size={17} /> Simpan Absensi ({pendingNis.size} Siswa)</>
                 ) : (
-                  `Simpan ${pendingNis.size > 0 ? `(${pendingNis.size} siswa)` : ""}`
+                  <><Users size={17} /> Pilih siswa terlebih dahulu</>
                 )}
               </button>
             </div>
           </div>
         )}
 
-        {/* EMPTY STATE */}
+        {/* ── Empty state ── */}
         {!selectedKelas && !loadingKelas && (
           <div className="empty-state glass-panel">
-            <p>Silakan pilih kelas terlebih dahulu.</p>
+            <Users size={32} style={{ color: "var(--text-ghost)", opacity: 0.5 }} />
+            <p>Pilih kelas untuk melihat daftar siswa</p>
           </div>
         )}
       </div>
 
-      {/* MODAL SUKSES */}
+      {/* ── Modal Sukses ── */}
       {showSuccessModal && saveResult && (
         <div className="modal-overlay">
           <div className="success-modal glass-panel">
-            <div className="success-icon-badge">
-              <CheckCircle2 size={64} />
+            <div className="success-icon-wrap">
+              <CheckCircle2 size={40} />
             </div>
             <h3>Tersimpan!</h3>
             <p>
-              <b className="text-green">{saveResult.berhasil} siswa</b> berhasil diabsen.
+              <b style={{ color: "#10b981" }}>{saveResult.berhasil} siswa</b> berhasil diabsen.
               {saveResult.gagal > 0 && (
-                <><br /><span className="text-red">{saveResult.gagal} gagal</span> (mungkin sudah absen).</>
+                <><br /><span style={{ color: "#ef4444" }}>{saveResult.gagal} gagal</span> (mungkin sudah absen).</>
               )}
             </p>
-            <button className="btn-save-green" onClick={() => setShowSuccessModal(false)}>
+            <button className="btn-save-green" style={{ width: "100%" }} onClick={() => setShowSuccessModal(false)}>
               Tutup
             </button>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spinner-anim { animation: spin 1s linear infinite; }
-
-        /* Judul halaman — ikut var global */
-        .page-title-manual {
-          margin: 0;
-          font-size: 22px;
-          font-weight: 700;
-          text-align: center;
-          color: var(--text-primary);
-        }
-
-        /* Warna semantik yang dipakai di JSX */
-        .text-amber { color: #F59E0B; }
-        .text-accent { color: var(--accent-text); }
-        .text-red    { color: #EF4444; }
-
-        /* Sub teks dropdown */
-        .dropdown-item-sub {
-          font-size: 11px;
-          color: var(--text-muted);
-        }
-
-        /* Placeholder selector */
-        .selector-placeholder {
-          color: var(--text-muted);
-        }
-
-        /* List empty message */
-        .list-empty-msg {
-          text-align: center;
-          padding: 24px;
-          color: var(--text-ghost);
-          font-size: 13px;
-        }
-
-        /* Status "Akan Diabsen" di dark */
-        .student-row.active .status-text:not(.is-present) {
-          color: var(--accent-text);
-        }
-
-        @media (prefers-color-scheme: light) {
-          .text-amber { color: #b45309; }
-          .text-red   { color: #dc2626; }
-
-          /* Status "Akan Diabsen" di light */
-          .student-row.active .status-text:not(.is-present) {
-            color: #0369a1;
-          }
-        }
-      `}</style>
     </main>
   );
 }

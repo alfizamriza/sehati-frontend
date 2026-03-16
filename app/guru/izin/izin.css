@@ -1,0 +1,754 @@
+/* =========================================
+   IZIN PAGE — FULL SELF-CONTAINED CSS
+   Tidak bergantung pada laporan.css
+   ========================================= */
+
+/* ── Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── Tokens ── */
+:root {
+    --izin-sakit-color: #f87171;
+    --izin-sakit-bg: rgba(239, 68, 68, 0.12);
+    --izin-sakit-border: rgba(239, 68, 68, 0.30);
+
+    --izin-izin-color: #60a5fa;
+    --izin-izin-bg: rgba(37, 99, 235, 0.12);
+    --izin-izin-border: rgba(37, 99, 235, 0.30);
+
+    --izin-tk-color: #fbbf24;
+    --izin-tk-bg: rgba(217, 119, 6, 0.12);
+    --izin-tk-border: rgba(217, 119, 6, 0.30);
+
+    --iz-row-bg: rgba(255, 255, 255, 0.03);
+    --iz-row-border: rgba(255, 255, 255, 0.07);
+    --iz-row-hover: rgba(255, 255, 255, 0.055);
+    --iz-nama: #f1f5f9;
+    --iz-nis: rgba(255, 255, 255, 0.38);
+    --iz-num: rgba(255, 255, 255, 0.25);
+
+    --iz-input-bg: rgba(255, 255, 255, 0.05);
+    --iz-input-border: rgba(255, 255, 255, 0.10);
+    --iz-input-focus: rgba(23, 158, 255, 0.22);
+    --iz-input-color: #f1f5f9;
+    --iz-placeholder: rgba(255, 255, 255, 0.28);
+    --iz-label: rgba(255, 255, 255, 0.72);
+    --iz-label-opt: rgba(255, 255, 255, 0.32);
+
+    --iz-select-option: #0f172a;
+
+    --iz-date-bg: rgba(255, 255, 255, 0.04);
+    --iz-date-border: rgba(255, 255, 255, 0.10);
+    --iz-date-color: #f1f5f9;
+    --iz-date-sub: rgba(255, 255, 255, 0.35);
+
+    --iz-header-back: rgba(255, 255, 255, 0.50);
+    --iz-title: #ffffff;
+    --iz-subtitle: rgba(255, 255, 255, 0.40);
+
+    --iz-badge-teal-bg: rgba(13, 148, 136, 0.18);
+    --iz-badge-teal-bd: rgba(13, 148, 136, 0.36);
+
+    --iz-summary-bg: rgba(23, 158, 255, 0.05);
+    --iz-summary-bd: rgba(23, 158, 255, 0.20);
+    --iz-summary-lbl: rgba(255, 255, 255, 0.40);
+    --iz-summary-val: #ffffff;
+    --iz-summary-meta: rgba(255, 255, 255, 0.28);
+
+    --iz-rw-bg: rgba(30, 41, 59, 0.55);
+    --iz-rw-bd: rgba(255, 255, 255, 0.07);
+    --iz-rw-nama: #f1f5f9;
+    --iz-rw-meta: rgba(255, 255, 255, 0.38);
+
+    --iz-btn-dis-bg: rgba(255, 255, 255, 0.06);
+    --iz-btn-dis-color: rgba(255, 255, 255, 0.28);
+    --iz-chevron: rgba(255, 255, 255, 0.30);
+
+    --iz-empty: rgba(255, 255, 255, 0.28);
+    --iz-skeleton: rgba(255, 255, 255, 0.07);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --izin-sakit-color: #b91c1c;
+        --izin-sakit-bg: #fef2f2;
+        --izin-sakit-border: #fca5a5;
+
+        --izin-izin-color: #1d4ed8;
+        --izin-izin-bg: #eff6ff;
+        --izin-izin-border: #93c5fd;
+
+        --izin-tk-color: #92400e;
+        --izin-tk-bg: #fffbeb;
+        --izin-tk-border: #fcd34d;
+
+        --iz-row-bg: #ffffff;
+        --iz-row-border: rgba(15, 23, 42, 0.08);
+        --iz-row-hover: #f8fafc;
+        --iz-nama: #0f172a;
+        --iz-nis: #64748b;
+        --iz-num: #94a3b8;
+
+        --iz-input-bg: #ffffff;
+        --iz-input-border: rgba(15, 23, 42, 0.14);
+        --iz-input-focus: rgba(3, 105, 161, 0.18);
+        --iz-input-color: #0f172a;
+        --iz-placeholder: #94a3b8;
+        --iz-label: #374151;
+        --iz-label-opt: #9ca3af;
+
+        --iz-select-option: #ffffff;
+
+        --iz-date-bg: #f8fafc;
+        --iz-date-border: rgba(15, 23, 42, 0.12);
+        --iz-date-color: #0f172a;
+        --iz-date-sub: #64748b;
+
+        --iz-header-back: #475569;
+        --iz-title: #0f172a;
+        --iz-subtitle: #64748b;
+
+        --iz-badge-teal-bg: #f0fdfa;
+        --iz-badge-teal-bd: #5eead4;
+
+        --iz-summary-bg: #eff6ff;
+        --iz-summary-bd: #bfdbfe;
+        --iz-summary-lbl: #64748b;
+        --iz-summary-val: #0f172a;
+        --iz-summary-meta: #94a3b8;
+
+        --iz-rw-bg: #ffffff;
+        --iz-rw-bd: rgba(15, 23, 42, 0.09);
+        --iz-rw-nama: #0f172a;
+        --iz-rw-meta: #64748b;
+
+        --iz-btn-dis-bg: rgba(15, 23, 42, 0.06);
+        --iz-btn-dis-color: #94a3b8;
+        --iz-chevron: #64748b;
+
+        --iz-empty: #94a3b8;
+        --iz-skeleton: rgba(15, 23, 42, 0.07);
+    }
+}
+
+/* ── Back button ── */
+.iz-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: var(--iz-header-back);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+    margin-bottom: 20px;
+    transition: color 0.18s;
+}
+
+.iz-back-btn:hover {
+    color: #0d9488;
+}
+
+/* ── Page title row ── */
+.iz-page-title-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.iz-icon-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: var(--iz-badge-teal-bg);
+    border: 1px solid var(--iz-badge-teal-bd);
+}
+
+.iz-page-title-text h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--iz-title);
+    font-family: 'Inter', sans-serif;
+}
+
+.iz-page-title-text p {
+    margin: 3px 0 0;
+    font-size: 0.80rem;
+    color: var(--iz-subtitle);
+}
+
+/* ── Form label ── */
+.iz-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--iz-label);
+    margin-bottom: 8px;
+}
+
+.iz-label-opt {
+    color: var(--iz-label-opt);
+    font-weight: 400;
+}
+
+.iz-required {
+    color: #ef4444;
+}
+
+/* ── Input / Select / Textarea ── */
+.iz-input,
+.iz-select,
+.iz-textarea {
+    width: 100%;
+    background: var(--iz-input-bg);
+    border: 1px solid var(--iz-input-border);
+    border-radius: 9px;
+    padding: 9px 12px;
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: var(--iz-input-color);
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.iz-input::placeholder,
+.iz-textarea::placeholder {
+    color: var(--iz-placeholder);
+}
+
+.iz-input:focus,
+.iz-select:focus,
+.iz-textarea:focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px var(--iz-input-focus);
+}
+
+.iz-textarea {
+    resize: vertical;
+    min-height: 64px;
+    line-height: 1.55;
+}
+
+/* Select wrapper */
+.iz-sel-wrap {
+    position: relative;
+}
+
+.iz-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 34px;
+    cursor: pointer;
+}
+
+.iz-select option {
+    background: var(--iz-select-option, #0f172a);
+    color: var(--iz-input-color);
+}
+
+.iz-select:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.iz-sel-chevron {
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--iz-chevron);
+}
+
+/* ── Date chip (read-only) ── */
+.iz-date-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    background: var(--iz-date-bg);
+    border: 1px solid var(--iz-date-border);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--iz-date-color);
+}
+
+.iz-date-chip-right {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--iz-date-sub);
+}
+
+/* ── Skeleton ── */
+.iz-skeleton {
+    height: 38px;
+    border-radius: 9px;
+    background: var(--iz-skeleton);
+    animation: iz-pulse 1.4s ease infinite;
+}
+
+@keyframes iz-pulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.9;
+    }
+}
+
+/* ── Empty / Loading state ── */
+.iz-empty-state,
+.iz-loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 36px 20px;
+    color: var(--iz-empty);
+    font-size: 0.83rem;
+    text-align: center;
+    flex-direction: column;
+}
+
+.iz-loading-state {
+    flex-direction: row;
+    padding: 28px 20px;
+}
+
+/* =========================================
+   SISWA ROWS — satu baris per siswa
+   ========================================= */
+.iz-siswa-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--iz-row-border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.iz-siswa-row {
+    background: var(--iz-row-bg);
+    border-bottom: 1px solid var(--iz-row-border);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: background 0.12s;
+    animation: iz-row-in 0.22s ease both;
+}
+
+.iz-siswa-row:last-child {
+    border-bottom: none;
+}
+
+.iz-siswa-row:hover {
+    background: var(--iz-row-hover);
+}
+
+@keyframes iz-row-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Row top: nomor + nama + NIS */
+.iz-row-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.iz-row-num {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--iz-num);
+    min-width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+@media (prefers-color-scheme: light) {
+    .iz-row-num {
+        background: rgba(15, 23, 42, 0.06);
+    }
+}
+
+.iz-row-name-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.iz-row-nama {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--iz-nama);
+    line-height: 1.2;
+}
+
+.iz-row-nis {
+    font-size: 0.72rem;
+    color: var(--iz-nis);
+    margin-top: 1px;
+}
+
+/* Tipe pill buttons */
+.iz-tipe-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.iz-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1.5px solid var(--iz-input-border);
+    background: var(--iz-input-bg);
+    color: var(--iz-label);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.14s;
+    white-space: nowrap;
+}
+
+.iz-pill:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-color-scheme: light) {
+    .iz-pill:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+}
+
+.iz-pill--sakit.iz-pill--on {
+    background: var(--izin-sakit-bg);
+    border-color: var(--izin-sakit-border);
+    color: var(--izin-sakit-color);
+}
+
+.iz-pill--izin.iz-pill--on {
+    background: var(--izin-izin-bg);
+    border-color: var(--izin-izin-border);
+    color: var(--izin-izin-color);
+}
+
+.iz-pill--tanpa_keterangan.iz-pill--on {
+    background: var(--izin-tk-bg);
+    border-color: var(--izin-tk-border);
+    color: var(--izin-tk-color);
+}
+
+/* Catatan textarea per-row */
+.iz-row-catatan {
+    width: 100%;
+    background: var(--iz-input-bg);
+    border: 1px solid var(--iz-input-border);
+    border-radius: 8px;
+    padding: 8px 11px;
+    font-size: 0.80rem;
+    font-weight: 400;
+    color: var(--iz-input-color);
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+    outline: none;
+    resize: none;
+    line-height: 1.5;
+    transition: border-color 0.16s, box-shadow 0.16s;
+}
+
+.iz-row-catatan::placeholder {
+    color: var(--iz-placeholder);
+}
+
+.iz-row-catatan:focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px var(--iz-input-focus);
+}
+
+/* =========================================
+   SUBMIT SECTION
+   ========================================= */
+.iz-submit-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 4px;
+}
+
+.iz-submit-hint {
+    font-size: 0.78rem;
+    color: var(--iz-label-opt);
+    text-align: center;
+}
+
+/* THE BUTTON — fully self-contained */
+.iz-submit-btn {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 13px;
+    border: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.16s, transform 0.12s, box-shadow 0.16s;
+    /* always visible teal — fix masalah #button */
+    background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+    color: #ffffff;
+    box-shadow: 0 8px 22px rgba(13, 148, 136, 0.32);
+}
+
+.iz-submit-btn:hover:not(:disabled) {
+    opacity: 0.91;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(13, 148, 136, 0.38);
+}
+
+.iz-submit-btn:active:not(:disabled) {
+    transform: scale(0.98);
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.24);
+}
+
+.iz-submit-btn:disabled {
+    background: var(--iz-btn-dis-bg);
+    color: var(--iz-btn-dis-color);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.iz-submit-btn--success {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    box-shadow: 0 8px 22px rgba(22, 163, 74, 0.32);
+    cursor: default;
+}
+
+/* =========================================
+   SUMMARY BOX
+   ========================================= */
+.iz-summary-box {
+    padding: 14px 18px;
+    background: var(--iz-summary-bg);
+    border: 1px solid var(--iz-summary-bd);
+    border-radius: 12px;
+    font-size: 0.82rem;
+    line-height: 1.85;
+}
+
+.iz-summary-title {
+    font-weight: 700;
+    color: #0d9488;
+    margin-bottom: 6px;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.iz-summary-row {
+    color: var(--iz-summary-val);
+}
+
+.iz-summary-lbl {
+    color: var(--iz-summary-lbl);
+}
+
+.iz-summary-val {
+    font-weight: 600;
+}
+
+.iz-summary-meta {
+    color: var(--iz-summary-meta);
+}
+
+/* =========================================
+   RIWAYAT
+   ========================================= */
+.iz-rw-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.iz-rw-head-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--iz-title);
+    font-family: 'Inter', sans-serif;
+}
+
+.iz-rw-head-icon {
+    color: #0d9488;
+}
+
+.iz-rw-refresh {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--iz-input-bg);
+    border: 1px solid var(--iz-input-border);
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--iz-nis);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.13s;
+}
+
+.iz-rw-refresh:hover {
+    background: var(--iz-row-hover);
+}
+
+.iz-rw-refresh:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.iz-rw-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.iz-rw-card {
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--iz-rw-bg);
+    border: 1px solid var(--iz-rw-bd);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.12s;
+}
+
+.iz-rw-card:hover {
+    background: var(--iz-row-hover);
+}
+
+.iz-rw-bar {
+    width: 3px;
+    height: 34px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.iz-rw-bar--sakit {
+    background: #ef4444;
+}
+
+.iz-rw-bar--izin {
+    background: #3b82f6;
+}
+
+.iz-rw-bar--tanpa_keterangan {
+    background: #f59e0b;
+}
+
+.iz-rw-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.iz-rw-nama {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--iz-rw-nama);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.iz-rw-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: var(--iz-rw-meta);
+    margin-top: 2px;
+}
+
+.iz-tipe-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.iz-tipe-badge--sakit {
+    background: var(--izin-sakit-bg);
+    color: var(--izin-sakit-color);
+    border-color: var(--izin-sakit-border);
+}
+
+.iz-tipe-badge--izin {
+    background: var(--izin-izin-bg);
+    color: var(--izin-izin-color);
+    border-color: var(--izin-izin-border);
+}
+
+.iz-tipe-badge--tanpa_keterangan {
+    background: var(--izin-tk-bg);
+    color: var(--izin-tk-color);
+    border-color: var(--izin-tk-border);
+}
+
+/* ── spin ── */
+.iz-spin {
+    animation: iz-spin 0.8s linear infinite;
+    display: inline-flex;
+}
+
+@keyframes iz-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
