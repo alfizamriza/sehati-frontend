@@ -931,7 +931,7 @@ export default function TransaksiPage() {
 
   const fetchKatalog = useCallback(() => {
     setLoadingProduk(true);
-    getProdukKatalog()
+    getProdukKatalog(true)
       .then((data) => { setProdukAll(data); if (data.length > 0) setActiveKat(data[0].kategori); })
       .catch(console.error)
       .finally(() => setLoadingProduk(false));

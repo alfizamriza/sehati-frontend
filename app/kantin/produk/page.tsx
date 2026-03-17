@@ -236,9 +236,9 @@ function ModalForm({
               </InputRow>
             )}
             {form.isTitipan && (
-               <InputRow label="Stok Titipan Hari Ini">
+               <InputRow label="Sisa Awal Titipan">
                  <input className="mf-input" required type="number" min={0} value={form.stokHarian ?? form.stok} onChange={handleNum("stokHarian")} />
-               </InputRow>
+                </InputRow>
             )}
           </div>
 
@@ -282,12 +282,16 @@ function ModalForm({
               <div>
                 <div className="mf-label">Titipan Harian</div>
                 <div style={{ fontSize: "0.7rem", color: "var(--txt-sub)", marginTop: 2 }}>
-                  Stok direset setiap pagi sesuai jumlah titipan
+                  Input yang dipakai adalah sisa awal titipan untuk hari ini
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => set("isTitipan", !form.isTitipan)}
+                onClick={() => {
+                  const next = !form.isTitipan;
+                  set("isTitipan", next);
+                  if (next) set("stokHarian", form.stokHarian ?? form.stok);
+                }}
                 style={{ background: "none", border: "none", cursor: "pointer", color: form.isTitipan ? "#179EFF" : "var(--txt-sub)", display: "flex" }}
               >
                 {form.isTitipan ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
@@ -391,12 +395,16 @@ export default function ProdukPage() {
   async function handleSave(form: typeof EMPTY_FORM & { id?: number }) {
     setActionLoading(true);
     try {
+      const normalizedForm = form.isTitipan
+        ? { ...form, stok: form.stokHarian ?? form.stok }
+        : { ...form, stokHarian: undefined };
+
       if (form.id) {
-        const { id, ...payload } = form;
+        const { id, ...payload } = normalizedForm;
         await updateProduk(id, payload);
         showToast("Produk berhasil diperbarui", "ok");
       } else {
-        await createProduk(form as CreateProdukPayload);
+        await createProduk(normalizedForm as CreateProdukPayload);
         showToast("Produk berhasil ditambahkan", "ok");
       }
       setModalForm(null);

@@ -53,24 +53,64 @@ const KATEGORI_CFG = {
 } as const;
 
 // ─── PLASTIK WARNING ──────────────────────────────────────────────────────────
-function PlastikWarning({ jumlah }: { jumlah: number }) {
-  if (jumlah === 0) return null;
+function PlastikWarning({ jumlah, jumlahByoc }: { jumlah: number; jumlahByoc: number }) {
+  if (jumlah === 0 && jumlahByoc === 0) return null;
+
   const level = jumlah >= 10 ? "high" : jumlah >= 5 ? "med" : "low";
   const cfg = {
-    low: { color: "var(--gold,#F59E0B)", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.22)", text: `${jumlah}x produk kemasan plastik dibeli. Coba kurangi ya!` },
-    med: { color: "var(--streak-color,#F97316)", bg: "var(--status-plastik-bg)", border: "var(--status-plastik-border)", text: `${jumlah}x produk kemasan plastik! Yuk beralih ke kemasan ramah lingkungan 🌱` },
-    high: { color: "var(--status-pel-text,#EF4444)", bg: "var(--status-pel-bg)", border: "var(--status-pel-border)", text: `${jumlah}x produk kemasan plastik! Kamu sudah berkontribusi banyak sampah. Tolong kurangi!` },
+    low: {
+      color: "var(--gold,#F59E0B)",
+      bg: "rgba(245,158,11,0.08)",
+      border: "rgba(245,158,11,0.22)",
+      text: `${jumlah}x produk kemasan plastik dibeli. Coba kurangi ya!`,
+    },
+    med: {
+      color: "var(--streak-color,#F97316)",
+      bg: "var(--status-plastik-bg)",
+      border: "var(--status-plastik-border)",
+      text: `${jumlah}x produk kemasan plastik! Yuk beralih ke kemasan ramah lingkungan 🌱`,
+    },
+    high: {
+      color: "var(--status-pel-text,#EF4444)",
+      bg: "var(--status-pel-bg)",
+      border: "var(--status-pel-border)",
+      text: `${jumlah}x produk kemasan plastik! Kamu sudah berkontribusi banyak sampah. Tolong kurangi!`,
+    },
   }[level];
 
   return (
-    <div className="rw-plastik-warning" style={{ background: cfg.bg, borderColor: cfg.border }}>
-      <AlertTriangle size={15} style={{ color: cfg.color, flexShrink: 0, marginTop: 1 }} />
-      <div>
-        <div className="rw-plastik-warning-title" style={{ color: cfg.color }}>
-          Peringatan Penggunaan Plastik
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {/* Warning plastik NON-BYOC */}
+      {jumlah > 0 && (
+        <div className="rw-plastik-warning" style={{ background: cfg.bg, borderColor: cfg.border }}>
+          <AlertTriangle size={15} style={{ color: cfg.color, flexShrink: 0, marginTop: 1 }} />
+          <div>
+            <div className="rw-plastik-warning-title" style={{ color: cfg.color }}>
+              Peringatan Penggunaan Plastik
+            </div>
+            <div className="rw-plastik-warning-body">{cfg.text}</div>
+          </div>
         </div>
-        <div className="rw-plastik-warning-body">{cfg.text}</div>
-      </div>
+      )}
+
+      {/* Info BYOC — hijau, bukan warning */}
+      {jumlahByoc > 0 && (
+        <div
+          className="rw-plastik-warning"
+          style={{ background: "rgba(16,185,129,0.07)", borderColor: "rgba(16,185,129,0.22)" }}
+        >
+          <Leaf size={15} style={{ color: "var(--status-hadir-text)", flexShrink: 0, marginTop: 1 }} />
+          <div>
+            <div className="rw-plastik-warning-title" style={{ color: "var(--status-hadir-text)" }}>
+              Produk Plastik dengan Wadah Sendiri
+            </div>
+            <div className="rw-plastik-warning-body">
+              {jumlahByoc}x produk plastik dibeli menggunakan wadah sendiri (BYOC) —
+              tidak dikenakan penalti. Bagus! 🌱
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -79,53 +119,92 @@ function PlastikWarning({ jumlah }: { jumlah: number }) {
 function SummaryCards({ summary }: { summary: RiwayatSummary }) {
   return (
     <div className="rw-summary-grid">
-      {/* Counts row */}
       <div className="rw-summary-counts">
         <div className="rw-summary-card">
-          <div className="rw-summary-card-value" style={{ color: "var(--status-hadir-text)" }}>{summary.totalTumbler}</div>
+          <div className="rw-summary-card-value" style={{ color: "var(--status-hadir-text)" }}>
+            {summary.totalTumbler}
+          </div>
           <div className="rw-summary-card-label">Tumbler</div>
         </div>
         <div className="rw-summary-card">
-          <div className="rw-summary-card-value" style={{ color: "var(--color-primary)" }}>{summary.totalBelanja}</div>
+          <div className="rw-summary-card-value" style={{ color: "var(--color-primary)" }}>
+            {summary.totalBelanja}
+          </div>
           <div className="rw-summary-card-label">Belanja</div>
         </div>
         <div className="rw-summary-card">
-          <div className="rw-summary-card-value" style={{ color: "var(--status-pel-text)" }}>{summary.totalPelanggaran}</div>
+          <div className="rw-summary-card-value" style={{ color: "var(--status-pel-text)" }}>
+            {summary.totalPelanggaran}
+          </div>
           <div className="rw-summary-card-label">Pelanggaran</div>
         </div>
       </div>
 
-      {/* Coins footer row */}
       <div className="rw-summary-footer">
         <div className="rw-summary-footer-item">
           <TrendingUp size={13} style={{ color: "var(--status-hadir-text)" }} />
           <div>
             <div className="rw-summary-footer-label">Coins Masuk</div>
-            <div className="rw-summary-footer-value" style={{ color: "var(--status-hadir-text)" }}>+{summary.totalCoinsDidapat}</div>
+            <div className="rw-summary-footer-value" style={{ color: "var(--status-hadir-text)" }}>
+              +{summary.totalCoinsDidapat}
+            </div>
           </div>
         </div>
+
         <div className="rw-summary-divider" />
+
         <div className="rw-summary-footer-item">
           <TrendingDown size={13} style={{ color: "var(--status-pel-text)" }} />
           <div>
             <div className="rw-summary-footer-label">Coins Keluar</div>
-            <div className="rw-summary-footer-value" style={{ color: "var(--status-pel-text)" }}>-{summary.totalCoinsKeluar}</div>
+            <div className="rw-summary-footer-value" style={{ color: "var(--status-pel-text)" }}>
+              -{summary.totalCoinsKeluar}
+            </div>
           </div>
         </div>
+
         <div className="rw-summary-divider" />
-        <div className="rw-summary-footer-item">
-          <Trash2 size={13} style={{ color: "var(--status-plastik-text)" }} />
-          <div>
-            <div className="rw-summary-footer-label">Plastik</div>
-            <div className="rw-summary-footer-value" style={{ color: "var(--status-plastik-text)" }}>{summary.jumlahPlastik}×</div>
+
+        {/* Plastik: dua kolom jika ada BYOC */}
+        {(summary.jumlahPlastikByoc ?? 0) > 0 ? (
+          <>
+            <div className="rw-summary-footer-item">
+              <Trash2 size={13} style={{ color: "var(--status-plastik-text)" }} />
+              <div>
+                <div className="rw-summary-footer-label">Plastik</div>
+                <div className="rw-summary-footer-value" style={{ color: "var(--status-plastik-text)" }}>
+                  {summary.jumlahPlastik}×
+                </div>
+              </div>
+            </div>
+            <div className="rw-summary-divider" />
+            <div className="rw-summary-footer-item">
+              <Leaf size={13} style={{ color: "var(--status-hadir-text)" }} />
+              <div>
+                <div className="rw-summary-footer-label">Plastik BYOC</div>
+                <div className="rw-summary-footer-value" style={{ color: "var(--status-hadir-text)" }}>
+                  {summary.jumlahPlastikByoc}×
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="rw-summary-footer-item">
+            <Trash2 size={13} style={{ color: "var(--status-plastik-text)" }} />
+            <div>
+              <div className="rw-summary-footer-label">Plastik</div>
+              <div className="rw-summary-footer-value" style={{ color: "var(--status-plastik-text)" }}>
+                {summary.jumlahPlastik}×
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ─── CHIP ────────────────────────────────────────────────────────────────────
+// ─── CHIP ─────────────────────────────────────────────────────────────────────
 function Chip({ children, color, bg, border }: {
   children: React.ReactNode;
   color?: string; bg?: string; border?: string;
@@ -179,14 +258,16 @@ function TumblerCard({ item, onClick }: { item: RiwayatTumbler; onClick: () => v
               <Zap size={9} /> Bonus Streak +{item.streakBonus}
             </Chip>
           )}
-          <Chip color="var(--status-hadir-text)" bg="var(--status-hadir-bg)" border="var(--status-hadir-border)">
+          <Chip
+            color="var(--status-hadir-text)"
+            bg="var(--status-hadir-bg)"
+            border="var(--status-hadir-border)"
+          >
             {item.method === "scan" ? <QrCode size={9} /> : <PenLine size={9} />}
             {labelMethod(item.method)}
           </Chip>
           {item.dicatatOleh !== "-" && (
-            <Chip>
-              <User size={9} /> {item.dicatatOleh}
-            </Chip>
+            <Chip><User size={9} /> {item.dicatatOleh}</Chip>
           )}
         </div>
       </div>
@@ -196,7 +277,9 @@ function TumblerCard({ item, onClick }: { item: RiwayatTumbler; onClick: () => v
 
 // ─── BELANJA CARD ─────────────────────────────────────────────────────────────
 function BelanjaCard({ item, onClick }: { item: RiwayatBelanja; onClick: () => void }) {
-  const isPlastik = item.adaProdukPlastik;
+  const isPlastik = item.adaProdukPlastik;              // plastik NON-BYOC
+  const isByoc = item.isByoc ?? false;
+  const hasPlastikByoc = isByoc && item.jumlahItemPlastik > 0; // plastik BYOC
   const hasReward = item.coinsReward > 0;
   const hasPenalty = item.coinsPenalty > 0;
 
@@ -228,14 +311,48 @@ function BelanjaCard({ item, onClick }: { item: RiwayatBelanja; onClick: () => v
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 3 }}>
                 <span className="rw-item-title" style={{ color: accColor }}>Belanja Kantin</span>
+
+                {/* Badge BYOC — hijau */}
+                {isByoc && (
+                  <Chip
+                    color="var(--status-hadir-text)"
+                    bg="var(--status-hadir-bg)"
+                    border="var(--status-hadir-border)"
+                  >
+                    <Leaf size={8} /> Wadah Sendiri
+                  </Chip>
+                )}
+
+                {/* Bonus coins */}
                 {hasReward && (
-                  <Chip color="var(--status-hadir-text)" bg="var(--status-hadir-bg)" border="var(--status-hadir-border)">
+                  <Chip
+                    color="var(--status-hadir-text)"
+                    bg="var(--status-hadir-bg)"
+                    border="var(--status-hadir-border)"
+                  >
                     <Zap size={8} /> +{item.coinsReward} Bonus
                   </Chip>
                 )}
+
+                {/* Plastik NON-BYOC → merah (pelanggaran) */}
                 {isPlastik && (
-                  <Chip color="var(--status-plastik-text)" bg="var(--status-plastik-bg)" border="var(--status-plastik-border)">
+                  <Chip
+                    color="var(--status-plastik-text)"
+                    bg="var(--status-plastik-bg)"
+                    border="var(--status-plastik-border)"
+                  >
                     <Trash2 size={8} /> Plastik
+                  </Chip>
+                )}
+
+                {/* Plastik BYOC → amber muda (info, bukan pelanggaran) */}
+                {hasPlastikByoc && !isPlastik && (
+                  <Chip
+                    color="var(--gold,#F59E0B)"
+                    bg="rgba(245,158,11,0.08)"
+                    border="rgba(245,158,11,0.22)"
+                  >
+                    <Trash2 size={8} /> Plastik (Wadah Sendiri)
                   </Chip>
                 )}
               </div>
@@ -244,7 +361,7 @@ function BelanjaCard({ item, onClick }: { item: RiwayatBelanja; onClick: () => v
               </div>
             </div>
           </div>
-          {/* Tampilkan semua coins yang relevan sekaligus */}
+
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
               {hasReward && (
@@ -267,11 +384,16 @@ function BelanjaCard({ item, onClick }: { item: RiwayatBelanja; onClick: () => v
         <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
           <Chip>{payIcon} {labelPaymentMethod(item.paymentMethod)}</Chip>
           {item.totalDiskon > 0 && (
-            <Chip color="var(--status-hadir-text)" bg="var(--status-hadir-bg)" border="var(--status-hadir-border)">
+            <Chip
+              color="var(--status-hadir-text)"
+              bg="var(--status-hadir-bg)"
+              border="var(--status-hadir-border)"
+            >
               Diskon {formatRupiah(item.totalDiskon)}
             </Chip>
           )}
         </div>
+
         {item.items.length > 0 && (
           <div className="rw-product-list">
             {item.items.map((i) => i.namaProduk).join(" · ")}
@@ -343,7 +465,9 @@ function ModalWrapper({ children, onClose, accentColor }: {
   );
 }
 
-function MRow({ label, value, icon }: { label: string; value: React.ReactNode; icon?: React.ReactNode }) {
+function MRow({ label, value, icon }: {
+  label: string; value: React.ReactNode; icon?: React.ReactNode;
+}) {
   return (
     <div className="rw-modal-row">
       <span className="rw-modal-row-label">{label}</span>
@@ -368,8 +492,14 @@ function ModalTumbler({ item, onClose }: { item: RiwayatTumbler; onClose: () => 
       </div>
 
       <MRow label="Waktu" value={`${formatWaktu(item.waktu)} WIB`} />
-      <MRow label="Metode" value={labelMethod(item.method)} icon={item.method === "scan" ? <QrCode size={12} /> : <PenLine size={12} />} />
-      {item.dicatatOleh !== "-" && <MRow label="Dicatat oleh" value={item.dicatatOleh} icon={<User size={12} />} />}
+      <MRow
+        label="Metode"
+        value={labelMethod(item.method)}
+        icon={item.method === "scan" ? <QrCode size={12} /> : <PenLine size={12} />}
+      />
+      {item.dicatatOleh !== "-" && (
+        <MRow label="Dicatat oleh" value={item.dicatatOleh} icon={<User size={12} />} />
+      )}
       {item.kelas !== "-" && <MRow label="Kelas" value={item.kelas} />}
 
       <div className="rw-modal-divider" />
@@ -380,14 +510,24 @@ function ModalTumbler({ item, onClose }: { item: RiwayatTumbler; onClose: () => 
           <div className="rw-modal-coins-total-plus">+{total}</div>
         </div>
         <div className="rw-modal-coins-breakdown">
-          <div className="rw-modal-coins-chip" style={{ background: "var(--status-hadir-bg)", borderColor: "var(--status-hadir-border)" }}>
+          <div
+            className="rw-modal-coins-chip"
+            style={{ background: "var(--status-hadir-bg)", borderColor: "var(--status-hadir-border)" }}
+          >
             <span className="rw-modal-coins-chip-label">Reward</span>
-            <span className="rw-modal-coins-chip-value" style={{ color: "var(--status-hadir-text)" }}>+{item.coinsReward}</span>
+            <span className="rw-modal-coins-chip-value" style={{ color: "var(--status-hadir-text)" }}>
+              +{item.coinsReward}
+            </span>
           </div>
           {item.streakBonus > 0 && (
-            <div className="rw-modal-coins-chip" style={{ background: "rgba(245,158,11,0.08)", borderColor: "rgba(245,158,11,0.2)" }}>
+            <div
+              className="rw-modal-coins-chip"
+              style={{ background: "rgba(245,158,11,0.08)", borderColor: "rgba(245,158,11,0.2)" }}
+            >
               <span className="rw-modal-coins-chip-label">Bonus Streak</span>
-              <span className="rw-modal-coins-chip-value" style={{ color: "var(--gold,#F59E0B)" }}>+{item.streakBonus}</span>
+              <span className="rw-modal-coins-chip-value" style={{ color: "var(--gold,#F59E0B)" }}>
+                +{item.streakBonus}
+              </span>
             </div>
           )}
         </div>
@@ -404,6 +544,8 @@ function ModalTumbler({ item, onClose }: { item: RiwayatTumbler; onClose: () => 
 // ─── MODAL BELANJA ────────────────────────────────────────────────────────────
 function ModalBelanja({ item, onClose }: { item: RiwayatBelanja; onClose: () => void }) {
   const isPlastik = item.adaProdukPlastik;
+  const isByoc = item.isByoc ?? false;
+  const hasPlastikByoc = isByoc && item.jumlahItemPlastik > 0 && !isPlastik;
   const hasReward = item.coinsReward > 0;
   const hasPenalty = item.coinsPenalty > 0;
 
@@ -432,12 +574,32 @@ function ModalBelanja({ item, onClose }: { item: RiwayatBelanja; onClose: () => 
         </div>
       </div>
 
-      {/* Banner coins reward */}
+      {/* Banner BYOC */}
+      {isByoc && (
+        <div style={{
+          background: "var(--status-hadir-bg)",
+          border: "1px solid var(--status-hadir-border)",
+          borderRadius: 10, padding: "10px 14px", marginBottom: 10,
+          display: "flex", alignItems: "center", gap: 10,
+        }}>
+          <Leaf size={16} style={{ color: "var(--status-hadir-text)", flexShrink: 0 }} />
+          <div>
+            <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--status-hadir-text)" }}>
+              Pakai Wadah Sendiri (BYOC)
+            </div>
+            <div style={{ fontSize: "0.76rem", marginTop: 2 }}>
+              Kamu membawa wadah sendiri untuk transaksi ini.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Banner bonus coins */}
       {hasReward && (
         <div style={{
           background: "var(--status-hadir-bg)",
           border: "1px solid var(--status-hadir-border)",
-          borderRadius: 10, padding: "10px 14px", marginBottom: 14,
+          borderRadius: 10, padding: "10px 14px", marginBottom: 10,
           display: "flex", alignItems: "center", gap: 10,
         }}>
           <Zap size={16} style={{ color: "var(--status-hadir-text)", flexShrink: 0 }} />
@@ -445,7 +607,7 @@ function ModalBelanja({ item, onClose }: { item: RiwayatBelanja; onClose: () => 
             <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--status-hadir-text)" }}>
               Dapat Bonus Coins!
             </div>
-            <div style={{ fontSize: "0.76rem", color: "var(--text-primary)", marginTop: 2 }}>
+            <div style={{ fontSize: "0.76rem", marginTop: 2 }}>
               Transaksi ini memberikan reward koin tambahan.
             </div>
             <div style={{ marginTop: 6, fontSize: "0.92rem", fontWeight: 800, color: "var(--status-hadir-text)" }}>
@@ -455,13 +617,41 @@ function ModalBelanja({ item, onClose }: { item: RiwayatBelanja; onClose: () => 
         </div>
       )}
 
-      {/* Banner penalti plastik */}
+      {/* Banner plastik NON-BYOC → warning merah */}
       {isPlastik && hasPenalty && (
         <div className="rw-plastik-alert">
           <AlertTriangle size={13} style={{ color: "var(--status-plastik-text)", flexShrink: 0, marginTop: 1 }} />
           <span>
-            Ada <strong style={{ color: "var(--status-plastik-text)" }}>{item.jumlahItemPlastik} produk kemasan plastik</strong> — dikenakan penalti{" "}
-            <strong style={{ color: "var(--status-plastik-text)" }}>-{item.coinsPenalty} koin</strong>. Yuk pilih alternatif ramah lingkungan! 🌱
+            Ada{" "}
+            <strong style={{ color: "var(--status-plastik-text)" }}>
+              {item.jumlahItemPlastik} produk kemasan plastik
+            </strong>{" "}
+            — dikenakan penalti{" "}
+            <strong style={{ color: "var(--status-plastik-text)" }}>
+              -{item.coinsPenalty} koin
+            </strong>
+            . Yuk pilih alternatif ramah lingkungan! 🌱
+          </span>
+        </div>
+      )}
+
+      {/* Banner plastik BYOC → informasi hijau, tidak ada penalti */}
+      {hasPlastikByoc && (
+        <div
+          className="rw-plastik-alert"
+          style={{ background: "rgba(16,185,129,0.07)", borderColor: "rgba(16,185,129,0.22)" }}
+        >
+          <Leaf size={13} style={{ color: "var(--status-hadir-text)", flexShrink: 0, marginTop: 1 }} />
+          <span>
+            Ada{" "}
+            <strong style={{ color: "var(--status-hadir-text)" }}>
+              {item.jumlahItemPlastik} produk kemasan plastik
+            </strong>{" "}
+            dibeli menggunakan{" "}
+            <strong style={{ color: "var(--status-hadir-text)" }}>
+              wadah sendiri (BYOC)
+            </strong>{" "}
+            — tidak dikenakan penalti. Tetap ramah lingkungan! 🌱
           </span>
         </div>
       )}
@@ -492,15 +682,16 @@ function ModalBelanja({ item, onClose }: { item: RiwayatBelanja; onClose: () => 
 
       <MRow label="Metode Bayar" value={labelPaymentMethod(item.paymentMethod)} icon={payIcon} />
       {item.totalDiskon > 0 && (
-        <MRow label="Diskon" value={<span style={{ color: "var(--status-hadir-text)" }}>-{formatRupiah(item.totalDiskon)}</span>} />
+        <MRow
+          label="Diskon"
+          value={<span style={{ color: "var(--status-hadir-text)" }}>-{formatRupiah(item.totalDiskon)}</span>}
+        />
       )}
       <MRow label="Total Harga" value={formatRupiah(item.totalHarga)} />
       <MRow label="Total Bayar" value={<strong>{formatRupiah(item.totalBayar)}</strong>} />
 
-      {/* Ringkasan coins di bawah */}
-      {(hasReward || hasPenalty) && (
-        <div className="rw-modal-divider" />
-      )}
+      {(hasReward || hasPenalty) && <div className="rw-modal-divider" />}
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
         {hasReward && (
           <div style={{ textAlign: "right" }}>
@@ -545,9 +736,7 @@ function ModalPelanggaran({ item, onClose }: { item: RiwayatPelanggaran; onClose
         <Chip color={ks.color} bg={ks.bg} border={ks.border}>
           <span style={{ textTransform: "capitalize" }}>Kategori {item.kategori}</span>
         </Chip>
-        <Chip color={sc.color} bg={sc.bg} border={sc.border}>
-          {sc.label}
-        </Chip>
+        <Chip color={sc.color} bg={sc.bg} border={sc.border}>{sc.label}</Chip>
       </div>
 
       <MRow label="Dicatat oleh" value={item.dicatatOleh} icon={<User size={12} />} />
@@ -558,9 +747,7 @@ function ModalPelanggaran({ item, onClose }: { item: RiwayatPelanggaran; onClose
 
       {item.buktiUrl && (
         <div style={{ marginTop: 12 }}>
-          <div className="rw-bukti-label">
-            <ImageIcon size={11} /> Foto Bukti
-          </div>
+          <div className="rw-bukti-label"><ImageIcon size={11} /> Foto Bukti</div>
           <img src={item.buktiUrl} alt="Bukti" className="rw-bukti-img" />
         </div>
       )}
@@ -574,7 +761,7 @@ function ModalPelanggaran({ item, onClose }: { item: RiwayatPelanggaran; onClose
   );
 }
 
-// ─── EMPTY STATE ─────────────────────────────────────────────────────────────
+// ─── EMPTY STATE ──────────────────────────────────────────────────────────────
 function EmptyState({ tab }: { tab: TabKey }) {
   const cfg = {
     all: { icon: <Clock size={30} strokeWidth={1} />, text: "Belum ada aktivitas" },
@@ -691,7 +878,13 @@ export default function RiwayatPage() {
         )}
 
         {summary && <SummaryCards summary={summary} />}
-        {summary && <PlastikWarning jumlah={summary.jumlahPlastik} />}
+
+        {summary && (
+          <PlastikWarning
+            jumlah={summary.jumlahPlastik}
+            jumlahByoc={summary.jumlahPlastikByoc ?? 0}
+          />
+        )}
 
         <div className="rw-tabs">
           {TABS.map((t) => (
@@ -707,8 +900,9 @@ export default function RiwayatPage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {tab === "all" && (
-            allItems.length === 0 ? <EmptyState tab="all" /> :
-              allItems.map((entry, i) => {
+            allItems.length === 0
+              ? <EmptyState tab="all" />
+              : allItems.map((entry, i) => {
                 if (entry.kind === "tumbler")
                   return <TumblerCard key={i} item={entry.item} onClick={() => setModalTumbler(entry.item)} />;
                 if (entry.kind === "belanja")

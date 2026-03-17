@@ -8,7 +8,7 @@ export interface RiwayatTumbler {
   createdAt: string;
   coinsReward: number;
   streakBonus: number;
-  method: string;          // 'scan' | 'manual'
+  method: string;
   dicatatOleh: string;
   kelas: string;
 }
@@ -18,7 +18,7 @@ export interface DetailBelanja {
   harga: number;
   qty: number;
   subtotal: number;
-  jenisKemasan: string;    // 'plastik' | 'kertas' | 'tanpa_kemasan'
+  jenisKemasan: string;
 }
 
 export interface RiwayatBelanja {
@@ -31,11 +31,12 @@ export interface RiwayatBelanja {
   totalDiskon: number;
   totalBayar: number;
   coinsUsed: number;
-  coinsReward: number;     // coins bonus didapat (mis. dari promo)
-  coinsPenalty: number;    // potongan coins karena kemasan plastik
-  paymentMethod: string;   // 'coins' | 'voucher' | 'tunai'
+  coinsReward: number;
+  coinsPenalty: number;
+  paymentMethod: string;
+  isByoc: boolean;           // ← baru: bawa wadah sendiri
   items: DetailBelanja[];
-  adaProdukPlastik: boolean;
+  adaProdukPlastik: boolean; // true hanya jika plastik DAN bukan BYOC
   jumlahItemPlastik: number;
   dicatatOleh: string;
   verifiedAt: string | null;
@@ -63,7 +64,8 @@ export interface RiwayatSummary {
   totalPelanggaran: number;
   totalCoinsDidapat: number;
   totalCoinsKeluar: number;
-  jumlahPlastik: number;
+  jumlahPlastik: number;       // plastik NON-BYOC (pelanggaran)
+  jumlahPlastikByoc: number;   // ← baru: plastik BYOC (bukan pelanggaran)
 }
 
 export interface RiwayatAll {
@@ -93,7 +95,7 @@ export function formatTanggal(dateStr: string): string {
 
 export function formatWaktu(timeStr: string): string {
   if (!timeStr || timeStr === "-") return "-";
-  return timeStr.substring(0, 5); // HH:MM
+  return timeStr.substring(0, 5);
 }
 
 export function formatRupiah(n: number): string {
@@ -111,7 +113,7 @@ export function labelMethod(m: string): string {
 }
 
 // ─── IN-MEMORY CACHE ─────────────────────────────────────────────────────────
-const CACHE_DURATION = 3 * 60 * 1000; // 3 menit
+const CACHE_DURATION = 3 * 60 * 1000;
 
 interface CacheEntry { data: RiwayatAll; timestamp: number }
 let _cache: CacheEntry | null = null;
@@ -126,13 +128,8 @@ function setCached(data: RiwayatAll): void {
   _cache = { data, timestamp: Date.now() };
 }
 
-export function clearRiwayatCache(): void {
-  _cache = null;
-}
-
-export function isRiwayatCached(): boolean {
-  return !!getCached();
-}
+export function clearRiwayatCache(): void { _cache = null; }
+export function isRiwayatCached(): boolean { return !!getCached(); }
 
 // ─── API CALLS ────────────────────────────────────────────────────────────────
 export async function getRiwayatAll(
@@ -147,12 +144,7 @@ export async function getRiwayatAll(
   if (!res.data?.success) throw new Error("Gagal mengambil riwayat");
 
   let payload: any = res.data;
-  while (
-    payload &&
-    typeof payload === "object" &&
-    "success" in payload &&
-    "data" in payload
-  ) {
+  while (payload && typeof payload === "object" && "success" in payload && "data" in payload) {
     payload = (payload as ApiEnvelope).data;
   }
 
@@ -167,27 +159,10 @@ export async function getRiwayatAll(
       totalCoinsDidapat: Number(payload?.summary?.totalCoinsDidapat ?? 0),
       totalCoinsKeluar: Number(payload?.summary?.totalCoinsKeluar ?? 0),
       jumlahPlastik: Number(payload?.summary?.jumlahPlastik ?? 0),
+      jumlahPlastikByoc: Number(payload?.summary?.jumlahPlastikByoc ?? 0),
     },
   };
 
   setCached(normalized);
   return normalized;
-}
-
-export async function getRiwayatTumbler(limit = 50): Promise<RiwayatTumbler[]> {
-  const res = await api.get("/riwayat/tumbler", { params: { limit } });
-  if (!res.data?.success) throw new Error("Gagal mengambil riwayat tumbler");
-  return res.data.data;
-}
-
-export async function getRiwayatBelanja(limit = 50): Promise<RiwayatBelanja[]> {
-  const res = await api.get("/riwayat/belanja", { params: { limit } });
-  if (!res.data?.success) throw new Error("Gagal mengambil riwayat belanja");
-  return res.data.data;
-}
-
-export async function getRiwayatPelanggaran(limit = 50): Promise<RiwayatPelanggaran[]> {
-  const res = await api.get("/riwayat/pelanggaran", { params: { limit } });
-  if (!res.data?.success) throw new Error("Gagal mengambil riwayat pelanggaran");
-  return res.data.data;
 }
