@@ -399,8 +399,9 @@ export default function ProdukPage() {
         ? { ...form, stok: form.stokHarian ?? form.stok }
         : { ...form, stokHarian: undefined };
 
-      if (form.id) {
-        const { id, ...payload } = normalizedForm;
+      if (form.id !== undefined) {
+        const id = form.id;
+        const { id: _id, ...payload } = normalizedForm;
         await updateProduk(id, payload);
         showToast("Produk berhasil diperbarui", "ok");
       } else {

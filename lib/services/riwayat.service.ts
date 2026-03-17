@@ -166,3 +166,27 @@ export async function getRiwayatAll(
   setCached(normalized);
   return normalized;
 }
+
+export async function getRiwayatTumbler(
+  limit = 50,
+  forceRefresh = false,
+): Promise<RiwayatTumbler[]> {
+  const data = await getRiwayatAll(limit, forceRefresh);
+  return data.tumbler;
+}
+
+export async function getRiwayatBelanja(
+  limit = 50,
+  forceRefresh = false,
+): Promise<RiwayatBelanja[]> {
+  const data = await getRiwayatAll(limit, forceRefresh);
+  return data.belanja;
+}
+
+export async function getRiwayatPelanggaran(
+  limit = 50,
+  forceRefresh = false,
+): Promise<RiwayatPelanggaran[]> {
+  const data = await getRiwayatAll(limit, forceRefresh);
+  return data.pelanggaran;
+}
