@@ -40,10 +40,22 @@ export interface ProfilVoucher {
   usedAt: string | null;
 }
 
+export interface ProfilShowcaseNote {
+  id: string;
+  achievementId: number;
+  achievementName: string;
+  achievementIcon: string;
+  achievementBadgeColor: string;
+  noteText: string | null;
+  expiresAt: string | null;
+  createdAt: string | null;
+}
+
 export interface ProfilData {
   profil: ProfilSiswa;
   achievements: ProfilAchievement[];
   vouchers: ProfilVoucher[];
+  showcaseNote: ProfilShowcaseNote | null;
 }
 
 type ApiEnvelope<T = unknown> = {
@@ -110,6 +122,18 @@ export async function getProfil(forceRefresh = false): Promise<ProfilData> {
           usedAt: v?.usedAt ?? null,
         }))
       : [],
+    showcaseNote: payload?.showcaseNote
+      ? {
+          id: String(payload.showcaseNote.id ?? ""),
+          achievementId: Number(payload.showcaseNote.achievementId ?? 0),
+          achievementName: payload.showcaseNote.achievementName ?? "-",
+          achievementIcon: payload.showcaseNote.achievementIcon ?? "🏆",
+          achievementBadgeColor: payload.showcaseNote.achievementBadgeColor ?? "blue",
+          noteText: payload.showcaseNote.noteText ?? null,
+          expiresAt: payload.showcaseNote.expiresAt ?? null,
+          createdAt: payload.showcaseNote.createdAt ?? null,
+        }
+      : null,
   };
 
   _cache = { data: normalized, ts: Date.now() };

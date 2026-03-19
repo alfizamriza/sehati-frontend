@@ -4,8 +4,6 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   RefreshCw,
-  Sun,
-  Moon,
   Trophy,
   Flame,
   Star,
@@ -14,7 +12,7 @@ import {
   Users,
   Medal,
   Crown,
-  ChevronUp,
+  ChevronDown,
   Award,
   BookOpen,
   GraduationCap,
@@ -33,14 +31,18 @@ import {
   LeaderboardKelasRow,
   LeaderboardJenjangRow,
 } from "@/lib/services/admin";
-import SehatiLoadingScreen from "@/components/siswa/SehatiLoadingScreen";
 import "../siswa-tokens.css";
 import "./leaderboard-light.css";
 
 // ─────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────
-type TabKey = "kelas" | "antarKelas" | "sekolah" | "antarJenjang" | "siswaAntarJenjang";
+type TabKey =
+  | "kelas"
+  | "antarKelas"
+  | "sekolah"
+  | "antarJenjang"
+  | "siswaAntarJenjang";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "kelas", label: "Kelas Saya" },
@@ -50,19 +52,21 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "siswaAntarJenjang", label: "Se-Jenjang" },
 ];
 
-// Jenjang config — icons only, no emoji
 const JENJANG_CFG: Record<string, { icon: React.ReactNode; color: string }> = {
   SD: { icon: <BookOpen size={16} />, color: "var(--jenjang-sd)" },
   SMP: { icon: <School size={16} />, color: "var(--jenjang-smp)" },
   SMA: { icon: <GraduationCap size={16} />, color: "var(--jenjang-sma)" },
 };
 
-// Rank medal icons
 const RankIcon = ({ rank }: { rank: number }) => {
   if (rank === 1) return <Medal size={18} color="var(--gold)" strokeWidth={2.5} />;
   if (rank === 2) return <Medal size={18} color="var(--silver)" strokeWidth={2.5} />;
   if (rank === 3) return <Medal size={18} color="var(--bronze)" strokeWidth={2.5} />;
-  return <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-muted)" }}>#{rank}</span>;
+  return (
+    <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-muted)" }}>
+      #{rank}
+    </span>
+  );
 };
 
 // ─────────────────────────────────────────────
@@ -85,10 +89,64 @@ const getTingkatLabel = (value?: string | number | null) => {
 };
 
 // ─────────────────────────────────────────────
+// ACHIEVEMENT BADGE + EXPAND PANEL
+//
+// Konsep:
+// - Badge kecil (ikon + nama) muncul di bawah meta-chip
+// - Tap badge → panel glassmorphism slide down di dalam card
+// - Tidak ada elemen keluar dari card → layout selalu rapi
+// - State expand per-item (lokal di komponen AchievementShowcase)
+// ─────────────────────────────────────────────
+const AchievementShowcase = ({
+  note,
+}: {
+  note: LeaderboardSiswaRow["showcaseNote"];
+}) => {
+  const [open, setOpen] = useState(false);
+  if (!note) return null;
+
+  return (
+    <>
+      {/* Badge — selalu terlihat */}
+      <button
+        className="ach-badge"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        aria-expanded={open}
+        aria-label={`Lihat achievement: ${note.achievementName}`}
+      >
+        <span className="ach-badge-icon">{note.achievementIcon}</span>
+        <span className="ach-badge-name">{note.achievementName}</span>
+        <ChevronDown
+          size={11}
+          className={`ach-badge-chevron${open ? " open" : ""}`}
+        />
+      </button>
+
+      {/* Panel expand — slide down di dalam card */}
+      <div
+        className={`ach-expand-panel${open ? " open" : ""}`}
+        aria-hidden={!open}
+      >
+        <div className="ach-expand-inner">
+          <div className="ach-expand-title">
+            <span>{note.achievementIcon}</span>
+            {note.achievementName}
+          </div>
+          <p className="ach-expand-text">
+            {note.noteText || "Achievement ini sedang dipamerkan."}
+          </p>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ─────────────────────────────────────────────
 // SUB COMPONENTS
 // ─────────────────────────────────────────────
-
-/** Skeleton shimmer baris */
 const SkeletonRow = () => (
   <div className="lb-item glass-panel lb-skeleton">
     <div className="skel skel-rank" />
@@ -101,7 +159,6 @@ const SkeletonRow = () => (
   </div>
 );
 
-/** Podium tiga besar */
 interface PodiumProps { top3: LeaderboardSiswaRow[]; }
 const Podium = ({ top3 }: PodiumProps) => {
   const order = [2, 1, 3] as const;
@@ -115,15 +172,18 @@ const Podium = ({ top3 }: PodiumProps) => {
               key={r}
               initial={{ scale: 0, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              transition={{ delay: r === 1 ? 0.1 : r === 2 ? 0.2 : 0.3, type: "spring" }}
-              className={`podium-box r-${r} ${p?.is_me ? "is-me-podium" : ""}`}
+              transition={{
+                delay: r === 1 ? 0.1 : r === 2 ? 0.2 : 0.3,
+                type: "spring",
+              }}
+              className={`podium-box r-${r}${p?.is_me ? " is-me-podium" : ""}`}
             >
               {r === 1 && (
                 <div className="crown-top">
                   <Crown size={20} color="var(--gold)" strokeWidth={2} />
                 </div>
               )}
-              <div className={`p-avatar-circle ${p?.is_me ? "bg-primary" : ""}`}>
+              <div className={`p-avatar-circle${p?.is_me ? " bg-primary" : ""}`}>
                 {p?.fotoUrl ? (
                   <img
                     src={p.fotoUrl}
@@ -149,46 +209,65 @@ const Podium = ({ top3 }: PodiumProps) => {
   );
 };
 
-/** Baris siswa */
+// ─────────────────────────────────────────────
+// SiswaItem
+// Layout: item-main-row (rank + avatar + info + score)
+//         lalu AchievementShowcase (badge + panel) di bawahnya
+//         keduanya di dalam flex-wrap card
+// ─────────────────────────────────────────────
 const SiswaItem = ({ row, idx }: { row: LeaderboardSiswaRow; idx: number }) => (
   <motion.div
     initial={{ opacity: 0, x: -16 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ delay: idx * 0.04 }}
-    className={`lb-item glass-panel ${row.is_me ? "is-me" : ""}`}
+    className={`lb-item glass-panel${row.is_me ? " is-me" : ""}`}
   >
-    <div className="item-rank"><RankIcon rank={row.rank} /></div>
-    <div className={`item-avatar-circle ${row.is_me ? "bg-primary" : ""}`}>
-      {row.fotoUrl ? (
-        <img src={row.fotoUrl} alt={row.nama} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-      ) : (
-        getInitials(row.nama)
-      )}
-    </div>
-    <div className="item-info">
-      <div className="item-name">
-        {row.nama}
-        {row.is_me && <span className="me-badge">Kamu</span>}
+    {/* Baris utama */}
+    <div className="item-main-row">
+      <div className="item-rank">
+        <RankIcon rank={row.rank} />
       </div>
-      <div className="item-meta">
-        <span className="meta-chip">
-          <Flame size={11} color="var(--streak-color)" />
-          {row.streak} hari
-        </span>
-        <span className="meta-chip">
-          <School size={11} />
-          {row.kelas}
-        </span>
+
+      <div className={`item-avatar-circle${row.is_me ? " bg-primary" : ""}`}>
+        {row.fotoUrl ? (
+          <img
+            src={row.fotoUrl}
+            alt={row.nama}
+            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+          />
+        ) : (
+          getInitials(row.nama)
+        )}
       </div>
-    </div>
-    <div className="item-score">
-      <div className="pts">{formatCoins(row.coins)}</div>
-      <div className="pts-label">coins</div>
+
+      <div className="item-info">
+        <div className="item-name">
+          {row.nama}
+          {row.is_me && <span className="me-badge">Kamu</span>}
+        </div>
+        <div className="item-meta">
+          <span className="meta-chip">
+            <Flame size={11} color="var(--streak-color)" />
+            {row.streak} hari
+          </span>
+          <span className="meta-chip">
+            <School size={11} />
+            {row.kelas}
+          </span>
+        </div>
+
+        {/* Badge achievement — di dalam item-info, bawah meta */}
+        <AchievementShowcase note={row.showcaseNote} />
+      </div>
+
+      <div className="item-score">
+        <div className="pts">{formatCoins(row.coins)}</div>
+        <div className="pts-label">coins</div>
+      </div>
     </div>
   </motion.div>
 );
 
-/** Baris kelas */
 const KelasItem = ({ row, idx }: { row: LeaderboardKelasRow; idx: number }) => {
   const jenjangLabel = getJenjangLabel(
     row.jenjang,
@@ -196,49 +275,47 @@ const KelasItem = ({ row, idx }: { row: LeaderboardKelasRow; idx: number }) => {
   );
   const tingkatLabel = getTingkatLabel(row.tingkat);
   const cfg = JENJANG_CFG[jenjangLabel];
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -16 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: idx * 0.04 }}
-      className={`lb-item glass-panel ${row.is_my_class ? "is-me" : ""}`}
+      className={`lb-item glass-panel${row.is_my_class ? " is-me" : ""}`}
     >
-      <div className="item-rank"><RankIcon rank={row.rank} /></div>
-      <div
-        className="item-avatar-circle kelas-icon"
-        style={{ background: cfg ? `${cfg.color}18` : undefined, color: cfg?.color }}
-      >
-        {cfg?.icon ?? <Building2 size={16} />}
-      </div>
-      <div className="item-info">
-        <div className="item-name">
-          {row.nama_kelas}
-          {row.is_my_class && <span className="me-badge">Kelas Saya</span>}
+      <div className="item-main-row">
+        <div className="item-rank"><RankIcon rank={row.rank} /></div>
+
+        <div
+          className="item-avatar-circle kelas-icon"
+          style={{ background: cfg ? `${cfg.color}18` : undefined, color: cfg?.color }}
+        >
+          {cfg?.icon ?? <Building2 size={16} />}
         </div>
-        <div className="item-meta">
-          <span className="meta-chip" style={{ color: cfg?.color }}>
-            {cfg?.icon}
-            {jenjangLabel}
-          </span>
-          <span className="meta-chip">
-            <Award size={11} />
-            {tingkatLabel}
-          </span>
-          <span className="meta-chip">
-            <Users size={11} />
-            {row.jumlah_siswa} siswa
-          </span>
+
+        <div className="item-info">
+          <div className="item-name">
+            {row.nama_kelas}
+            {row.is_my_class && <span className="me-badge">Kelas Saya</span>}
+          </div>
+          <div className="item-meta">
+            <span className="meta-chip" style={{ color: cfg?.color }}>
+              {cfg?.icon}{jenjangLabel}
+            </span>
+            <span className="meta-chip"><Award size={11} />{tingkatLabel}</span>
+            <span className="meta-chip"><Users size={11} />{row.jumlah_siswa} siswa</span>
+          </div>
         </div>
-      </div>
-      <div className="item-score">
-        <div className="pts">{formatCoins(Math.round(row.avg_coins))}</div>
-        <div className="pts-label">avg/siswa</div>
+
+        <div className="item-score">
+          <div className="pts">{formatCoins(Math.round(row.avg_coins))}</div>
+          <div className="pts-label">avg/siswa</div>
+        </div>
       </div>
     </motion.div>
   );
 };
 
-/** Baris jenjang */
 const JenjangItem = ({ row, idx }: { row: LeaderboardJenjangRow; idx: number }) => {
   const cfg = JENJANG_CFG[row.jenjang];
   return (
@@ -249,37 +326,37 @@ const JenjangItem = ({ row, idx }: { row: LeaderboardJenjangRow; idx: number }) 
       className="lb-item glass-panel lb-jenjang-item"
       style={{ borderColor: cfg ? `${cfg.color}44` : undefined, color: cfg?.color }}
     >
-      <div className="item-rank"><RankIcon rank={row.rank} /></div>
-      <div
-        className="item-avatar-circle jenjang-icon"
-        style={{ background: cfg ? `${cfg.color}15` : undefined, color: cfg?.color }}
-      >
-        {cfg?.icon ?? <Building2 size={18} />}
-      </div>
-      <div className="item-info">
-        <div className="item-name" style={{ color: cfg?.color }}>
-          Jenjang {row.jenjang}
+      <div className="item-main-row">
+        <div className="item-rank"><RankIcon rank={row.rank} /></div>
+
+        <div
+          className="item-avatar-circle jenjang-icon"
+          style={{ background: cfg ? `${cfg.color}15` : undefined, color: cfg?.color }}
+        >
+          {cfg?.icon ?? <Building2 size={18} />}
         </div>
-        <div className="item-meta">
-          <span className="meta-chip">
-            <Users size={11} />
-            {row.total_siswa} siswa
-          </span>
-          <span className="meta-chip">
-            <TrendingUp size={11} />
-            Total {formatCoins(Number(row.total_coins))}
-          </span>
+
+        <div className="item-info">
+          <div className="item-name" style={{ color: cfg?.color }}>
+            Jenjang {row.jenjang}
+          </div>
+          <div className="item-meta">
+            <span className="meta-chip"><Users size={11} />{row.total_siswa} siswa</span>
+            <span className="meta-chip"><TrendingUp size={11} />Total {formatCoins(Number(row.total_coins))}</span>
+          </div>
         </div>
-      </div>
-      <div className="item-score">
-        <div className="pts" style={{ color: cfg?.color }}>{Math.round(Number(row.avg_coins))}</div>
-        <div className="pts-label">avg coins</div>
+
+        <div className="item-score">
+          <div className="pts" style={{ color: cfg?.color }}>
+            {Math.round(Number(row.avg_coins))}
+          </div>
+          <div className="pts-label">avg coins</div>
+        </div>
       </div>
     </motion.div>
   );
 };
 
-/** Empty state */
 const EmptyState = ({ message = "Belum ada data" }: { message?: string }) => (
   <div className="lb-empty">
     <Trophy size={40} strokeWidth={1.5} />
@@ -292,9 +369,7 @@ const EmptyState = ({ message = "Belum ada data" }: { message?: string }) => (
 // ─────────────────────────────────────────────
 export default function LeaderboardSiswaPage() {
   const [tab, setTab] = useState<TabKey>("kelas");
-  const [isDark, setIsDark] = useState(false);
 
-  // ── Query hooks ──
   const { data: dataKelas, isLoading: loadKelas, refetch: refKelas } = useLeaderboardKelasSaya();
   const { data: dataAntarKelas, isLoading: loadAntarKelas, refetch: refAntarKelas } = useLeaderboardAntarKelas();
   const { data: dataSekolah, isLoading: loadSekolah, refetch: refSekolah } = useLeaderboardSekolah();
@@ -320,7 +395,6 @@ export default function LeaderboardSiswaPage() {
     siswaAntarJenjang: loadSiswaJenjang,
   }[tab];
 
-  // Top 3 podium
   const top3Siswa = useMemo((): LeaderboardSiswaRow[] => {
     const src =
       tab === "kelas" ? dataKelas :
@@ -331,7 +405,6 @@ export default function LeaderboardSiswaPage() {
 
   const showPodium = tab !== "antarKelas" && tab !== "antarJenjang";
 
-  // "Posisi Saya"
   const myPosSiswa = useMemo(() => {
     const src =
       tab === "kelas" ? dataKelas :
@@ -349,7 +422,7 @@ export default function LeaderboardSiswaPage() {
     <main className="dashboard-page leaderboard-page">
       <div className="dashboard-container">
 
-        {/* ── HEADER ── */}
+        {/* HEADER */}
         <header className="dash-header">
           <motion.div
             initial={{ x: -20, opacity: 0 }}
@@ -364,10 +437,9 @@ export default function LeaderboardSiswaPage() {
               <span className="brand-role">Leaderboard</span>
             </div>
           </motion.div>
-
           <div className="header-actions">
             <button
-              className={`btn-icon ${isLoading ? "spinning" : ""}`}
+              className={`btn-icon${isLoading ? " spinning" : ""}`}
               onClick={handleRefresh}
               title="Refresh data"
             >
@@ -376,13 +448,13 @@ export default function LeaderboardSiswaPage() {
           </div>
         </header>
 
-        {/* ── TABS ── */}
+        {/* TABS */}
         <div className="lb-tabs-wrapper">
           <div className="lb-tabs-container glass-panel">
             {TABS.map((t) => (
               <button
                 key={t.key}
-                className={`lb-tab ${tab === t.key ? "active" : ""}`}
+                className={`lb-tab${tab === t.key ? " active" : ""}`}
                 onClick={() => setTab(t.key)}
               >
                 {t.label}
@@ -391,7 +463,7 @@ export default function LeaderboardSiswaPage() {
           </div>
         </div>
 
-        {/* ── POSISI SAYA ── */}
+        {/* POSISI SAYA */}
         <AnimatePresence>
           {(myPosSiswa || myPosKelas) && (
             <motion.div
@@ -402,8 +474,7 @@ export default function LeaderboardSiswaPage() {
               className="my-position-card glass-panel"
             >
               <div className="my-pos-label">
-                <Star size={13} />
-                Posisi Kamu
+                <Star size={13} /> Posisi Kamu
               </div>
               <div className="my-pos-content">
                 <span className="my-pos-rank">
@@ -429,7 +500,7 @@ export default function LeaderboardSiswaPage() {
           )}
         </AnimatePresence>
 
-        {/* ── CONTENT ── */}
+        {/* CONTENT */}
         <AnimatePresence mode="wait">
           <motion.div
             key={tab}
@@ -438,12 +509,10 @@ export default function LeaderboardSiswaPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.18 }}
           >
-            {/* Podium (tab siswa saja) */}
             {showPodium && !isLoading && top3Siswa.length > 0 && (
               <Podium top3={top3Siswa} />
             )}
 
-            {/* Antar Jenjang summary cards */}
             {tab === "antarJenjang" && !isLoading && (dataAntarJenjang ?? []).length > 0 && (
               <div className="jenjang-summary-row">
                 {(dataAntarJenjang ?? []).map((j) => {
@@ -462,64 +531,52 @@ export default function LeaderboardSiswaPage() {
                       <div className="jc-jenjang" style={{ color: cfg?.color }}>{j.jenjang}</div>
                       <div className="jc-rank">#{j.rank}</div>
                       <div className="jc-avg">{Math.round(Number(j.avg_coins))} avg</div>
-                      <div className="jc-siswa">
-                        <Users size={10} />
-                        {j.total_siswa}
-                      </div>
+                      <div className="jc-siswa"><Users size={10} />{j.total_siswa}</div>
                     </motion.div>
                   );
                 })}
               </div>
             )}
 
-            {/* Skeleton */}
             {isLoading && (
               <div className="lb-list">
                 {Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)}
               </div>
             )}
 
-            {/* List data */}
             {!isLoading && (
               <div className="lb-list">
-
                 {tab === "kelas" && (
                   (dataKelas ?? []).length === 0
                     ? <EmptyState message="Tidak ada data untuk kelas ini" />
                     : (dataKelas ?? []).map((row, i) => <SiswaItem key={row.nis} row={row} idx={i} />)
                 )}
-
                 {tab === "antarKelas" && (
                   (dataAntarKelas ?? []).length === 0
                     ? <EmptyState message="Tidak ada data kelas" />
                     : (dataAntarKelas ?? []).map((row, i) => <KelasItem key={row.kelas_id} row={row} idx={i} />)
                 )}
-
                 {tab === "sekolah" && (
                   (dataSekolah ?? []).length === 0
                     ? <EmptyState message="Tidak ada data siswa" />
                     : (dataSekolah ?? []).map((row, i) => <SiswaItem key={row.nis} row={row} idx={i} />)
                 )}
-
                 {tab === "antarJenjang" && (
                   (dataAntarJenjang ?? []).length === 0
                     ? <EmptyState message="Tidak ada data jenjang" />
                     : (dataAntarJenjang ?? []).map((row, i) => <JenjangItem key={row.jenjang} row={row} idx={i} />)
                 )}
-
                 {tab === "siswaAntarJenjang" && (
                   (dataSiswaJenjang ?? []).length === 0
                     ? <EmptyState message="Tidak ada data siswa se-jenjang" />
                     : (dataSiswaJenjang ?? []).map((row, i) => <SiswaItem key={row.nis} row={row} idx={i} />)
                 )}
-
               </div>
             )}
           </motion.div>
         </AnimatePresence>
 
       </div>
-
       <BottomNavSiswa />
     </main>
   );

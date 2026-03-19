@@ -1,0 +1,527 @@
+/* ================================================================
+   CATATAN PENCAPAIAN — Liquid Glass Style
+   Import AFTER profil.css:
+     import "./profil-showcase.css";
+
+   Hanya override bagian Catatan Pencapaian (.profil-showcase-*)
+   Style lain di profil.css TIDAK tersentuh.
+   ================================================================ */
+
+/* ── LIQUID GLASS BASE MIXIN (class helper) ─────────────────────
+   Diterapkan pada .profil-showcase-card via override di bawah     */
+
+/* Override total untuk showcase card */
+.profil-showcase-card {
+    position: relative;
+    width: 100%;
+    border-radius: 22px;
+    overflow: hidden;
+    isolation: isolate;
+    padding: 18px 18px 16px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Liquid glass — light mode */
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.3),
+        0 20px 60px rgba(31, 38, 135, 0.10),
+        0 8px 24px rgba(31, 38, 135, 0.07),
+        0 0 0 0 rgba(24, 120, 238, 0);
+    backdrop-filter: blur(28px) saturate(1.8) brightness(1.04);
+    -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.04);
+}
+
+/* Refraction + highlight layer */
+.profil-showcase-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+        radial-gradient(ellipse 65% 45% at 28% 18%, rgba(255, 255, 255, 0.55) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 35% at 72% 78%, rgba(255, 255, 255, 0.22) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Shimmer sweep on hover */
+.profil-showcase-card::after {
+    content: "";
+    position: absolute;
+    top: -100%;
+    left: -60%;
+    width: 40%;
+    height: 300%;
+    background: linear-gradient(105deg,
+            transparent 40%,
+            rgba(255, 255, 255, 0.22) 50%,
+            transparent 60%);
+    transform: skewX(-15deg);
+    transition: left 0.65s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.profil-showcase-card:hover::after {
+    left: 140%;
+}
+
+/* All direct children above pseudo layers */
+.profil-showcase-card>* {
+    position: relative;
+    z-index: 2;
+}
+
+.profil-showcase-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.35),
+        0 28px 70px rgba(31, 38, 135, 0.14),
+        0 12px 30px rgba(31, 38, 135, 0.10),
+        0 0 30px rgba(24, 120, 238, 0.14);
+}
+
+.profil-showcase-card:active {
+    transform: translateY(0) scale(0.99);
+}
+
+/* ── DARK MODE ─────────────────────────────────────────────────── */
+[data-theme="dark"] .profil-showcase-card {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+        0 20px 60px rgba(0, 0, 0, 0.45),
+        0 8px 24px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(28px) saturate(1.4) brightness(0.94);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4) brightness(0.94);
+}
+
+[data-theme="dark"] .profil-showcase-card::before {
+    background:
+        radial-gradient(ellipse 65% 45% at 28% 18%, rgba(255, 255, 255, 0.10) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 35% at 72% 78%, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+}
+
+[data-theme="dark"] .profil-showcase-card:hover {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+        0 28px 70px rgba(0, 0, 0, 0.55),
+        0 12px 30px rgba(0, 0, 0, 0.35),
+        0 0 40px rgba(96, 165, 250, 0.18);
+}
+
+/* ── EMPTY CARD VARIANT ────────────────────────────────────────── */
+.profil-showcase-card.profil-showcase-empty {
+    flex-direction: row;
+    align-items: center;
+    border-style: dashed;
+    border-color: rgba(24, 120, 238, 0.35);
+    border-width: 1.5px;
+    padding: 20px 18px;
+}
+
+[data-theme="dark"] .profil-showcase-card.profil-showcase-empty {
+    border-color: rgba(96, 165, 250, 0.28);
+}
+
+.profil-showcase-card.profil-showcase-empty:hover {
+    transform: translateY(-3px);
+    border-color: rgba(24, 120, 238, 0.55);
+}
+
+[data-theme="dark"] .profil-showcase-card.profil-showcase-empty:hover {
+    border-color: rgba(96, 165, 250, 0.45);
+}
+
+/* ── EMPTY ICON BOX ────────────────────────────────────────────── */
+.profil-showcase-empty-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: rgba(24, 120, 238, 0.10);
+    border: 1px solid rgba(24, 120, 238, 0.22);
+    color: var(--color-primary);
+    transition: background 0.2s, border-color 0.2s;
+}
+
+[data-theme="dark"] .profil-showcase-empty-icon {
+    background: rgba(96, 165, 250, 0.10);
+    border-color: rgba(96, 165, 250, 0.20);
+    color: #60a5fa;
+}
+
+.profil-showcase-card.profil-showcase-empty:hover .profil-showcase-empty-icon {
+    background: rgba(24, 120, 238, 0.16);
+    border-color: rgba(24, 120, 238, 0.38);
+}
+
+[data-theme="dark"] .profil-showcase-card.profil-showcase-empty:hover .profil-showcase-empty-icon {
+    background: rgba(96, 165, 250, 0.16);
+    border-color: rgba(96, 165, 250, 0.35);
+}
+
+/* ── EMPTY TEXT ────────────────────────────────────────────────── */
+.profil-showcase-empty-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.profil-showcase-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0;
+}
+
+.profil-showcase-subtitle {
+    font-size: 0.77rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+/* ── NOTIFICATION ROW (icon + title + time) ────────────────────── */
+.profil-showcase-notif-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profil-showcase-notif-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .profil-showcase-notif-icon {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.profil-showcase-notif-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.profil-showcase-notif-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 1px;
+    letter-spacing: -0.2px;
+}
+
+.profil-showcase-notif-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.profil-showcase-notif-time {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--text-disabled);
+    flex-shrink: 0;
+    align-self: flex-start;
+    padding-top: 2px;
+    letter-spacing: 0.2px;
+}
+
+/* ── INNER BUBBLE ──────────────────────────────────────────────── */
+.profil-showcase-bubble {
+    border-radius: 18px 18px 18px 5px;
+    padding: 14px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    /* inner glass */
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.80);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+[data-theme="dark"] .profil-showcase-bubble {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ── ACHIEVEMENT PILL ──────────────────────────────────────────── */
+.profil-showcase-achievement {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.1px;
+    width: fit-content;
+    max-width: 100%;
+    /* color/bg controlled by badgeStyle from getBadgeStyle() — unchanged */
+}
+
+/* ── MESSAGE TEXT ──────────────────────────────────────────────── */
+.profil-showcase-message {
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* ── FOOTER ROW ────────────────────────────────────────────────── */
+.profil-showcase-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.profil-showcase-meta-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.profil-showcase-live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.65);
+    display: inline-block;
+    flex-shrink: 0;
+    animation: lgDotPulse 2s infinite;
+}
+
+@keyframes lgDotPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0.55;
+    }
+}
+
+.profil-showcase-edit-tag {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--color-primary);
+}
+
+[data-theme="dark"] .profil-showcase-edit-tag {
+    color: #60a5fa;
+}
+
+/* ── MODAL FORM overrides (showcase only) ──────────────────────── */
+
+/* Chip selector replaces <select> */
+.profil-showcase-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 18px;
+}
+
+.profil-showcase-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    font-family: inherit;
+    transition: all 0.18s;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(0, 0, 0, 0.09);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .profil-showcase-chip {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.10);
+    color: var(--text-secondary);
+}
+
+.profil-showcase-chip:hover {
+    transform: scale(1.05);
+    background: rgba(24, 120, 238, 0.10);
+    border-color: rgba(24, 120, 238, 0.28);
+    color: var(--color-primary);
+}
+
+[data-theme="dark"] .profil-showcase-chip:hover {
+    background: rgba(96, 165, 250, 0.12);
+    border-color: rgba(96, 165, 250, 0.3);
+    color: #93c5fd;
+}
+
+.profil-showcase-chip.active {
+    background: rgba(24, 120, 238, 0.13);
+    border-color: rgba(24, 120, 238, 0.38);
+    color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(24, 120, 238, 0.12);
+    font-weight: 800;
+}
+
+[data-theme="dark"] .profil-showcase-chip.active {
+    background: rgba(96, 165, 250, 0.16);
+    border-color: rgba(96, 165, 250, 0.42);
+    color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.10);
+}
+
+/* Preview bubble inside modal */
+.profil-showcase-preview-wrap {
+    margin-bottom: 16px;
+}
+
+.profil-showcase-preview-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-disabled);
+    margin-bottom: 7px;
+    display: block;
+}
+
+.profil-showcase-preview-bubble {
+    border-radius: 18px 18px 18px 5px;
+    padding: 14px 15px;
+    min-height: 68px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.82);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+[data-theme="dark"] .profil-showcase-preview-bubble {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.09);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.profil-showcase-preview-msg {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.profil-showcase-preview-msg.has-text {
+    color: var(--text-primary);
+}
+
+/* Textarea override for modal */
+.profil-textarea {
+    width: 100%;
+    border-radius: 16px;
+    padding: 13px 14px;
+    font-size: 0.87rem;
+    font-family: inherit;
+    color: var(--text-primary);
+    outline: none;
+    resize: vertical;
+    min-height: 90px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: rgba(255, 255, 255, 0.62);
+    border: 1px solid rgba(0, 0, 0, 0.09);
+}
+
+[data-theme="dark"] .profil-textarea {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.11);
+}
+
+.profil-textarea::placeholder {
+    color: var(--text-disabled);
+}
+
+.profil-textarea:focus {
+    border-color: rgba(24, 120, 238, 0.48);
+    box-shadow: 0 0 0 4px rgba(24, 120, 238, 0.11);
+}
+
+[data-theme="dark"] .profil-textarea:focus {
+    border-color: rgba(96, 165, 250, 0.4);
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.10);
+}
+
+/* Actions row */
+.profil-showcase-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+/* Inline delete override */
+.profil-btn-danger-inline {
+    width: auto;
+    padding: 12px 14px;
+    flex: none;
+}
+
+@media (max-width: 400px) {
+    .profil-showcase-actions {
+        flex-direction: column;
+    }
+
+    .profil-btn-danger-inline {
+        width: 100%;
+    }
+
+    .profil-showcase-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}

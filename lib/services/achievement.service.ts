@@ -1,4 +1,5 @@
 import api from "@/lib/api";
+import { clearProfilCache } from "./Profil.service";
 
 /* =====================================================
     TYPES
@@ -18,6 +19,28 @@ export interface Achievement {
 export interface UnlockedAchievement extends Achievement {
   unlockedAt: string;
   isDisplayed: boolean;
+}
+
+export interface ShowcaseOption {
+  achievementId: number;
+  nama: string;
+  deskripsi: string | null;
+  icon: string;
+  badgeColor: string;
+  unlockedAt: string | null;
+}
+
+export interface ShowcaseNote {
+  id: string;
+  nis: string;
+  achievementId: number;
+  achievementName: string;
+  achievementIcon: string;
+  achievementBadgeColor: string;
+  noteText: string | null;
+  expiresAt: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 /* =====================================================
@@ -120,4 +143,35 @@ export async function getUnlockedAchievements(
     console.error("Gagal mengambil unlocked achievements:", error);
     return [];
   }
+}
+
+export async function getShowcaseOptions(): Promise<ShowcaseOption[]> {
+  try {
+    const res = await api.get("/achievement/showcase-options");
+    if (!res.data?.success) return [];
+    return Array.isArray(res.data.data) ? res.data.data : [];
+  } catch (error) {
+    console.error("Gagal mengambil opsi showcase achievement:", error);
+    return [];
+  }
+}
+
+export async function saveShowcaseNote(payload: {
+  achievementId: number;
+  noteText?: string | null;
+}): Promise<ShowcaseNote> {
+  const res = await api.post("/achievement/showcase-note", payload);
+  if (!res.data?.success || !res.data?.data) {
+    throw new Error(res.data?.message || "Gagal menyimpan catatan showcase");
+  }
+  clearProfilCache();
+  return res.data.data as ShowcaseNote;
+}
+
+export async function deleteShowcaseNote(): Promise<void> {
+  const res = await api.delete("/achievement/showcase-note");
+  if (!res.data?.success) {
+    throw new Error(res.data?.message || "Gagal menghapus catatan showcase");
+  }
+  clearProfilCache();
 }

@@ -5,17 +5,17 @@ import {
   Coins, Zap, Trophy, Droplets, ShieldAlert,
   Camera, Lock, Eye, EyeOff, X, CheckCircle2,
   ChevronRight, Loader2, LogOut, Award,
-  AlertTriangle, User,
+  AlertTriangle, User, MessageSquarePlus, Sparkles, Trash2,
 } from "lucide-react";
 import BottomNavSiswa from "@/components/siswa/BottomNavSiswa";
 import { ErrorState } from "@/components/common/AsyncState";
 import BrandLogo from "@/components/common/BrandLogo";
-import api from "@/lib/api";
 import {
   getProfil, updatePassword,
   clearProfilCache, isProfilCached,
   formatJoinDate, getBadgeStyle,
-  type ProfilData, type ProfilAchievement, type ProfilVoucher,
+  type ProfilData, type ProfilAchievement, type ProfilVoucher, type ProfilShowcaseNote,
+  saveShowcaseNote, deleteShowcaseNote,
 } from "@/lib/services/siswa";
 import { logout } from "@/lib/services/shared";
 import { clearDashboardCache } from "@/lib/services/siswa";
@@ -24,6 +24,7 @@ import "../siswa-tokens.css";
 import "./profil.css";
 import "./profil-foto.css";
 import SehatiLoadingScreen from "@/components/siswa/SehatiLoadingScreen";
+import "./profil-showcase.css";
 
 // ─── MODAL SHEET ──────────────────────────────────────────────────────────────
 function ModalSheet({
@@ -185,6 +186,85 @@ function VoucherBadge({ voucher }: { voucher: ProfilVoucher }) {
   );
 }
 
+export function ShowcaseCard({
+  showcaseNote,
+  onEdit,
+}: {
+  showcaseNote: ProfilShowcaseNote | null;
+  onEdit: () => void;
+}) {
+  const badgeStyle = getBadgeStyle(showcaseNote?.achievementBadgeColor ?? "blue");
+
+  // ── Empty state ────────────────────────────────────────────────────────────
+  if (!showcaseNote) {
+    return (
+      <button
+        className="profil-showcase-card profil-showcase-empty"
+        onClick={onEdit}
+      >
+        <div className="profil-showcase-empty-icon">
+          <MessageSquarePlus size={20} />
+        </div>
+        <div className="profil-showcase-empty-copy">
+          <div className="profil-showcase-title">
+            Belum ada catatan pencapaian
+          </div>
+          <div className="profil-showcase-subtitle">
+            Pilih achievement & tulis caption buat tampil di leaderboard!
+          </div>
+        </div>
+      </button>
+    );
+  }
+
+  // ── Filled state ───────────────────────────────────────────────────────────
+  return (
+    <button className="profil-showcase-card" onClick={onEdit}>
+      {/* Notification-style header row */}
+      <div className="profil-showcase-notif-row">
+        <div className="profil-showcase-notif-icon">
+          {showcaseNote.achievementIcon}
+        </div>
+        <div className="profil-showcase-notif-text">
+          <div className="profil-showcase-notif-title">Catatan Aktif</div>
+          <div className="profil-showcase-notif-sub">
+            Tampil di leaderboard kamu
+          </div>
+        </div>
+        <div className="profil-showcase-notif-time">Baru saja</div>
+      </div>
+
+      {/* Inner bubble */}
+      <div className="profil-showcase-bubble">
+        <div
+          className="profil-showcase-achievement"
+          style={{
+            background: badgeStyle.bg,
+            borderColor: badgeStyle.border,
+            color: badgeStyle.text,
+          }}
+        >
+          <span>{showcaseNote.achievementIcon}</span>
+          <span>{showcaseNote.achievementName}</span>
+        </div>
+        <div className="profil-showcase-message">
+          {showcaseNote.noteText ||
+            "Achievement ini sedang dipamerkan di leaderboard."}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="profil-showcase-meta">
+        <div className="profil-showcase-meta-left">
+          <span className="profil-showcase-live-dot" />
+          Aktif di leaderboard
+        </div>
+        <span className="profil-showcase-edit-tag">✏ Ubah</span>
+      </div>
+    </button>
+  );
+}
+
 // ─── MENU ITEM ────────────────────────────────────────────────────────────────
 function MenuItem({ icon, label, sublabel, onClick, danger = false }: {
   icon: React.ReactNode; label: string; sublabel?: string;
@@ -341,6 +421,234 @@ function ModalLogout({ onClose }: { onClose: () => void }) {
 }
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
+export function ModalShowcaseNote({
+  achievements,
+  currentNote,
+  onClose,
+  onSaved,
+  // ModalSheet di-pass sebagai prop supaya komponen ini tidak perlu tahu
+  // implementasinya — tinggal pakai yang sudah ada di profil.tsx
+  ModalSheetComponent,
+}: {
+  achievements: ProfilAchievement[];
+  currentNote: ProfilShowcaseNote | null;
+  onClose: () => void;
+  onSaved: (note: ProfilShowcaseNote | null) => void;
+  // Jika ingin lebih mudah, hapus prop ini dan import ModalSheet langsung
+  // dari profil.tsx setelah kamu pindahkan ke file terpisah.
+  ModalSheetComponent?: React.ComponentType<{
+    children: React.ReactNode;
+    onClose: () => void;
+    title: string;
+    accentColor: string;
+  }>;
+}) {
+  const Sheet = ModalSheetComponent as any; // fallback — lihat catatan di bawah
+
+  const [selectedAchievementId, setSelectedAchievementId] = useState<number>(
+    currentNote?.achievementId ?? achievements[0]?.id ?? 0
+  );
+  const [noteText, setNoteText] = useState(currentNote?.noteText ?? "");
+  const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const selectedAch =
+    achievements.find((a) => a.id === selectedAchievementId) ?? achievements[0];
+  const badgeStyle = getBadgeStyle(selectedAch?.badgeColor ?? "blue");
+
+  async function handleSave() {
+    if (!selectedAchievementId) {
+      setErr("Pilih achievement terlebih dahulu.");
+      return;
+    }
+    setLoading(true);
+    setErr(null);
+    try {
+      const saved = await saveShowcaseNote({
+        achievementId: selectedAchievementId,
+        noteText: noteText.trim() || null,
+      });
+      onSaved({
+        id: saved.id,
+        achievementId: saved.achievementId,
+        achievementName: saved.achievementName,
+        achievementIcon: saved.achievementIcon,
+        achievementBadgeColor: saved.achievementBadgeColor,
+        noteText: saved.noteText,
+        expiresAt: saved.expiresAt,
+        createdAt: saved.createdAt,
+      });
+      onClose();
+    } catch (e: any) {
+      setErr(e?.message || "Gagal menyimpan catatan pencapaian.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    setErr(null);
+    try {
+      await deleteShowcaseNote();
+      onSaved(null);
+      onClose();
+    } catch (e: any) {
+      setErr(e?.message || "Gagal menghapus catatan pencapaian.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const modalContent = (
+    <>
+      {achievements.length === 0 ? (
+        <div className="profil-empty-box">
+          <div className="profil-empty-icon">🏅</div>
+          <div className="profil-empty-text">
+            Belum ada achievement yang bisa dipamerkan.
+          </div>
+        </div>
+      ) : (
+        <div className="profil-showcase-form">
+          {/* ── Achievement chips ── */}
+          <div>
+            <label className="profil-field-label">Pilih Achievement</label>
+            <div className="profil-showcase-chips">
+              {achievements.map((ach) => (
+                <button
+                  key={ach.id}
+                  className={`profil-showcase-chip${ach.id === selectedAchievementId ? " active" : ""
+                    }`}
+                  onClick={() => setSelectedAchievementId(ach.id)}
+                  type="button"
+                >
+                  {ach.icon} {ach.nama}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Live preview ── */}
+          <div className="profil-showcase-preview-wrap">
+            <span className="profil-showcase-preview-label">Preview</span>
+            <div className="profil-showcase-preview-bubble">
+              {selectedAch && (
+                <div
+                  className="profil-showcase-achievement"
+                  style={{
+                    background: badgeStyle.bg,
+                    borderColor: badgeStyle.border,
+                    color: badgeStyle.text,
+                  }}
+                >
+                  <span>{selectedAch.icon}</span>
+                  <span>{selectedAch.nama}</span>
+                </div>
+              )}
+              <div
+                className={`profil-showcase-preview-msg${noteText ? " has-text" : ""
+                  }`}
+              >
+                {noteText || "Caption kamu muncul di sini..."}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Caption textarea ── */}
+          <div>
+            <label className="profil-field-label">
+              Caption singkat (max 100 karakter)
+            </label>
+            <textarea
+              className="profil-textarea"
+              placeholder="Contoh: Akhirnya tembus top 3! Semangat terus 🔥"
+              maxLength={100}
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value.slice(0, 100))}
+            />
+            <div className="profil-textarea-meta">{noteText.length}/100</div>
+          </div>
+
+          {/* ── Error ── */}
+          {err && (
+            <div className="profil-error-alert">
+              <AlertTriangle
+                size={14}
+                style={{
+                  color: "var(--status-pel-text)",
+                  flexShrink: 0,
+                  marginTop: 1,
+                }}
+              />
+              <span className="profil-error-alert-text">{err}</span>
+            </div>
+          )}
+
+          {/* ── Actions ── */}
+          <div className="profil-showcase-actions">
+            <button className="profil-btn-secondary" onClick={onClose}>
+              Batal
+            </button>
+            {currentNote && (
+              <button
+                className="profil-btn-danger profil-btn-danger-inline"
+                onClick={handleDelete}
+                disabled={loading || deleting}
+              >
+                {deleting ? (
+                  <Loader2
+                    size={14}
+                    style={{ animation: "spin 0.7s linear infinite" }}
+                  />
+                ) : (
+                  <Trash2 size={14} />
+                )}
+                Hapus
+              </button>
+            )}
+            <button
+              className="profil-btn-primary"
+              onClick={handleSave}
+              disabled={loading || deleting}
+            >
+              {loading ? (
+                <>
+                  <Loader2
+                    size={16}
+                    style={{ animation: "spin 0.7s linear infinite" }}
+                  />
+                  Menyimpan...
+                </>
+              ) : (
+                "✨ Simpan Catatan"
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  // Render dengan ModalSheet yang sudah ada di profil.tsx
+  // Karena ModalSheet ada di file yang sama, langsung pakai saja.
+  // Hapus prop ModalSheetComponent dan uncomment baris di bawah
+  // jika kamu pindahkan komponen ini ke file terpisah:
+  //
+  //   import { ModalSheet } from "./profil";  ← export ModalSheet dulu
+  //
+  return (
+    <Sheet
+      onClose={onClose}
+      title="Catatan Pencapaian"
+      accentColor="var(--color-primary)"
+    >
+      {modalContent}
+    </Sheet>
+  );
+}
+
 export default function ProfilSiswaPage() {
   const [profilData, setProfilData] = useState<ProfilData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -350,6 +658,7 @@ export default function ProfilSiswaPage() {
   const [modalFoto, setModalFoto] = useState(false);
   const [modalPassword, setModalPassword] = useState(false);
   const [modalLogout, setModalLogout] = useState(false);
+  const [modalShowcase, setModalShowcase] = useState(false);
 
   const load = useCallback(async (force = false) => {
     const hitCache = isProfilCached() && !force;
@@ -374,8 +683,8 @@ export default function ProfilSiswaPage() {
 
   if (loading && !profilData) return <SehatiLoadingScreen />;
 
-  const { profil, achievements = [], vouchers = [] } =
-    profilData ?? { profil: null, achievements: [], vouchers: [] };
+  const { profil, achievements = [], vouchers = [], showcaseNote = null } =
+    profilData ?? { profil: null, achievements: [], vouchers: [], showcaseNote: null };
 
   if (!profil) {
     return (
@@ -411,6 +720,17 @@ export default function ProfilSiswaPage() {
       )}
       {modalPassword && <ModalGantiPassword onClose={() => setModalPassword(false)} />}
       {modalLogout && <ModalLogout onClose={() => setModalLogout(false)} />}
+      {modalShowcase && (
+        <ModalShowcaseNote
+          achievements={achievements}
+          currentNote={showcaseNote}
+          onClose={() => setModalShowcase(false)}
+          ModalSheetComponent={ModalSheet}
+          onSaved={(nextNote) => {
+            setProfilData((prev) => (prev ? { ...prev, showcaseNote: nextNote } : prev));
+          }}
+        />
+      )}
 
       <div className="dashboard-container">
 
@@ -483,6 +803,12 @@ export default function ProfilSiswaPage() {
         )}
 
         {/* ── VOUCHER ── */}
+        <SectionTitle icon={<MessageSquarePlus size={16} />} title="Catatan Pencapaian" />
+        <ShowcaseCard
+          showcaseNote={showcaseNote}
+          onEdit={() => setModalShowcase(true)}
+        />
+
         <SectionTitle icon={<Trophy size={16} />} title="Voucher Saya" />
         {vouchers.length === 0 ? (
           <div className="profil-empty-box">

@@ -29,6 +29,13 @@ export interface LeaderboardSiswaRow {
   streak: number;
   is_me: boolean;
   fotoUrl: string | null;
+  showcaseNote: {
+    achievementId: number;
+    achievementName: string;
+    achievementIcon: string;
+    achievementBadgeColor: string;
+    noteText: string | null;
+  } | null;
 }
 
 export interface LeaderboardKelasRow {
