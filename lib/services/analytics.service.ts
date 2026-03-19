@@ -63,9 +63,11 @@ export interface AnalyticsData {
   stats: StatCard[];
   trend: TrendPoint[];
   heatmapPelanggaran: HeatmapCell[];
+  heatmapLogin: HeatmapCell[];
   donutMetodeBayar: DonutSlice[];
   donutKemasan: DonutSlice[];
   topSiswa: RankingItem[];
+  topSiswaLogin: RankingItem[];
   topProduk: RankingItem[];
   progressKelas: ClassProgress[];
   lastUpdated: string;
@@ -107,17 +109,42 @@ function writeSessionCache(key: string, entry: AnalyticsCacheEntry) {
   } catch {}
 }
 
+function normalizeAnalyticsData(raw: any): AnalyticsData {
+  return {
+    period: raw?.period ?? "today",
+    range: {
+      start: raw?.range?.start ?? "",
+      end: raw?.range?.end ?? "",
+    },
+    stats: Array.isArray(raw?.stats) ? raw.stats : [],
+    trend: Array.isArray(raw?.trend) ? raw.trend : [],
+    heatmapPelanggaran: Array.isArray(raw?.heatmapPelanggaran) ? raw.heatmapPelanggaran : [],
+    heatmapLogin: Array.isArray(raw?.heatmapLogin) ? raw.heatmapLogin : [],
+    donutMetodeBayar: Array.isArray(raw?.donutMetodeBayar) ? raw.donutMetodeBayar : [],
+    donutKemasan: Array.isArray(raw?.donutKemasan) ? raw.donutKemasan : [],
+    topSiswa: Array.isArray(raw?.topSiswa) ? raw.topSiswa : [],
+    topSiswaLogin: Array.isArray(raw?.topSiswaLogin) ? raw.topSiswaLogin : [],
+    topProduk: Array.isArray(raw?.topProduk) ? raw.topProduk : [],
+    progressKelas: Array.isArray(raw?.progressKelas) ? raw.progressKelas : [],
+    lastUpdated: raw?.lastUpdated ?? new Date(0).toISOString(),
+  };
+}
+
 function readAnalyticsCache(key: string): AnalyticsData | null {
   const now = Date.now();
   const memory = analyticsMemoryCache.get(key);
   if (memory && now - memory.ts < ANALYTICS_CACHE_TTL_MS) {
-    return memory.data;
+    return normalizeAnalyticsData(memory.data);
   }
 
   const session = readSessionCache(key);
   if (session && now - session.ts < ANALYTICS_CACHE_TTL_MS) {
-    analyticsMemoryCache.set(key, session);
-    return session.data;
+    const normalizedEntry: AnalyticsCacheEntry = {
+      ...session,
+      data: normalizeAnalyticsData(session.data),
+    };
+    analyticsMemoryCache.set(key, normalizedEntry);
+    return normalizedEntry.data;
   }
 
   return null;
@@ -137,7 +164,7 @@ export async function fetchAnalytics(
   }
   const res = await api.get(`/analytics?${params}`, { timeout: 30000 });
   if (!res.data?.success) throw new Error(res.data?.message ?? "Gagal mengambil analytics");
-  return res.data.data;
+  return normalizeAnalyticsData(res.data.data);
 }
 
 export async function fetchAnalyticsCached(

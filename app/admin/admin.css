@@ -4809,6 +4809,11 @@ code.ach-code {
   background: var(--amber-bg);
 }
 
+.login-log-stat-icon.purple {
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.12);
+}
+
 .login-log-stat-value {
   font-size: 1.2rem;
   font-weight: 800;
@@ -4854,6 +4859,68 @@ code.ach-code {
   color: var(--text-sec);
   font-size: 0.82rem;
   line-height: 1.55;
+}
+
+.moderation-note-cell {
+  max-width: 280px;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  white-space: normal;
+}
+
+.moderation-chip-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.moderation-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  background: rgba(59, 130, 246, 0.08);
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.moderation-chip.red {
+  border-color: rgba(239, 68, 68, 0.18);
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+}
+
+.moderation-chip.subtle {
+  border-color: rgba(148, 163, 184, 0.16);
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--text-sec);
+}
+
+.moderation-severity {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 800;
+}
+
+.moderation-severity.info {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.moderation-severity.warning {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+}
+
+.moderation-severity.danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
 }
 
 .login-log-empty {

@@ -36,6 +36,8 @@ export interface Achievement {
   deskripsi?: string;
   tipe: "streak" | "coins" | "tumbler" | "pelanggaran" | "transaksi";
   target_value: number;
+  pelanggaran_mode?: "count" | "no_violation_days" | null;
+  pelanggaran_period_days?: number | null;
   icon?: string;
   badge_color?: string;
   coins_reward: number;
@@ -52,6 +54,8 @@ type AchievementPayload = {
   deskripsi?: string;
   tipe: "streak" | "coins" | "tumbler" | "pelanggaran" | "transaksi";
   target_value: number;
+  pelanggaran_mode?: "count" | "no_violation_days" | null;
+  pelanggaran_period_days?: number | null;
   icon?: string;
   badge_color?: string;
   coins_reward?: number;
@@ -370,6 +374,11 @@ export async function createAchievement(
       voucher_reward: Boolean(dto.voucher_reward),
       voucher_nominal: dto.voucher_reward ? Number(dto.voucher_nominal ?? 0) : null,
       voucher_tipe_voucher: dto.voucher_reward ? (dto.voucher_tipe_voucher ?? null) : null,
+      pelanggaran_mode: dto.tipe === "pelanggaran" ? (dto.pelanggaran_mode ?? "count") : null,
+      pelanggaran_period_days:
+        dto.tipe === "pelanggaran" && (dto.pelanggaran_mode ?? "count") === "no_violation_days"
+          ? Number(dto.pelanggaran_period_days ?? 0)
+          : null,
     };
     if (dto.is_active !== undefined) payload.is_active = dto.is_active;
     const res = await api.post("/pengaturan/achievement", payload);
@@ -400,6 +409,8 @@ export async function updateAchievement(
     if (dto.voucher_reward !== undefined) payload.voucher_reward = Boolean(dto.voucher_reward);
     if (dto.voucher_nominal !== undefined) payload.voucher_nominal = dto.voucher_nominal;
     if (dto.voucher_tipe_voucher !== undefined) payload.voucher_tipe_voucher = dto.voucher_tipe_voucher;
+    if (dto.pelanggaran_mode !== undefined) payload.pelanggaran_mode = dto.pelanggaran_mode;
+    if (dto.pelanggaran_period_days !== undefined) payload.pelanggaran_period_days = dto.pelanggaran_period_days;
 
     const res = await api.patch(`/pengaturan/achievement/${id}`, payload);
     const data = unwrapData<Achievement>(res.data);

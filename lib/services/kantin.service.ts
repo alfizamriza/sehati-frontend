@@ -163,3 +163,21 @@ export async function deleteKantin(id: number): Promise<void> {
     throw new Error(err.response?.data?.message || 'Gagal menghapus kantin');
   }
 }
+
+export async function updateKantinPassword(passwordLama: string, passwordBaru: string): Promise<void> {
+  try {
+    const response = await api.patch('/kantin/password', {
+      passwordLama,
+      passwordBaru,
+    });
+
+    if (!response.data?.success) {
+      throw new Error(response.data?.message || 'Gagal mengubah password kantin');
+    }
+  } catch (error: any) {
+    console.error('Error updating kantin password:', error);
+    throw new Error(
+      error.response?.data?.message || error.message || 'Gagal mengubah password kantin',
+    );
+  }
+}

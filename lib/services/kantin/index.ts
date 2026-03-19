@@ -94,3 +94,8 @@ export type {
   TransaksiResult,
   CekVoucherResult
 } from "../transaksi.service";
+
+// 5. kantin.service
+export {
+  updateKantinPassword,
+} from "../kantin.service";

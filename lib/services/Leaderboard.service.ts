@@ -35,6 +35,7 @@ export interface LeaderboardSiswaRow {
     achievementIcon: string;
     achievementBadgeColor: string;
     noteText: string | null;
+    createdAt: string | null;
   } | null;
 }
 

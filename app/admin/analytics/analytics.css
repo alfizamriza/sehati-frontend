@@ -688,6 +688,13 @@
   min-width: 0;
 }
 
+.an-row-4col {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
 /* ── RANKING ──────────────────────────────────────────────── */
 .an-rank-list {
   display: flex;
@@ -897,6 +904,10 @@
     grid-template-columns: 1fr 1fr;
   }
 
+  .an-row-4col {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .an-stats-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -908,6 +919,10 @@
   }
 
   .an-row-3col {
+    grid-template-columns: 1fr;
+  }
+
+  .an-row-4col {
     grid-template-columns: 1fr;
   }
 

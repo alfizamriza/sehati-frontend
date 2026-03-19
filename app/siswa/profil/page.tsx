@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Coins, Zap, Trophy, Droplets, ShieldAlert,
   Camera, Lock, Eye, EyeOff, X, CheckCircle2,
@@ -20,6 +20,7 @@ import {
 import { logout } from "@/lib/services/shared";
 import { clearDashboardCache } from "@/lib/services/siswa";
 import ModalGantiFoto from "@/components/siswa/Modalgantifoto";
+import { analyzeShowcaseNote } from "@/lib/utils/showcase-note-moderation";
 import "../siswa-tokens.css";
 import "./profil.css";
 import "./profil-foto.css";
@@ -194,6 +195,12 @@ export function ShowcaseCard({
   onEdit: () => void;
 }) {
   const badgeStyle = getBadgeStyle(showcaseNote?.achievementBadgeColor ?? "blue");
+  const createdLabel = showcaseNote?.createdAt
+    ? new Intl.DateTimeFormat("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(showcaseNote.createdAt))
+    : "Aktif";
 
   // ── Empty state ────────────────────────────────────────────────────────────
   if (!showcaseNote) {
@@ -228,10 +235,10 @@ export function ShowcaseCard({
         <div className="profil-showcase-notif-text">
           <div className="profil-showcase-notif-title">Catatan Aktif</div>
           <div className="profil-showcase-notif-sub">
-            Tampil di leaderboard kamu
+            Tampil di leaderboard kamu. Untuk ganti, hapus dulu.
           </div>
         </div>
-        <div className="profil-showcase-notif-time">Baru saja</div>
+        <div className="profil-showcase-notif-time">{createdLabel}</div>
       </div>
 
       {/* Inner bubble */}
@@ -259,7 +266,7 @@ export function ShowcaseCard({
           <span className="profil-showcase-live-dot" />
           Aktif di leaderboard
         </div>
-        <span className="profil-showcase-edit-tag">✏ Ubah</span>
+        <span className="profil-showcase-edit-tag">🗑 Hapus dulu untuk buat baru</span>
       </div>
     </button>
   );
@@ -452,14 +459,28 @@ export function ModalShowcaseNote({
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const moderation = useMemo(() => analyzeShowcaseNote(noteText), [noteText]);
+  const blockedTerms = moderation.matches;
+  const hasBlockedTerms = moderation.hasProfanity;
+  const severityLabel =
+    moderation.severityScore >= 0.75
+      ? "tinggi"
+      : moderation.severityScore >= 0.45
+        ? "sedang"
+        : "ringan";
 
   const selectedAch =
     achievements.find((a) => a.id === selectedAchievementId) ?? achievements[0];
   const badgeStyle = getBadgeStyle(selectedAch?.badgeColor ?? "blue");
+  const isReadonly = Boolean(currentNote);
 
   async function handleSave() {
     if (!selectedAchievementId) {
       setErr("Pilih achievement terlebih dahulu.");
+      return;
+    }
+    if (hasBlockedTerms) {
+      setErr("Catatan mengandung kata yang tidak pantas. Silakan perbaiki dulu.");
       return;
     }
     setLoading(true);
@@ -503,11 +524,82 @@ export function ModalShowcaseNote({
 
   const modalContent = (
     <>
-      {achievements.length === 0 ? (
+      {achievements.length === 0 && !isReadonly ? (
         <div className="profil-empty-box">
           <div className="profil-empty-icon">🏅</div>
           <div className="profil-empty-text">
             Belum ada achievement yang bisa dipamerkan.
+          </div>
+        </div>
+      ) : isReadonly ? (
+        <div className="profil-showcase-form">
+          <div className="profil-showcase-preview-wrap">
+            <span className="profil-showcase-preview-label">Catatan Aktif</span>
+            <div className="profil-showcase-preview-bubble">
+              <div
+                className="profil-showcase-achievement"
+                style={{
+                  background: getBadgeStyle(currentNote?.achievementBadgeColor ?? "blue").bg,
+                  borderColor: getBadgeStyle(currentNote?.achievementBadgeColor ?? "blue").border,
+                  color: getBadgeStyle(currentNote?.achievementBadgeColor ?? "blue").text,
+                }}
+              >
+                <span>{currentNote?.achievementIcon}</span>
+                <span>{currentNote?.achievementName}</span>
+              </div>
+              <div className="profil-showcase-preview-msg has-text">
+                {currentNote?.noteText || "Achievement ini sedang dipamerkan di leaderboard."}
+              </div>
+            </div>
+          </div>
+
+          <div className="profil-error-alert" style={{ background: "var(--surface-soft)" }}>
+            <AlertTriangle
+              size={14}
+              style={{
+                color: "var(--primary)",
+                flexShrink: 0,
+                marginTop: 1,
+              }}
+            />
+            <span className="profil-error-alert-text">
+              Catatan yang sudah dibuat tidak bisa diedit. Hapus catatan ini dulu jika ingin membuat catatan baru.
+            </span>
+          </div>
+
+          {err && (
+            <div className="profil-error-alert">
+              <AlertTriangle
+                size={14}
+                style={{
+                  color: "var(--status-pel-text)",
+                  flexShrink: 0,
+                  marginTop: 1,
+                }}
+              />
+              <span className="profil-error-alert-text">{err}</span>
+            </div>
+          )}
+
+          <div className="profil-showcase-actions">
+            <button className="profil-btn-secondary" onClick={onClose}>
+              Tutup
+            </button>
+            <button
+              className="profil-btn-danger profil-btn-danger-inline"
+              onClick={handleDelete}
+              disabled={loading || deleting}
+            >
+              {deleting ? (
+                <Loader2
+                  size={14}
+                  style={{ animation: "spin 0.7s linear infinite" }}
+                />
+              ) : (
+                <Trash2 size={14} />
+              )}
+              Hapus Catatan
+            </button>
           </div>
         </div>
       ) : (
@@ -566,10 +658,40 @@ export function ModalShowcaseNote({
               placeholder="Contoh: Akhirnya tembus top 3! Semangat terus 🔥"
               maxLength={100}
               value={noteText}
-              onChange={(e) => setNoteText(e.target.value.slice(0, 100))}
+              onChange={(e) => {
+                setNoteText(e.target.value.slice(0, 100));
+                if (err) setErr(null);
+              }}
             />
             <div className="profil-textarea-meta">{noteText.length}/100</div>
           </div>
+
+          {hasBlockedTerms && (
+            <div className="profil-error-alert">
+              <AlertTriangle
+                size={14}
+                style={{
+                  color: "var(--status-pel-text)",
+                  flexShrink: 0,
+                  marginTop: 1,
+                }}
+              />
+              <span className="profil-error-alert-text">
+                Catatan terdeteksi mengandung kata yang tidak pantas. Ubah caption sebelum disimpan.
+                {blockedTerms.length > 0 && (
+                  <>
+                    {" "}Kata terdeteksi: <strong>{blockedTerms.join(", ")}</strong>.
+                  </>
+                )}
+                {" "}Severity: <strong>{severityLabel}</strong>
+                {moderation.categories.length > 0 && (
+                  <>
+                    {" "}• kategori: <strong>{moderation.categories.join(", ")}</strong>
+                  </>
+                )}
+              </span>
+            </div>
+          )}
 
           {/* ── Error ── */}
           {err && (
@@ -591,23 +713,6 @@ export function ModalShowcaseNote({
             <button className="profil-btn-secondary" onClick={onClose}>
               Batal
             </button>
-            {currentNote && (
-              <button
-                className="profil-btn-danger profil-btn-danger-inline"
-                onClick={handleDelete}
-                disabled={loading || deleting}
-              >
-                {deleting ? (
-                  <Loader2
-                    size={14}
-                    style={{ animation: "spin 0.7s linear infinite" }}
-                  />
-                ) : (
-                  <Trash2 size={14} />
-                )}
-                Hapus
-              </button>
-            )}
             <button
               className="profil-btn-primary"
               onClick={handleSave}

@@ -26,6 +26,8 @@ interface AchievementFull extends Achievement {
   voucher_reward: boolean;
   voucher_nominal?: number | null;
   voucher_tipe_voucher?: "percentage" | "fixed" | null;
+  pelanggaran_mode?: "count" | "no_violation_days" | null;
+  pelanggaran_period_days?: number | null;
 }
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -50,6 +52,11 @@ const TIPE_OPTIONS = [
   { value: "tumbler",     label: "Tumbler",     color: "#10a8b9", bg: "rgba(16,185,129,0.15)", icon: <Milk size={14} color="#10a8b9"/> },
   { value: "pelanggaran", label: "Pelanggaran", color: "#EF4444", bg: "rgba(239,68,68,0.15)",  icon: <OctagonX size={14} color="#f54242"/> },
   { value: "transaksi",   label: "Transaksi",   color: "#179EFF", bg: "rgba(23,158,255,0.15)", icon: <ArrowRightLeft size={13} color="#179EFF" /> },
+];
+
+const PELANGGARAN_MODE_OPTIONS = [
+  { value: "count" as const, label: "Berdasarkan Jumlah", hint: "Achievement unlock jika jumlah pelanggaran sama dengan target." },
+  { value: "no_violation_days" as const, label: "Tanpa Pelanggaran", hint: "Achievement unlock jika siswa bebas pelanggaran selama X hari." },
 ];
 
 const BADGE_COLORS = [
@@ -1058,6 +1065,7 @@ function AchievementSection({ toast }: { toast: ReturnType<typeof useToast> }) {
     nama: "", deskripsi: "", tipe: "streak", target_value: 10,
     icon: "🏆", badge_color: "blue", coins_reward: 0, is_active: true,
     voucher_reward: false, voucher_nominal: null, voucher_tipe_voucher: null,
+    pelanggaran_mode: null, pelanggaran_period_days: null,
   };
   const [newForm, setNewForm] = useState({ ...blank });
 
@@ -1078,14 +1086,28 @@ function AchievementSection({ toast }: { toast: ReturnType<typeof useToast> }) {
 
   const getTipeStyle  = (tipe: string) => TIPE_OPTIONS.find((o) => o.value === tipe) ?? TIPE_OPTIONS[0];
   const getBadgeColor = (color: string) => BADGE_COLORS.find((c) => c.value === color)?.color ?? "#179EFF";
+  const formatTargetLabel = (item: Pick<AchievementFull, "tipe" | "target_value" | "pelanggaran_mode" | "pelanggaran_period_days">) => {
+    if (item.tipe === "pelanggaran" && item.pelanggaran_mode === "no_violation_days") {
+      return `Tanpa pelanggaran ${item.pelanggaran_period_days ?? 0} hari`;
+    }
+    return `Target: ${item.target_value}`;
+  };
+  const isNewFormNoViolation = newForm.tipe === "pelanggaran" && newForm.pelanggaran_mode === "no_violation_days";
+  const isEditNoViolation = (editData.tipe ?? "") === "pelanggaran" && editData.pelanggaran_mode === "no_violation_days";
 
   async function handleCreate() {
     if (!newForm.nama.trim()) return toast.show("Nama achievement wajib diisi.", "error");
     if (newForm.voucher_reward && (!newForm.voucher_nominal || !newForm.voucher_tipe_voucher))
       return toast.show("Isi nominal dan tipe voucher.", "error");
+    if (isNewFormNoViolation && (!newForm.pelanggaran_period_days || newForm.pelanggaran_period_days < 1)) {
+      return toast.show("Isi durasi hari tanpa pelanggaran.", "error");
+    }
     setSaving(true);
     try {
-      const created = await createAchievement(newForm) as AchievementFull;
+      const created = await createAchievement({
+        ...newForm,
+        target_value: isNewFormNoViolation ? 0 : newForm.target_value,
+      }) as AchievementFull;
       setList((p) => [...p, created].sort((a, b) => a.tipe.localeCompare(b.tipe) || a.target_value - b.target_value));
       setNewForm({ ...blank }); setShowForm(false);
       toast.show("Achievement berhasil ditambahkan.");
@@ -1108,9 +1130,15 @@ function AchievementSection({ toast }: { toast: ReturnType<typeof useToast> }) {
     if (!editingId) return;
     if (editData.voucher_reward && (!editData.voucher_nominal || !editData.voucher_tipe_voucher))
       return toast.show("Isi nominal dan tipe voucher.", "error");
+    if (isEditNoViolation && (!editData.pelanggaran_period_days || editData.pelanggaran_period_days < 1)) {
+      return toast.show("Isi durasi hari tanpa pelanggaran.", "error");
+    }
     setSaving(true);
     try {
-      const u = await updateAchievement(editingId, editData) as AchievementFull;
+      const u = await updateAchievement(editingId, {
+        ...editData,
+        target_value: isEditNoViolation ? 0 : editData.target_value,
+      }) as AchievementFull;
       setList((p) => p.map((a) => (a.id === editingId ? u : a)));
       setEditingId(null); toast.show("Achievement diperbarui.");
     } catch (e: any) { toast.show(e.message, "error"); }
@@ -1218,15 +1246,84 @@ function AchievementSection({ toast }: { toast: ReturnType<typeof useToast> }) {
             <div className="role-grid-2" style={{ gap: 14, marginBottom: 14 }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label" style={{ fontSize: "0.78rem" }}>Tipe *</label>
-                <select className="form-input" value={newForm.tipe} onChange={(e) => setNewForm((p) => ({ ...p, tipe: e.target.value as any }))} style={{ appearance: "none", cursor: "pointer" }}>
+                <select
+                  className="form-input"
+                  value={newForm.tipe}
+                  onChange={(e) => setNewForm((p) => {
+                    const nextTipe = e.target.value as any;
+                    return {
+                      ...p,
+                      tipe: nextTipe,
+                      pelanggaran_mode: nextTipe === "pelanggaran" ? (p.pelanggaran_mode ?? "count") : null,
+                      pelanggaran_period_days: nextTipe === "pelanggaran" ? p.pelanggaran_period_days : null,
+                      target_value: nextTipe === "pelanggaran" && p.pelanggaran_mode === "no_violation_days" ? 0 : p.target_value,
+                    };
+                  })}
+                  style={{ appearance: "none", cursor: "pointer" }}
+                >
                   {TIPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label" style={{ fontSize: "0.78rem" }}>Target Value *</label>
-                <input type="number" min={0} className="form-input" value={newForm.target_value} onChange={(e) => setNewForm((p) => ({ ...p, target_value: Number(e.target.value) }))} style={{ color: "var(--primary)", fontWeight: 700 }} />
+                <input
+                  type="number"
+                  min={0}
+                  className="form-input"
+                  value={isNewFormNoViolation ? 0 : newForm.target_value}
+                  onChange={(e) => setNewForm((p) => ({ ...p, target_value: Number(e.target.value) }))}
+                  disabled={isNewFormNoViolation}
+                  style={{ color: "var(--primary)", fontWeight: 700, opacity: isNewFormNoViolation ? 0.7 : 1 }}
+                />
               </div>
             </div>
+            {newForm.tipe === "pelanggaran" && (
+              <div className="role-grid-2" style={{ gap: 14, marginBottom: 14 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: "0.78rem" }}>Mode Pelanggaran</label>
+                  <select
+                    className="form-input"
+                    value={newForm.pelanggaran_mode ?? "count"}
+                    onChange={(e) => setNewForm((p) => {
+                      const nextMode = e.target.value as "count" | "no_violation_days";
+                      return {
+                        ...p,
+                        pelanggaran_mode: nextMode,
+                        pelanggaran_period_days: nextMode === "no_violation_days" ? (p.pelanggaran_period_days ?? 30) : null,
+                        target_value: nextMode === "no_violation_days" ? 0 : p.target_value || 0,
+                      };
+                    })}
+                    style={{ appearance: "none", cursor: "pointer" }}
+                  >
+                    {PELANGGARAN_MODE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <div style={{ fontSize: "0.72rem", color: "var(--text-faint)", marginTop: 6 }}>
+                    {PELANGGARAN_MODE_OPTIONS.find((option) => option.value === (newForm.pelanggaran_mode ?? "count"))?.hint}
+                  </div>
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: "0.78rem" }}>
+                    {isNewFormNoViolation ? "Durasi Hari *" : "Target Pelanggaran *"}
+                  </label>
+                  {isNewFormNoViolation ? (
+                    <input
+                      type="number"
+                      min={1}
+                      className="form-input"
+                      value={newForm.pelanggaran_period_days ?? 30}
+                      onChange={(e) => setNewForm((p) => ({ ...p, pelanggaran_period_days: Number(e.target.value) }))}
+                      style={{ color: "var(--primary)", fontWeight: 700 }}
+                    />
+                  ) : (
+                    <div style={{ fontSize: "0.74rem", color: "var(--text-faint)", paddingTop: 10 }}>
+                      Gunakan target di atas untuk jumlah pelanggaran, misalnya target `0` atau `3`.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="form-group" style={{ marginBottom: 14 }}>
               <label className="form-label" style={{ fontSize: "0.78rem" }}>Coins Reward</label>
               <input type="number" min={0} className="form-input" value={newForm.coins_reward} onChange={(e) => setNewForm((p) => ({ ...p, coins_reward: Number(e.target.value) }))} style={{ color: "var(--amber)", fontWeight: 700 }} />
@@ -1296,7 +1393,14 @@ function AchievementSection({ toast }: { toast: ReturnType<typeof useToast> }) {
                   <span style={{ fontSize: "0.72rem", padding: "2px 8px", borderRadius: 10, background: getTipeStyle(newForm.tipe).bg, color: getTipeStyle(newForm.tipe).color, fontWeight: 600 }}>
                     {getTipeStyle(newForm.tipe).icon} {newForm.tipe}
                   </span>
-                  <span style={{ fontSize: "0.72rem", color: "var(--primary)" }}>Target: {newForm.target_value}</span>
+                  <span style={{ fontSize: "0.72rem", color: "var(--primary)" }}>
+                    {formatTargetLabel({
+                      tipe: newForm.tipe,
+                      target_value: isNewFormNoViolation ? 0 : newForm.target_value,
+                      pelanggaran_mode: newForm.pelanggaran_mode,
+                      pelanggaran_period_days: newForm.pelanggaran_period_days,
+                    })}
+                  </span>
                   {newForm.coins_reward > 0 && (
                     <span style={{ fontSize: "0.72rem", color: "var(--amber)" }}>+{newForm.coins_reward} <HandCoins size={12} /></span>
                   )}
@@ -1366,7 +1470,24 @@ function AchievementSection({ toast }: { toast: ReturnType<typeof useToast> }) {
                     {/* Tipe */}
                     <td>
                       {isEditing
-                        ? <select className="form-input" value={editData.tipe} onChange={(e) => setEditData((d) => ({ ...d, tipe: e.target.value as any }))} style={{ appearance: "none", cursor: "pointer", padding: "7px 10px", fontSize: "0.82rem" }}>
+                        ? <select
+                            className="form-input"
+                            value={editData.tipe}
+                            onChange={(e) => setEditData((d) => {
+                              const nextTipe = e.target.value as any;
+                              return {
+                                ...d,
+                                tipe: nextTipe,
+                                pelanggaran_mode: nextTipe === "pelanggaran" ? (d.pelanggaran_mode ?? "count") : null,
+                                pelanggaran_period_days: nextTipe === "pelanggaran" ? (d.pelanggaran_period_days ?? null) : null,
+                                target_value:
+                                  nextTipe === "pelanggaran" && d.pelanggaran_mode === "no_violation_days"
+                                    ? 0
+                                    : d.target_value,
+                              };
+                            })}
+                            style={{ appearance: "none", cursor: "pointer", padding: "7px 10px", fontSize: "0.82rem" }}
+                          >
                             {TIPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                           </select>
                         : <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, fontSize: "0.73rem", fontWeight: 700, background: ts.bg, color: ts.color }}>{ts.icon} {a.tipe}</span>}
@@ -1374,9 +1495,56 @@ function AchievementSection({ toast }: { toast: ReturnType<typeof useToast> }) {
 
                     {/* Target */}
                     <td>
-                      {isEditing
-                        ? <input type="number" min={0} className="form-input" value={editData.target_value ?? 0} onChange={(e) => setEditData((d) => ({ ...d, target_value: Number(e.target.value) }))} style={{ color: "var(--primary)", fontWeight: 700, width: 80 }} />
-                        : <span style={{ color: "var(--primary)", fontWeight: 700 }}>{a.target_value}</span>}
+                      {isEditing ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          <input
+                            type="number"
+                            min={0}
+                            className="form-input"
+                            value={isEditNoViolation ? 0 : editData.target_value ?? 0}
+                            onChange={(e) => setEditData((d) => ({ ...d, target_value: Number(e.target.value) }))}
+                            disabled={isEditNoViolation}
+                            style={{ color: "var(--primary)", fontWeight: 700, width: 90, opacity: isEditNoViolation ? 0.7 : 1 }}
+                          />
+                          {(editData.tipe ?? a.tipe) === "pelanggaran" && (
+                            <>
+                              <select
+                                className="form-input"
+                                value={editData.pelanggaran_mode ?? "count"}
+                                onChange={(e) => setEditData((d) => {
+                                  const nextMode = e.target.value as "count" | "no_violation_days";
+                                  return {
+                                    ...d,
+                                    pelanggaran_mode: nextMode,
+                                    pelanggaran_period_days: nextMode === "no_violation_days" ? (d.pelanggaran_period_days ?? 30) : null,
+                                    target_value: nextMode === "no_violation_days" ? 0 : d.target_value,
+                                  };
+                                })}
+                                style={{ appearance: "none", cursor: "pointer", fontSize: "0.78rem" }}
+                              >
+                                {PELANGGARAN_MODE_OPTIONS.map((option) => (
+                                  <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                              </select>
+                              {isEditNoViolation && (
+                                <input
+                                  type="number"
+                                  min={1}
+                                  className="form-input"
+                                  value={editData.pelanggaran_period_days ?? 30}
+                                  onChange={(e) => setEditData((d) => ({ ...d, pelanggaran_period_days: Number(e.target.value) }))}
+                                  placeholder="Jumlah hari"
+                                  style={{ color: "var(--primary)", fontWeight: 700, fontSize: "0.82rem" }}
+                                />
+                              )}
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <span style={{ color: "var(--primary)", fontWeight: 700, fontSize: "0.78rem" }}>
+                          {formatTargetLabel(a)}
+                        </span>
+                      )}
                     </td>
 
                     {/* Coins reward */}
@@ -1444,6 +1612,8 @@ function AchievementSection({ toast }: { toast: ReturnType<typeof useToast> }) {
                                 coins_reward: a.coins_reward, voucher_reward: a.voucher_reward ?? false,
                                 voucher_nominal: a.voucher_nominal ?? null,
                                 voucher_tipe_voucher: a.voucher_tipe_voucher ?? null,
+                                pelanggaran_mode: a.pelanggaran_mode ?? (a.tipe === "pelanggaran" ? "count" : null),
+                                pelanggaran_period_days: a.pelanggaran_period_days ?? null,
                               });
                             }}
                             className="act-btn act-blue"

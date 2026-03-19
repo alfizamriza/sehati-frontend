@@ -9,7 +9,7 @@ import {
   BarChart3, TrendingUp, TrendingDown, Users, Coins,
   AlertTriangle, CreditCard, Download, RefreshCw,
   Loader2, Calendar, Ticket, Leaf,
-  Trophy, Package, Activity,
+  Trophy, Package, Activity, LogIn,
 } from "lucide-react";
 import {
   fetchAnalyticsCached, exportAnalyticsPDF, formatPeriodLabel,
@@ -30,7 +30,15 @@ interface HeatmapTooltipState {
   max: number;
 }
 
-function HeatmapGrid({ data }: { data: any[] }) {
+function HeatmapGrid({
+  data,
+  unitLabel = "pelanggaran",
+  accentColor = "#f87171",
+}: {
+  data: any[];
+  unitLabel?: string;
+  accentColor?: string;
+}) {
   const [tip, setTip] = useState<HeatmapTooltipState>({
     visible: false, x: 0, y: 0, day: 0, hour: 0, count: 0, max: 1,
   });
@@ -80,8 +88,7 @@ function HeatmapGrid({ data }: { data: any[] }) {
 
   const intensityColor = tip.count === 0 ? "var(--txt-muted)"
     : tip.count / tip.max < 0.33 ? "#f59e0b"
-      : tip.count / tip.max < 0.66 ? "#f87171"
-        : "#ef4444";
+      : accentColor;
 
   const hourLabel = `${String(tip.hour).padStart(2, "0")}:00–${String(tip.hour + 1).padStart(2, "0")}:00`;
 
@@ -122,7 +129,7 @@ function HeatmapGrid({ data }: { data: any[] }) {
                     style={{
                       background: v === 0
                         ? "var(--border)"
-                        : `rgba(248,113,113,${intensity.toFixed(3)})`,
+                        : `color-mix(in srgb, ${accentColor} ${(intensity * 100).toFixed(0)}%, transparent)`,
                     }}
                     onMouseEnter={(e) => handleMouseEnter(e, day, hour, v)}
                     onMouseLeave={handleMouseLeave}
@@ -158,7 +165,7 @@ function HeatmapGrid({ data }: { data: any[] }) {
             >
               {tip.count}
             </span>
-            <span className="an-heatmap-tip-unit">pelanggaran</span>
+            <span className="an-heatmap-tip-unit">{unitLabel}</span>
           </div>
 
           {/* Intensity badge */}
@@ -404,6 +411,8 @@ export default function AnalyticsPage() {
   const [infoSekolah, setInfoSekolah] = useState({
     namaSekolah: "Sekolah SEHATI", npsn: "-", alamat: "-",
   });
+
+  const topSiswaLogin = data?.topSiswaLogin ?? [];
 
   useEffect(() => {
     api.get("/pengaturan").then((res) => {
@@ -698,7 +707,69 @@ export default function AnalyticsPage() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <HeatmapGrid data={data.heatmapPelanggaran} />
+              <HeatmapGrid
+                data={data.heatmapPelanggaran}
+                unitLabel="pelanggaran"
+                accentColor="#f87171"
+              />
+            )}
+          </div>
+
+          <div className="an-card an-card-full">
+            <div className="an-card-header">
+              <div className="an-card-title">
+                <LogIn size={15} />
+                Heatmap Login
+              </div>
+              <div className="an-card-subtext">
+                Jumlah akun unik yang login pada setiap jam dalam periode yang dipilih.
+              </div>
+            </div>
+
+            {period === "today" ? (
+              <div className="an-chart-wrap">
+                <ResponsiveContainer width="100%" height={180} minWidth={0}>
+                  <BarChart
+                    data={Array.from({ length: 24 }, (_, h) => {
+                      const count = data.heatmapLogin
+                        .filter((c: any) => c.hour === h)
+                        .reduce((s: number, c: any) => s + c.count, 0);
+                      return { jam: `${String(h).padStart(2, "0")}:00`, count };
+                    })}
+                    margin={{ top: 4, right: 10, left: -18, bottom: 0 }}
+                    barCategoryGap="20%"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                    <XAxis
+                      dataKey="jam"
+                      tick={{ fill: "var(--txt-muted)", fontSize: 9 }}
+                      tickLine={false} axisLine={false}
+                      interval={2}
+                    />
+                    <YAxis
+                      tick={{ fill: "var(--txt-muted)", fontSize: 9 }}
+                      tickLine={false} axisLine={false}
+                      allowDecimals={false}
+                    />
+                    <Tooltip
+                      formatter={(v: any) => [v, "akun login"]}
+                      labelFormatter={(l) => `Pukul ${l}`}
+                      content={<ChartTooltip />}
+                    />
+                    <Bar dataKey="count" name="Login" radius={[4, 4, 0, 0]}>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <Cell key={i} fill={`rgba(59,158,255,${0.35 + 0.65 * (i / 23)})`} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <HeatmapGrid
+                data={data.heatmapLogin}
+                unitLabel="akun login"
+                accentColor="#3B9EFF"
+              />
             )}
           </div>
 
@@ -803,7 +874,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* ── RANKING + PRODUCTS + PROGRESS ──────────────── */}
-          <div className="an-row-3col">
+          <div className="an-row-4col">
 
             {/* Top Siswa */}
             <div className="an-card">
@@ -817,6 +888,24 @@ export default function AnalyticsPage() {
                 {data.topSiswa.slice(0, 7).map((s: any) => (
                   <RankRow key={s.id} item={s} color="#f59e0b" isTop3={s.rank <= 3} />
                 ))}
+              </div>
+            </div>
+
+            <div className="an-card">
+              <div className="an-card-header">
+                <div className="an-card-title">
+                  <LogIn size={15} />
+                  Siswa Paling Aktif Login
+                </div>
+              </div>
+              <div className="an-rank-list">
+                {topSiswaLogin.length > 0 ? (
+                  topSiswaLogin.slice(0, 7).map((s: any) => (
+                    <RankRow key={s.id} item={s} color="#3B9EFF" isTop3={s.rank <= 3} />
+                  ))
+                ) : (
+                  <EmptyState text="Belum ada data login siswa pada periode ini." />
+                )}
               </div>
             </div>
 

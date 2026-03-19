@@ -7,12 +7,13 @@ import {
   TrendingUp, Coins, BarChart2, AlertTriangle,
   RefreshCw, LogOut, ChevronRight,
   ShoppingCart, Star, Zap, ArrowUpRight,
-  CreditCard, Tag, Wallet,
+  CreditCard, Tag, Wallet, Lock, Eye, EyeOff, Loader2,
 } from "lucide-react";
 import {
   getKantinDashboard, clearKantinDashboardCache, isKantinDashboardCached,
   formatRupiah, formatRupiahFull, formatWaktu, labelPayment, stokLevel,
   type KantinDashboardData, type TransaksiTerbaru, type ProdukTerlaris,
+  updateKantinPassword,
 } from "@/lib/services/kantin";
 import { ErrorState, LoadingState } from "@/components/common/AsyncState";
 import { logout } from "@/lib/services/shared";
@@ -302,6 +303,120 @@ function EmptyRow({ label }: { label: string }) {
   );
 }
 
+function ChangePasswordModal({
+  onClose,
+  onSuccess,
+}: {
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [form, setForm] = useState({
+    passwordLama: "",
+    passwordBaru: "",
+    konfirmasiPassword: "",
+  });
+  const [show, setShow] = useState({
+    passwordLama: false,
+    passwordBaru: false,
+    konfirmasiPassword: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fields = [
+    { key: "passwordLama", label: "Password Lama" },
+    { key: "passwordBaru", label: "Password Baru" },
+    { key: "konfirmasiPassword", label: "Konfirmasi Password Baru" },
+  ] as const;
+
+  async function handleSubmit() {
+    setError(null);
+
+    if (!form.passwordLama) {
+      setError("Masukkan password lama.");
+      return;
+    }
+    if (form.passwordBaru.length < 6) {
+      setError("Password baru minimal 6 karakter.");
+      return;
+    }
+    if (form.passwordBaru !== form.konfirmasiPassword) {
+      setError("Konfirmasi password tidak cocok.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await updateKantinPassword(form.passwordLama, form.passwordBaru);
+      onSuccess();
+      onClose();
+    } catch (e: any) {
+      setError(e.message || "Gagal mengubah password.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="guru-password-overlay" onClick={onClose}>
+      <div
+        className="glass-panel guru-password-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="kantin-password-title"
+      >
+        <div className="guru-password-icon">
+          <Lock size={28} />
+        </div>
+        <div className="guru-password-heading">
+          <h3 id="kantin-password-title">Ubah Password</h3>
+          <p>Perbarui password akun kantin untuk menjaga keamanan akses transaksi.</p>
+        </div>
+
+        <div className="guru-password-form">
+          {fields.map((field) => (
+            <label key={field.key} className="guru-password-field">
+              <span>{field.label}</span>
+              <div className="guru-password-input-wrap">
+                <input
+                  type={show[field.key] ? "text" : "password"}
+                  value={form[field.key]}
+                  onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  className="guru-password-input"
+                />
+                <button
+                  type="button"
+                  className="guru-password-toggle"
+                  onClick={() => setShow((prev) => ({ ...prev, [field.key]: !prev[field.key] }))}
+                >
+                  {show[field.key] ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </label>
+          ))}
+        </div>
+
+        {error && <div className="guru-password-error">{error}</div>}
+
+        <div className="guru-password-actions">
+          <button type="button" className="guru-password-secondary" onClick={onClose}>
+            Batal
+          </button>
+          <button
+            type="button"
+            className="guru-password-submit"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? <><Loader2 size={16} className="spin" /> Menyimpan...</> : <><Lock size={16} /> Simpan Password</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 
 export default function KantinDashboard() {
@@ -312,6 +427,7 @@ export default function KantinDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(async (force = false) => {
@@ -369,6 +485,12 @@ export default function KantinDashboard() {
     <main className="dashboard-page kantin-page">
       <div className="bg-blob blob-1" />
       <div className="bg-blob blob-2" />
+      {showPasswordModal && (
+        <ChangePasswordModal
+          onClose={() => setShowPasswordModal(false)}
+          onSuccess={() => {}}
+        />
+      )}
 
       <div className="dashboard-container">
 
@@ -385,6 +507,13 @@ export default function KantinDashboard() {
           </div>
 
           <div className="k-header-actions">
+            <button
+              className="btn-icon"
+              onClick={() => setShowPasswordModal(true)}
+              title="Ganti password"
+            >
+              <Lock size={15} />
+            </button>
             {/* Refresh */}
             {/* <button
               className="btn-icon"
