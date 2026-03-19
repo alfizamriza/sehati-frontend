@@ -271,6 +271,7 @@ export const useLeaderboardKelasSaya = (kelasId?: string) =>
     queryKey: leaderboardKeys.kelasSaya(kelasId),
     queryFn: () => fetchKelasSaya(kelasId),
     staleTime: 1000 * 60 * 2, // cache 2 menit
+    refetchInterval: 10000,
   });
 
 /** Tab: Antar Kelas — ranking kelas berdasarkan avg coins */
@@ -279,6 +280,7 @@ export const useLeaderboardAntarKelas = (jenjang?: string) =>
     queryKey: leaderboardKeys.antarKelas(jenjang),
     queryFn: () => fetchAntarKelas(jenjang),
     staleTime: 1000 * 60 * 2,
+    refetchInterval: 10000,
   });
 
 /** Tab: Sekolah — semua siswa aktif se-sekolah */
@@ -287,6 +289,7 @@ export const useLeaderboardSekolah = () =>
     queryKey: leaderboardKeys.sekolah(),
     queryFn: fetchSekolah,
     staleTime: 1000 * 60 * 2,
+    refetchInterval: 10000,
   });
 
 /** Tab: Antar Jenjang — ranking SD/SMP/SMA berdasarkan avg coins */
@@ -295,6 +298,7 @@ export const useLeaderboardAntarJenjang = () =>
     queryKey: leaderboardKeys.antarJenjang(),
     queryFn: fetchAntarJenjang,
     staleTime: 1000 * 60 * 5, // 5 menit, data jarang berubah
+    refetchInterval: 10000,
   });
 
 /** Tab: Siswa Se-Jenjang — semua siswa dalam jenjang yang sama dengan login */
@@ -303,6 +307,7 @@ export const useLeaderboardSiswaAntarJenjang = () =>
     queryKey: leaderboardKeys.siswaAntarJenjang(),
     queryFn: () => fetchSiswaAntarJenjang(),
     staleTime: 1000 * 60 * 2,
+    refetchInterval: 10000,
   });
 
 /** Tab: Siswa Se-Jenjang (admin/guru) — wajib kirim jenjang */
@@ -312,4 +317,5 @@ export const useLeaderboardSiswaByJenjang = (jenjang: string) =>
     queryFn: () => fetchSiswaAntarJenjang(jenjang),
     staleTime: 1000 * 60 * 2,
     enabled: Boolean(jenjang),
+    refetchInterval: 10000,
   });

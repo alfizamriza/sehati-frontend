@@ -197,9 +197,9 @@ export function ShowcaseCard({
   const badgeStyle = getBadgeStyle(showcaseNote?.achievementBadgeColor ?? "blue");
   const createdLabel = showcaseNote?.createdAt
     ? new Intl.DateTimeFormat("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(new Date(showcaseNote.createdAt))
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(showcaseNote.createdAt))
     : "Aktif";
 
   // ── Empty state ────────────────────────────────────────────────────────────
@@ -266,7 +266,7 @@ export function ShowcaseCard({
           <span className="profil-showcase-live-dot" />
           Aktif di leaderboard
         </div>
-        <span className="profil-showcase-edit-tag">🗑 Hapus dulu untuk buat baru</span>
+        <span className="profil-showcase-edit-tag">Hapus dulu untuk buat baru</span>
       </div>
     </button>
   );
