@@ -20,6 +20,7 @@ const PAGE_META: Record<string, { title: string; subtitle: string }> = {
   "/admin/leaderboard": { title: "Leaderboard",         subtitle: "Peringkat siswa terbaik" },
   "/admin/voucher":     { title: "Voucher & Poin",      subtitle: "Kelola voucher dan poin siswa" },
   "/admin/analytics":   { title: "Laporan & Analitik",  subtitle: "Lihat laporan dan statistik" },
+  "/admin/login-logs":  { title: "Riwayat Login",       subtitle: "Pantau aktivitas masuk pengguna sistem" },
   "/admin/pengaturan":  { title: "Pengaturan",          subtitle: "Konfigurasi sistem" },
 };
 

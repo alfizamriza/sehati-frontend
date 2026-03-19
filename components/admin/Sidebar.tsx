@@ -12,6 +12,7 @@ import {
   Crown,
   TicketPercent,
   BarChart2,
+  History,
   Settings,
   ChevronRight,
   ChevronLeft,
@@ -28,6 +29,7 @@ const nav = [
   { href: "/admin/leaderboard", label: "Leaderboard",         icon: <Crown size={20} /> },
   { href: "/admin/voucher",     label: "Voucher & Poin",      icon: <TicketPercent size={20} /> },
   { href: "/admin/analytics",   label: "Laporan & Analitik",  icon: <BarChart2 size={20} /> },
+  { href: "/admin/login-logs",  label: "Riwayat Login",       icon: <History size={20} /> },
   { href: "/admin/pengaturan",  label: "Pengaturan",          icon: <Settings size={20} /> },
 ];
 

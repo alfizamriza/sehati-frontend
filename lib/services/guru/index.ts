@@ -41,6 +41,10 @@ export type {
 } from "../laporan-pelanggaran.service";
 
 export {
+    updateGuruPassword,
+} from "../guru.service";
+
+export {
     getRiwayatTumbler,
     getRiwayatBelanja,
     getRiwayatPelanggaran,

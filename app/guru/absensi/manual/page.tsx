@@ -13,7 +13,7 @@ import {
   clearSiswaCache, getInfoHariIni,
   type KelasItem, type SiswaAbsensi, type AbsensiMeta,
 } from "@/lib/services/absensi.service";
-import { formatKelasLabel } from "@/lib/utils/kelas";
+import { formatKelasLabel, toRoman } from "@/lib/utils/kelas";
 
 export default function ManualAttendancePage() {
   const router = useRouter();
@@ -43,6 +43,42 @@ export default function ManualAttendancePage() {
 
   const safeKelasList = Array.isArray(kelasList) ? kelasList : [];
   const safeSiswaList = Array.isArray(siswaList) ? siswaList : [];
+  const romanOrder: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12 };
+  function getTingkatRoman(tingkat: string | number) {
+    if (typeof tingkat === "string") {
+      const normalized = tingkat.trim().toUpperCase();
+      if (normalized) return normalized;
+    }
+    const parsed = Number(tingkat);
+    return Number.isFinite(parsed) ? toRoman(parsed) : "-";
+  }
+  function getTingkatOrderValue(tingkat: string | number) {
+    if (typeof tingkat === "string") {
+      const normalized = tingkat.trim().toUpperCase();
+      if (romanOrder[normalized]) return romanOrder[normalized];
+      const parsed = Number(normalized);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    const parsed = Number(tingkat);
+    return Number.isFinite(parsed) ? parsed : 99;
+  }
+  const orderedKelasList = [...safeKelasList].sort((a, b) => {
+    const jenjangOrder: Record<string, number> = { SD: 1, SMP: 2, SMA: 3 };
+    const byJenjang = (jenjangOrder[a.jenjang] ?? 99) - (jenjangOrder[b.jenjang] ?? 99);
+    if (byJenjang !== 0) return byJenjang;
+    const byTingkat = getTingkatOrderValue(a.tingkat) - getTingkatOrderValue(b.tingkat);
+    if (byTingkat !== 0) return byTingkat;
+    return a.nama.localeCompare(b.nama, "id");
+  });
+
+  function getKelasDisplay(kelas: KelasItem) {
+    const tingkatRoman = getTingkatRoman(kelas.tingkat);
+    return {
+      title: `${tingkatRoman} ${kelas.nama}`,
+      subtitle: kelas.jenjang,
+      fullLabel: formatKelasLabel(kelas),
+    };
+  }
 
   // ── Cek hari libur ──
   useEffect(() => {
@@ -186,29 +222,33 @@ export default function ManualAttendancePage() {
             {loadingKelas ? (
               <span className="selector-placeholder">Memuat kelas...</span>
             ) : (
-              <span>
-                {selectedKelas
-                  ? formatKelasLabel(selectedKelas)
-                  : <span className="selector-placeholder">Pilih Kelas...</span>}
-              </span>
+              selectedKelas ? (
+                <span className="selector-value">
+                  <span className="selector-title">{getKelasDisplay(selectedKelas).title}</span>
+                  <span className="selector-subtitle">{selectedKelas.jenjang}</span>
+                </span>
+              ) : <span className="selector-placeholder">Pilih Kelas...</span>
             )}
             {isDropdownOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </div>
 
           {isDropdownOpen && (
             <div className="dropdown-menu glass-panel">
-              {safeKelasList.length === 0 ? (
+              {orderedKelasList.length === 0 ? (
                 <div className="dropdown-item">
                   <span className="selector-placeholder">Tidak ada kelas</span>
                 </div>
               ) : (
-                safeKelasList.map((kelas) => (
+                orderedKelasList.map((kelas) => (
                   <div
                     key={kelas.id}
                     className={`dropdown-item ${selectedKelas?.id === kelas.id ? "selected" : ""}`}
                     onClick={() => handleSelectKelas(kelas)}
                   >
-                    <span>{formatKelasLabel(kelas)}</span>
+                    <span className="dropdown-item-copy">
+                      <span>{getKelasDisplay(kelas).title}</span>
+                      <span className="dropdown-item-sub">{kelas.jenjang}</span>
+                    </span>
                     {selectedKelas?.id === kelas.id && (
                       <Check size={14} style={{ color: "var(--accent-text)" }} />
                     )}
@@ -382,3 +422,4 @@ export default function ManualAttendancePage() {
     </main>
   );
 }
+

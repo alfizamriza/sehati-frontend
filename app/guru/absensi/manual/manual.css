@@ -53,6 +53,23 @@
   transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
 }
 
+.selector-value {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.selector-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.selector-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
 .class-selector:hover {
   background: var(--bg-input-hover);
   border-color: var(--accent-border);
@@ -92,6 +109,13 @@
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
+}
+
+.dropdown-item-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
 }
 
 .dropdown-item:last-child {

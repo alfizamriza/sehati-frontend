@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   RefreshCw,
@@ -12,7 +12,7 @@ import {
   Users,
   Medal,
   Crown,
-  ChevronDown,
+  ChevronUp,
   Award,
   BookOpen,
   GraduationCap,
@@ -89,58 +89,105 @@ const getTingkatLabel = (value?: string | number | null) => {
 };
 
 // ─────────────────────────────────────────────
-// ACHIEVEMENT BADGE + EXPAND PANEL
+// SHOWCASE BUBBLE
 //
-// Konsep:
-// - Badge kecil (ikon + nama) muncul di bawah meta-chip
-// - Tap badge → panel glassmorphism slide down di dalam card
-// - Tidak ada elemen keluar dari card → layout selalu rapi
-// - State expand per-item (lokal di komponen AchievementShowcase)
+// Menerima dua prop tambahan:
+//   isExpanded  — dikontrol dari luar (parent)
+//   onToggle    — callback ke parent untuk set id yang aktif
 // ─────────────────────────────────────────────
-const AchievementShowcase = ({
-  note,
-}: {
+interface ShowcaseBubbleProps {
   note: LeaderboardSiswaRow["showcaseNote"];
-}) => {
-  const [open, setOpen] = useState(false);
+  compact?: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
+}
+
+const ShowcaseBubble = ({
+  note,
+  compact = false,
+  isExpanded,
+  onToggle,
+}: ShowcaseBubbleProps) => {
   if (!note) return null;
 
   return (
-    <>
-      {/* Badge — selalu terlihat */}
-      <button
-        className="ach-badge"
+    <div className={`lb-showcase-container${compact ? " compact" : ""}`}>
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.3, y: 30, rotate: -15 }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+          y: isExpanded ? 0 : [0, -8, 0],
+          rotate: isExpanded ? 0 : [0, 2, -1, 0],
+        }}
+        transition={{
+          scale: { type: "spring", stiffness: 300, damping: 15 },
+          opacity: { duration: 0.5 },
+          y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+          rotate: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+          layout: { duration: 0.3 },
+        }}
+        whileHover={{
+          scale: 1.05,
+          y: -12,
+          filter: [
+            "brightness(1) drop-shadow(0 0 5px rgba(255,255,255,0))",
+            "brightness(1.1) drop-shadow(0 0 10px rgba(var(--color-primary-rgb),0.3))",
+            "brightness(1) drop-shadow(0 0 5px rgba(255,255,255,0))",
+          ],
+          transition: {
+            filter: { repeat: Infinity, duration: 1.5 },
+            scale: { type: "spring", stiffness: 400, damping: 10 },
+          },
+        }}
+        whileTap={{ scale: 0.95 }}
         onClick={(e) => {
           e.stopPropagation();
-          setOpen((v) => !v);
+          onToggle(); // ← delegasi ke parent, bukan state lokal
         }}
-        aria-expanded={open}
-        aria-label={`Lihat achievement: ${note.achievementName}`}
+        className={`lb-glass-bubble${isExpanded ? " expanded" : ""}`}
       >
-        <span className="ach-badge-icon">{note.achievementIcon}</span>
-        <span className="ach-badge-name">{note.achievementName}</span>
-        <ChevronDown
-          size={11}
-          className={`ach-badge-chevron${open ? " open" : ""}`}
-        />
-      </button>
+        <div className="bubble-header">
+          <span className="bubble-icon">{note.achievementIcon}</span>
+          <span className="bubble-title">{note.achievementName}</span>
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ opacity: 0, rotate: -180 }}
+                animate={{ opacity: 1, rotate: 0 }}
+                exit={{ opacity: 0, rotate: 180 }}
+              >
+                <ChevronUp size={14} className="close-icon" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-      {/* Panel expand — slide down di dalam card */}
-      <div
-        className={`ach-expand-panel${open ? " open" : ""}`}
-        aria-hidden={!open}
-      >
-        <div className="ach-expand-inner">
-          <div className="ach-expand-title">
-            <span>{note.achievementIcon}</span>
-            {note.achievementName}
-          </div>
-          <p className="ach-expand-text">
+        <motion.div layout className="bubble-content">
+          <p className={!isExpanded ? "truncate-text" : "full-text"}>
             {note.noteText || "Achievement ini sedang dipamerkan."}
           </p>
-        </div>
-      </div>
-    </>
+        </motion.div>
+
+        <motion.div
+          animate={{
+            y: [0, 2, 0], scale: [1, 1.1, 1],
+            filter: ["brightness(1)", "brightness(1.5) drop-shadow(0 0 2px rgba(255,255,255,0.5))", "brightness(1)"],
+          }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          className="bubble-tail"
+        />
+        <motion.div
+          animate={{
+            y: [0, 4, 0], scale: [1, 1.2, 1],
+            filter: ["brightness(1)", "brightness(1.5) drop-shadow(0 0 2px rgba(255,255,255,0.5))", "brightness(1)"],
+          }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+          className="bubble-tail2"
+        />
+      </motion.div>
+    </div>
   );
 };
 
@@ -162,6 +209,9 @@ const SkeletonRow = () => (
 interface PodiumProps { top3: LeaderboardSiswaRow[]; }
 const Podium = ({ top3 }: PodiumProps) => {
   const order = [2, 1, 3] as const;
+  // State expand lokal khusus podium (terpisah dari list)
+  const [expandedPodium, setExpandedPodium] = useState<number | null>(null);
+
   return (
     <section className="podium-section">
       <div className="lb-podium">
@@ -201,6 +251,16 @@ const Podium = ({ top3 }: PodiumProps) => {
                 <span className="p-pts">{p ? formatCoins(p.coins) : "0"} coins</span>
                 <div className={`p-rank-label rank-${r}`}>{r}</div>
               </div>
+              {/* {p?.showcaseNote && (
+                <ShowcaseBubble
+                  note={p.showcaseNote}
+                  compact
+                  isExpanded={expandedPodium === r}
+                  onToggle={() =>
+                    setExpandedPodium((prev) => (prev === r ? null : r))
+                  }
+                />
+              )} */}
             </motion.div>
           );
         })}
@@ -210,20 +270,38 @@ const Podium = ({ top3 }: PodiumProps) => {
 };
 
 // ─────────────────────────────────────────────
-// SiswaItem
-// Layout: item-main-row (rank + avatar + info + score)
-//         lalu AchievementShowcase (badge + panel) di bawahnya
-//         keduanya di dalam flex-wrap card
+// SiswaItem — menerima expandedId & onToggle dari parent LeaderboardList
 // ─────────────────────────────────────────────
-const SiswaItem = ({ row, idx }: { row: LeaderboardSiswaRow; idx: number }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -16 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ delay: idx * 0.04 }}
-    className={`lb-item glass-panel${row.is_me ? " is-me" : ""}`}
-  >
-    {/* Baris utama */}
-    <div className="item-main-row">
+interface SiswaItemProps {
+  row: LeaderboardSiswaRow;
+  idx: number;
+  expandedNis: string | null;
+  onToggleBubble: (nis: string) => void;
+}
+
+const SiswaItem = ({ row, idx, expandedNis, onToggleBubble }: SiswaItemProps) => {
+  const hasBubble = !!row.showcaseNote;
+  const isExpanded = expandedNis === row.nis;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: idx * 0.04 }}
+      className={[
+        "lb-item glass-panel",
+        row.is_me ? "is-me" : "",
+        hasBubble ? "lb-item--has-bubble" : "",
+      ].filter(Boolean).join(" ")}
+    >
+      {hasBubble && (
+        <ShowcaseBubble
+          note={row.showcaseNote}
+          isExpanded={isExpanded}
+          onToggle={() => onToggleBubble(row.nis)}
+        />
+      )}
+
       <div className="item-rank">
         <RankIcon rank={row.rank} />
       </div>
@@ -255,18 +333,43 @@ const SiswaItem = ({ row, idx }: { row: LeaderboardSiswaRow; idx: number }) => (
             {row.kelas}
           </span>
         </div>
-
-        {/* Badge achievement — di dalam item-info, bawah meta */}
-        <AchievementShowcase note={row.showcaseNote} />
       </div>
 
       <div className="item-score">
         <div className="pts">{formatCoins(row.coins)}</div>
         <div className="pts-label">coins</div>
       </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// LeaderboardList — wrapper list siswa yang memegang state expandedNis
+// Saat bubble A di-klik: expandedNis = A
+// Saat bubble B di-klik: expandedNis = B  (A otomatis tutup)
+// Saat bubble yang sama di-klik: expandedNis = null (tutup)
+// ─────────────────────────────────────────────
+const LeaderboardListSiswa = ({ data }: { data: LeaderboardSiswaRow[] }) => {
+  const [expandedNis, setExpandedNis] = useState<string | null>(null);
+
+  const handleToggle = useCallback((nis: string) => {
+    setExpandedNis((prev) => (prev === nis ? null : nis));
+  }, []);
+
+  return (
+    <>
+      {data.map((row, i) => (
+        <SiswaItem
+          key={row.nis}
+          row={row}
+          idx={i}
+          expandedNis={expandedNis}
+          onToggleBubble={handleToggle}
+        />
+      ))}
+    </>
+  );
+};
 
 const KelasItem = ({ row, idx }: { row: LeaderboardKelasRow; idx: number }) => {
   const jenjangLabel = getJenjangLabel(
@@ -283,34 +386,29 @@ const KelasItem = ({ row, idx }: { row: LeaderboardKelasRow; idx: number }) => {
       transition={{ delay: idx * 0.04 }}
       className={`lb-item glass-panel${row.is_my_class ? " is-me" : ""}`}
     >
-      <div className="item-main-row">
-        <div className="item-rank"><RankIcon rank={row.rank} /></div>
-
-        <div
-          className="item-avatar-circle kelas-icon"
-          style={{ background: cfg ? `${cfg.color}18` : undefined, color: cfg?.color }}
-        >
-          {cfg?.icon ?? <Building2 size={16} />}
+      <div className="item-rank"><RankIcon rank={row.rank} /></div>
+      <div
+        className="item-avatar-circle kelas-icon"
+        style={{ background: cfg ? `${cfg.color}18` : undefined, color: cfg?.color }}
+      >
+        {cfg?.icon ?? <Building2 size={16} />}
+      </div>
+      <div className="item-info">
+        <div className="item-name">
+          {row.nama_kelas}
+          {row.is_my_class && <span className="me-badge">Kelas Saya</span>}
         </div>
-
-        <div className="item-info">
-          <div className="item-name">
-            {row.nama_kelas}
-            {row.is_my_class && <span className="me-badge">Kelas Saya</span>}
-          </div>
-          <div className="item-meta">
-            <span className="meta-chip" style={{ color: cfg?.color }}>
-              {cfg?.icon}{jenjangLabel}
-            </span>
-            <span className="meta-chip"><Award size={11} />{tingkatLabel}</span>
-            <span className="meta-chip"><Users size={11} />{row.jumlah_siswa} siswa</span>
-          </div>
+        <div className="item-meta">
+          <span className="meta-chip" style={{ color: cfg?.color }}>
+            {cfg?.icon}{jenjangLabel}
+          </span>
+          <span className="meta-chip"><Award size={11} />{tingkatLabel}</span>
+          <span className="meta-chip"><Users size={11} />{row.jumlah_siswa} siswa</span>
         </div>
-
-        <div className="item-score">
-          <div className="pts">{formatCoins(Math.round(row.avg_coins))}</div>
-          <div className="pts-label">avg/siswa</div>
-        </div>
+      </div>
+      <div className="item-score">
+        <div className="pts">{formatCoins(Math.round(row.avg_coins))}</div>
+        <div className="pts-label">avg/siswa</div>
       </div>
     </motion.div>
   );
@@ -326,32 +424,27 @@ const JenjangItem = ({ row, idx }: { row: LeaderboardJenjangRow; idx: number }) 
       className="lb-item glass-panel lb-jenjang-item"
       style={{ borderColor: cfg ? `${cfg.color}44` : undefined, color: cfg?.color }}
     >
-      <div className="item-main-row">
-        <div className="item-rank"><RankIcon rank={row.rank} /></div>
-
-        <div
-          className="item-avatar-circle jenjang-icon"
-          style={{ background: cfg ? `${cfg.color}15` : undefined, color: cfg?.color }}
-        >
-          {cfg?.icon ?? <Building2 size={18} />}
+      <div className="item-rank"><RankIcon rank={row.rank} /></div>
+      <div
+        className="item-avatar-circle jenjang-icon"
+        style={{ background: cfg ? `${cfg.color}15` : undefined, color: cfg?.color }}
+      >
+        {cfg?.icon ?? <Building2 size={18} />}
+      </div>
+      <div className="item-info">
+        <div className="item-name" style={{ color: cfg?.color }}>Jenjang {row.jenjang}</div>
+        <div className="item-meta">
+          <span className="meta-chip"><Users size={11} />{row.total_siswa} siswa</span>
+          <span className="meta-chip">
+            <TrendingUp size={11} />Total {formatCoins(Number(row.total_coins))}
+          </span>
         </div>
-
-        <div className="item-info">
-          <div className="item-name" style={{ color: cfg?.color }}>
-            Jenjang {row.jenjang}
-          </div>
-          <div className="item-meta">
-            <span className="meta-chip"><Users size={11} />{row.total_siswa} siswa</span>
-            <span className="meta-chip"><TrendingUp size={11} />Total {formatCoins(Number(row.total_coins))}</span>
-          </div>
+      </div>
+      <div className="item-score">
+        <div className="pts" style={{ color: cfg?.color }}>
+          {Math.round(Number(row.avg_coins))}
         </div>
-
-        <div className="item-score">
-          <div className="pts" style={{ color: cfg?.color }}>
-            {Math.round(Number(row.avg_coins))}
-          </div>
-          <div className="pts-label">avg coins</div>
-        </div>
+        <div className="pts-label">avg coins</div>
       </div>
     </motion.div>
   );
@@ -549,27 +642,31 @@ export default function LeaderboardSiswaPage() {
                 {tab === "kelas" && (
                   (dataKelas ?? []).length === 0
                     ? <EmptyState message="Tidak ada data untuk kelas ini" />
-                    : (dataKelas ?? []).map((row, i) => <SiswaItem key={row.nis} row={row} idx={i} />)
+                    : <LeaderboardListSiswa data={dataKelas ?? []} />
                 )}
                 {tab === "antarKelas" && (
                   (dataAntarKelas ?? []).length === 0
                     ? <EmptyState message="Tidak ada data kelas" />
-                    : (dataAntarKelas ?? []).map((row, i) => <KelasItem key={row.kelas_id} row={row} idx={i} />)
+                    : (dataAntarKelas ?? []).map((row, i) => (
+                      <KelasItem key={row.kelas_id} row={row} idx={i} />
+                    ))
                 )}
                 {tab === "sekolah" && (
                   (dataSekolah ?? []).length === 0
                     ? <EmptyState message="Tidak ada data siswa" />
-                    : (dataSekolah ?? []).map((row, i) => <SiswaItem key={row.nis} row={row} idx={i} />)
+                    : <LeaderboardListSiswa data={dataSekolah ?? []} />
                 )}
                 {tab === "antarJenjang" && (
                   (dataAntarJenjang ?? []).length === 0
                     ? <EmptyState message="Tidak ada data jenjang" />
-                    : (dataAntarJenjang ?? []).map((row, i) => <JenjangItem key={row.jenjang} row={row} idx={i} />)
+                    : (dataAntarJenjang ?? []).map((row, i) => (
+                      <JenjangItem key={row.jenjang} row={row} idx={i} />
+                    ))
                 )}
                 {tab === "siswaAntarJenjang" && (
                   (dataSiswaJenjang ?? []).length === 0
                     ? <EmptyState message="Tidak ada data siswa se-jenjang" />
-                    : (dataSiswaJenjang ?? []).map((row, i) => <SiswaItem key={row.nis} row={row} idx={i} />)
+                    : <LeaderboardListSiswa data={dataSiswaJenjang ?? []} />
                 )}
               </div>
             )}

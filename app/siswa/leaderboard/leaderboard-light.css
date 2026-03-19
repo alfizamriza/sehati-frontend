@@ -1,11 +1,6 @@
 /* ================================================================
    LEADERBOARD — Page-specific styles
    Requires: siswa-tokens.css imported BEFORE this file
-
-   Konsep achievement showcase:
-   - Badge kecil (ikon + nama) di dalam card, selalu terlihat
-   - Tap badge → panel glassmorphism expand di dalam card
-   - Tidak ada elemen mengambang keluar card → layout selalu rapi
    ================================================================ */
 
 /* ================================================================
@@ -56,7 +51,7 @@
 }
 
 /* ================================================================
-   POSISI SAYA
+   POSISI SAYA CARD
    ================================================================ */
 .my-position-card {
   padding: 14px 18px;
@@ -254,30 +249,47 @@
 }
 
 /* ================================================================
-   LIST
+   LIST ITEMS
+   
+   TEKNIK TOOLTIP BUBBLE:
+   ─────────────────────────────────────────────────────────────────
+   Masalah lama : bubble pakai position:absolute top:-32px
+                  → bubble naik & menutupi card di ATASNYA
+
+   Solusi baru  :
+   1. .lb-item { overflow: visible } ← bubble boleh keluar area card
+   2. .lb-showcase-container { position:absolute; bottom:calc(100%+8px) }
+      → bubble mengambang TEPAT di atas CARD-NYA SENDIRI, bukan card lain
+   3. .lb-item--has-bubble { margin-top: 46px }
+      → "cadangkan" ruang di atas card agar bubble punya tempat mengambang
+      → card di atas tidak tertutupi karena gap sudah cukup besar
+   ─────────────────────────────────────────────────────────────────
    ================================================================ */
 .lb-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   padding-top: 8px;
 }
 
-/* ── CARD ──
-   Tidak ada overflow:hidden agar konten expand tidak terpotong.
-   flex-wrap: wrap supaya panel expand bisa turun ke baris penuh.
-*/
 .lb-item {
+  position: relative;
+  /* ← anchor untuk .lb-showcase-container */
   display: flex;
-  flex-wrap: wrap;
-  /* ← panel expand turun ke baris baru */
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 13px 16px;
   border-radius: var(--radius-item);
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   cursor: default;
   overflow: visible;
+  /* ← wajib: biarkan bubble keluar batas card */
+}
+
+/* Item yang memiliki bubble → tambahkan margin atas sebagai ruang bubble */
+.lb-item--has-bubble {
+  margin-top: 46px;
+  /* ← sesuaikan jika tinggi bubble berubah */
 }
 
 .lb-item:hover {
@@ -289,14 +301,6 @@
 .lb-item.is-me {
   background: var(--color-primary-soft) !important;
   border-color: var(--border-primary) !important;
-}
-
-/* Row utama (rank + avatar + info + score) — selalu full width */
-.item-main-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
 }
 
 /* Rank */
@@ -407,7 +411,6 @@
   letter-spacing: 0.5px;
 }
 
-/* "Kamu" badge */
 .me-badge {
   font-size: 0.62rem;
   font-weight: 700;
@@ -419,119 +422,212 @@
 }
 
 /* ================================================================
-   ACHIEVEMENT BADGE — selalu terlihat di bawah meta
+   SHOWCASE BUBBLE — TOOLTIP DI ATAS CARD
    ================================================================ */
-.ach-badge {
+
+/* Container: absolut, muncul di atas card */
+.lb-showcase-container {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  /* 8px di atas tepi atas card */
+  left: 52px;
+  /* sejajar kolom nama (lewati rank + gap) */
+  z-index: 20;
+  pointer-events: none;
+  max-width: calc(100% - 70px);
+}
+
+/* Compact untuk podium */
+.lb-showcase-container.compact {
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(100% + 6px);
+  max-width: 170px;
+}
+
+/* --- BUBBLE UTAMA (GLASS STYLE) --- */
+.lb-glass-bubble {
+  pointer-events: auto;
   display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 110px;
+  max-width: 220px;
+  padding: 8px 12px;
+  position: relative;
+
+  /* Kurangi opacity ke 0.4 - 0.6 agar benar-benar transparan (Glass) */
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+
+  /* Border putih tipis sebagai refleksi cahaya di pinggiran kaca */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 14px 14px 14px 2px;
+  /* Sudut lebih melengkung agar modern */
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  /* Inner glow putih */
+}
+
+/* --- DARK MODE --- */
+[data-theme='dark'] .lb-glass-bubble {
+  /* Di mode gelap gunakan warna gelap yang sangat transparan */
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* --- SAAT DI-KLIK (EXPANDED) --- */
+.lb-glass-bubble.expanded {
+  max-width: 280px;
+  /* Sedikit lebih lebar untuk teks panjang */
+
+  /* Tetap Glass: Gunakan opacity rendah, jangan 0.9 */
+  background: rgba(255, 255, 255, 0.5);
+
+  /* Kuncinya di sini: Blur lebih kuat agar teks kontras & terbaca */
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+  /* Border lebih tegas sedikit untuk mendefinisikan area besar */
+  border: 1px solid rgba(255, 255, 255, 0.6);
+
+  /* Shadow lebih dalam agar terlihat sangat melayang */
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+
+  z-index: 100;
+  /* Pastikan di atas segalanya */
+}
+
+/* --- DARK MODE EXPANDED GLASS --- */
+[data-theme='dark'] .lb-glass-bubble.expanded {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(25px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* Header */
+.bubble-header {
+  display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 6px;
-  padding: 3px 9px 3px 6px;
-  border-radius: 20px;
-  border: 1px solid var(--border-base);
-  background: var(--surface-input);
-  cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, transform 0.12s;
-  user-select: none;
-  max-width: 100%;
-  overflow: hidden;
 }
 
-.ach-badge:hover {
-  background: var(--color-primary-soft);
-  border-color: var(--border-primary);
-  transform: translateY(-1px);
-}
-
-.ach-badge:active {
-  transform: scale(0.97);
-}
-
-.ach-badge-icon {
-  font-size: 0.88rem;
+.bubble-icon {
+  font-size: 0.64rem;
   line-height: 1;
-  flex-shrink: 0;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .12));
 }
 
-.ach-badge-name {
-  font-size: 0.70rem;
-  font-weight: 700;
+.bubble-title {
+  font-size: 0.64rem;
+  font-weight: 800;
   color: var(--color-primary);
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.ach-badge-chevron {
-  margin-left: 2px;
-  font-size: 0.60rem;
+.close-icon {
+  opacity: 0.55;
   color: var(--text-muted);
+  cursor: pointer;
   flex-shrink: 0;
-  transition: transform 0.22s ease;
-  display: inline-block;
 }
 
-.ach-badge-chevron.open {
-  transform: rotate(180deg);
+/* Konten */
+.bubble-content p {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--text-primary);
 }
 
-/* ================================================================
-   EXPAND PANEL — glassmorphism, muncul di dalam card
-   ================================================================ */
-.ach-expand-panel {
-  width: 100%;
-  /* full lebar card */
+.truncate-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition:
-    max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.22s ease,
-    margin-top 0.22s ease;
-  margin-top: 0;
+  text-overflow: ellipsis;
 }
 
-.ach-expand-panel.open {
-  max-height: 120px;
-  opacity: 1;
-  margin-top: 10px;
-}
+/* Lingkaran Sedang */
+.bubble-tail {
+  position: absolute;
+  bottom: -16px;
+  left: 0px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 
-.ach-expand-inner {
-  padding: 10px 13px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* Glass Effect: Kuncinya di opacity rendah (0.3 - 0.4) */
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+
+  /* Border tipis putih untuk kesan pantulan cahaya di pinggir kaca */
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* Shadow halus agar terlihat mengambang */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  z-index: 10;
 }
 
-[data-theme='dark'] .ach-expand-inner {
-  background: rgba(30, 41, 59, 0.55);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+/* Lingkaran Kecil */
+.bubble-tail2 {
+  position: absolute;
+  bottom: -25px;
+  left: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  z-index: 10;
 }
 
-.ach-expand-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin-bottom: 5px;
+/* --- DARK MODE SUPPORT --- */
+[data-theme='dark'] .bubble-tail,
+[data-theme='dark'] .bubble-tail2 {
+  /* Di mode gelap, gunakan warna gelap transparan */
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-.ach-expand-title span {
-  font-size: 1rem;
-  line-height: 1;
+[data-theme='dark'] .bubble-tail {
+  border-left-color: rgba(30, 41, 59, 0.78);
 }
 
-.ach-expand-text {
-  font-size: 0.75rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
+/* Animasi mengambang — halus */
+@keyframes bubbleFloat {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.lb-glass-bubble:not(.expanded) {
+  animation: bubbleFloat 3.5s ease-in-out infinite;
 }
 
 /* ================================================================
@@ -701,5 +797,15 @@
 
   .lb-podium {
     gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lb-showcase-container {
+    left: 46px;
+  }
+
+  .lb-glass-bubble {
+    max-width: 175px;
   }
 }

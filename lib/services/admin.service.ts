@@ -10,6 +10,20 @@ type ApiEnvelope<T = unknown> = {
   data?: T;
 };
 
+export interface LoginAuditLogItem {
+  id: string;
+  role: "admin" | "guru" | "siswa" | "kantin";
+  actorUserId: string | null;
+  actorIdentifier: string;
+  actorName: string | null;
+  loginAt: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  status: "success" | "failed";
+  failureReason: string | null;
+  createdAt: string;
+}
+
 export async function getDashboardData(forceRefresh = false) {
   if (
     !forceRefresh &&
@@ -67,4 +81,22 @@ export async function getDashboardData(forceRefresh = false) {
 export async function getAdminUser() {
   const res = await authService.getProfileOnce();
   return res?.data ?? null;
+}
+
+export async function getLoginLogs(limit = 50): Promise<LoginAuditLogItem[]> {
+  const res = await api.get("/auth/login-logs", {
+    params: { limit },
+  });
+
+  let payload: any = res.data;
+  while (
+    payload &&
+    typeof payload === "object" &&
+    "success" in payload &&
+    "data" in payload
+  ) {
+    payload = (payload as ApiEnvelope).data;
+  }
+
+  return Array.isArray(payload) ? payload : [];
 }

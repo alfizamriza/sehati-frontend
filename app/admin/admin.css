@@ -4737,3 +4737,147 @@ code.ach-code {
   from { transform: translateX(24px); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
 }
+
+.login-log-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.login-log-hero {
+  overflow: hidden;
+}
+
+.login-log-hero-header {
+  align-items: center;
+}
+
+.login-log-hero-copy {
+  padding: 0 22px 10px;
+}
+
+.login-log-hero-copy p {
+  margin: 0;
+  max-width: 760px;
+  color: var(--text-sec);
+  line-height: 1.7;
+}
+
+.login-log-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 22px 22px;
+}
+
+.login-log-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-card);
+}
+
+.login-log-stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.login-log-stat-icon.blue {
+  color: var(--primary);
+  background: var(--surface-active);
+}
+
+.login-log-stat-icon.green {
+  color: var(--green);
+  background: var(--green-bg);
+}
+
+.login-log-stat-icon.red {
+  color: var(--red);
+  background: var(--red-bg);
+}
+
+.login-log-stat-icon.amber {
+  color: var(--amber);
+  background: var(--amber-bg);
+}
+
+.login-log-stat-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.login-log-stat-label {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+.login-log-table-wrap {
+  overflow-x: auto;
+}
+
+.login-log-table th:nth-child(1) { min-width: 160px; }
+.login-log-table th:nth-child(2) { min-width: 180px; }
+.login-log-table th:nth-child(5) { min-width: 180px; }
+.login-log-table th:nth-child(7) { min-width: 220px; }
+
+.login-log-primary {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.login-log-secondary {
+  margin-top: 4px;
+  color: var(--text-faint);
+  font-size: 0.76rem;
+}
+
+.login-log-device {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-sec);
+  font-size: 0.82rem;
+}
+
+.login-log-note {
+  color: var(--text-sec);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.login-log-empty {
+  min-height: 220px;
+}
+
+@media (max-width: 1100px) {
+  .login-log-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .login-log-hero-copy,
+  .login-log-stats {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .login-log-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .login-log-stat-card {
+    padding: 14px 15px;
+  }
+}

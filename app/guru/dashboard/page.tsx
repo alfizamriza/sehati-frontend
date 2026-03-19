@@ -8,13 +8,14 @@ import {
   Presentation, Trophy, Medal, Coins, LayoutDashboard,
   ChevronDown, RefreshCw, Loader2, ShieldCheck,
   CheckCircle2, XCircle, TrendingUp, Users,
-  CalendarCheck, Star, Tag, FileText,
+  CalendarCheck, Star, Tag, FileText, Lock, Eye, EyeOff,
 } from "lucide-react";
 import {
   getProfilGuru, getKelasList, getStatistikKelas,
   getTopSiswa, getPelanggaranTerbaru,
   type ProfilGuru, type KelasItem, type StatistikKelas,
   type TopSiswa, type PelanggaranItem,
+  updateGuruPassword,
 } from "@/lib/services/guru";
 import { ErrorState } from "@/components/common/AsyncState";
 import { logout } from "@/lib/services/shared";
@@ -127,6 +128,124 @@ function SectionTitle({ icon: Icon, label, color = "#179EFF" }: {
   );
 }
 
+function ChangePasswordModal({
+  onClose,
+  onSuccess,
+}: {
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [form, setForm] = useState({
+    passwordLama: "",
+    passwordBaru: "",
+    konfirmasiPassword: "",
+  });
+  const [show, setShow] = useState({
+    passwordLama: false,
+    passwordBaru: false,
+    konfirmasiPassword: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit() {
+    setError(null);
+
+    if (!form.passwordLama) {
+      setError("Masukkan password lama.");
+      return;
+    }
+    if (form.passwordBaru.length < 6) {
+      setError("Password baru minimal 6 karakter.");
+      return;
+    }
+    if (form.passwordBaru !== form.konfirmasiPassword) {
+      setError("Konfirmasi password tidak cocok.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await updateGuruPassword(form.passwordLama, form.passwordBaru);
+      onSuccess();
+      onClose();
+    } catch (e: any) {
+      setError(e.message || "Gagal mengubah password.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const fields = [
+    { key: "passwordLama", label: "Password Lama" },
+    { key: "passwordBaru", label: "Password Baru" },
+    { key: "konfirmasiPassword", label: "Konfirmasi Password Baru" },
+  ] as const;
+
+  return (
+    <div className="guru-password-overlay" onClick={onClose}>
+      <div
+        className="glass-panel guru-password-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="guru-password-title"
+      >
+        <div className="guru-password-icon">
+          <Lock size={28} />
+        </div>
+        <div className="guru-password-heading">
+          <h3 id="guru-password-title">Ubah Password</h3>
+          <p>Perbarui password akun guru untuk menjaga keamanan akses sistem.</p>
+        </div>
+
+        <div className="guru-password-form">
+          {fields.map((field) => (
+            <label key={field.key} className="guru-password-field">
+              <span>{field.label}</span>
+              <div className="guru-password-input-wrap">
+                <input
+                  type={show[field.key] ? "text" : "password"}
+                  value={form[field.key]}
+                  onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  className="guru-password-input"
+                />
+                <button
+                  type="button"
+                  className="guru-password-toggle"
+                  onClick={() => setShow((prev) => ({ ...prev, [field.key]: !prev[field.key] }))}
+                >
+                  {show[field.key] ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </label>
+          ))}
+        </div>
+
+        {error && <div className="guru-password-error">{error}</div>}
+
+        <div className="guru-password-actions">
+          <button
+            type="button"
+            className="guru-password-secondary"
+            onClick={onClose}
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            className="guru-password-submit"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? <><Loader2 size={16} className="spin" /> Menyimpan...</> : <><Lock size={16} /> Simpan Password</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN DASHBOARD ───────────────────────────────────────────────────────────
 export default function GuruDashboard() {
   const router = useRouter();
@@ -145,6 +264,7 @@ export default function GuruDashboard() {
   const [loadingPel, setLoadingPel]     = useState(false);
   const [refreshing, setRefreshing]     = useState(false);
   const [loadError, setLoadError]       = useState<string | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   // ── Init ────────────────────────────────────────────
   useEffect(() => {
@@ -251,6 +371,12 @@ export default function GuruDashboard() {
       <div className="bg-blob blob-1" />
       <div className="bg-blob blob-2" />
       <ToastContainer toasts={toast.toasts} />
+      {showPasswordModal && (
+        <ChangePasswordModal
+          onClose={() => setShowPasswordModal(false)}
+          onSuccess={() => toast.show("Password berhasil diubah", "success")}
+        />
+      )}
 
       <div className="dashboard-container">
 
@@ -272,6 +398,13 @@ export default function GuruDashboard() {
               style={{ color: refreshing ? "#179EFF" : undefined }}
             >
               <RefreshCw size={17} className={refreshing ? "spin" : ""} />
+            </button>
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              className="btn-icon"
+              title="Ganti password"
+            >
+              <Lock size={17} />
             </button>
             <button onClick={() => logout()} className="btn-icon danger-hover" title="Keluar">
               <LogOut size={17} />

@@ -207,3 +207,19 @@ export async function deleteGuru(nip: string): Promise<void> {
     throw new Error(error.response?.data?.message || 'Gagal menghapus guru');
   }
 }
+
+export async function updateGuruPassword(passwordLama: string, passwordBaru: string): Promise<void> {
+  try {
+    const response = await api.patch('/guru/password', {
+      passwordLama,
+      passwordBaru,
+    });
+
+    if (!response.data?.success) {
+      throw new Error(response.data?.message || 'Gagal mengubah password guru');
+    }
+  } catch (error: any) {
+    console.error('Error updating guru password:', error);
+    throw new Error(error.response?.data?.message || error.message || 'Gagal mengubah password guru');
+  }
+}
