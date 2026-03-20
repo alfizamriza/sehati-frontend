@@ -6,7 +6,9 @@ import {
   ArrowLeft, BookOpen, ChevronDown, Loader2,
   CheckCircle2, AlertTriangle, Calendar, RefreshCw,
   FileX, Heart, FileText, HelpCircle, Users,
+  CalendarOff, Zap
 } from "lucide-react";
+import { getInfoHariIni } from "@/lib/services/absensi.service";
 import {
   listKelas, listSiswaBelumAbsen, listIzin, createIzinBatch,
   KelasItem, SiswaItem, IzinRecord, IzinTipe,
@@ -14,6 +16,7 @@ import {
 import { formatKelasLabel } from "@/lib/utils/kelas";
 import "../dashboard/dashboard.css";
 import "./izin.css";
+import "../absensi/scanner.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type ToastType = "success" | "error";
@@ -21,6 +24,7 @@ type ToastType = "success" | "error";
 interface SiswaRow extends SiswaItem {
   tipe: IzinTipe;
   catatan: string;
+  checked: boolean; // ← NEW
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -49,7 +53,7 @@ function formatTanggalHariIni() {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function GuruIzinPage() {
   const router = useRouter();
-  const tanggal = todayISO(); // selalu hari ini, tidak bisa diubah
+  const tanggal = todayISO();
 
   // Data
   const [kelasList, setKelasList] = useState<KelasItem[]>([]);
@@ -75,12 +79,36 @@ export default function GuruIzinPage() {
     setTimeout(() => setToast(null), 3500);
   }, []);
 
+  // ─── Derived: siswa yang tercentang ───
+  const checkedRows = rows.filter((r) => r.checked);
+  const allChecked = rows.length > 0 && rows.every((r) => r.checked);
+  const someChecked = rows.some((r) => r.checked) && !allChecked;
+
+  // Holiday
+  const [isHoliday, setIsHoliday] = useState(false);
+  const [liburInfo, setLiburInfo] = useState<{ keterangan: string } | null>(null);
+
   // ── Boot ──
   useEffect(() => {
-    listKelas()
-      .then(setKelasList)
-      .catch((e) => showToast(e.message || "Gagal memuat data", "error"))
-      .finally(() => setInitLoading(false));
+    async function boot() {
+      try {
+        const info = await getInfoHariIni();
+        if (info.isLibur) {
+          setLiburInfo({ keterangan: info.keterangan || "" });
+          setIsHoliday(true);
+          setInitLoading(false);
+          return;
+        }
+      } catch {
+        // Abaikan error cek hari libur
+      }
+
+      listKelas()
+        .then(setKelasList)
+        .catch((e) => showToast(e.message || "Gagal memuat data", "error"))
+        .finally(() => setInitLoading(false));
+    }
+    boot();
   }, [showToast]);
 
   // ── Load siswa saat kelas berubah ──
@@ -91,7 +119,8 @@ export default function GuruIzinPage() {
     setSiswaLoading(true);
     try {
       const data: SiswaItem[] = await listSiswaBelumAbsen(kelas.id, tanggal);
-      setRows(data.map((s) => ({ ...s, tipe: "sakit", catatan: "" })));
+      // Default: semua tercentang
+      setRows(data.map((s) => ({ ...s, tipe: "sakit", catatan: "", checked: true })));
     } catch (e: any) {
       showToast(e.message || "Gagal memuat siswa", "error");
     } finally {
@@ -104,6 +133,14 @@ export default function GuruIzinPage() {
     setRows((prev) => prev.map((r) => r.nis === nis ? { ...r, tipe } : r));
   const setRowCatatan = (nis: string, catatan: string) =>
     setRows((prev) => prev.map((r) => r.nis === nis ? { ...r, catatan } : r));
+  const toggleRowCheck = (nis: string) =>
+    setRows((prev) => prev.map((r) => r.nis === nis ? { ...r, checked: !r.checked } : r));
+
+  // ── Select All / Deselect All ──
+  const handleToggleAll = () => {
+    const next = !allChecked;
+    setRows((prev) => prev.map((r) => ({ ...r, checked: next })));
+  };
 
   // ── Riwayat ──
   const fetchRiwayat = useCallback(async () => {
@@ -120,15 +157,14 @@ export default function GuruIzinPage() {
 
   useEffect(() => { fetchRiwayat(); }, [fetchRiwayat]);
 
-  // ── Submit: kirim semua siswa yang ada di list ──
+  // ── Submit: kirim hanya siswa yang checked ──
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (rows.length === 0) return;
+    if (checkedRows.length === 0) return;
     setSubmitting(true);
 
-    // Group by tipe+catatan untuk meminimalkan request
     const groups = new Map<string, { nis_list: string[]; tipe: IzinTipe; catatan?: string }>();
-    for (const r of rows) {
+    for (const r of checkedRows) {
       const key = `${r.tipe}||${r.catatan.trim()}`;
       if (!groups.has(key)) {
         groups.set(key, { nis_list: [], tipe: r.tipe, catatan: r.catatan.trim() || undefined });
@@ -141,17 +177,16 @@ export default function GuruIzinPage() {
         Array.from(groups.values()).map((g) => createIzinBatch({ ...g, tanggal }))
       );
       setSuccess(true);
-      showToast(`✓ ${rows.length} siswa berhasil dicatat`);
+      showToast(`✓ ${checkedRows.length} siswa berhasil dicatat`);
       fetchRiwayat();
 
       setTimeout(async () => {
         setRows([]);
         setSuccess(false);
-        // Refresh siswa list
         if (selectedKelas) {
           try {
             const fresh = await listSiswaBelumAbsen(selectedKelas.id, tanggal);
-            setRows(fresh.map((s) => ({ ...s, tipe: "sakit", catatan: "" })));
+            setRows(fresh.map((s) => ({ ...s, tipe: "sakit", catatan: "", checked: true })));
           } catch { /* silent */ }
         }
       }, 2000);
@@ -173,6 +208,57 @@ export default function GuruIzinPage() {
         <div className="loading-fullscreen">
           <Loader2 size={34} className="iz-spin" style={{ color: "#0d9488" }} />
           <span className="loading-text">Memuat data...</span>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Holiday screen ──
+  if (isHoliday) {
+    return (
+      <main className="dashboard-page scanner-page">
+        <div className="bg-blob blob-1" />
+        <div className="bg-blob blob-2" />
+        <div className="dashboard-container guru-layout-medium scanner-container">
+          <header className="scanner-header">
+            <button className="btn-icon back-btn" onClick={() => router.back()}>
+              <ArrowLeft size={17} />
+            </button>
+            <h2 className="page-title">Catat Izin / Sakit</h2>
+            <div className="spacer" />
+          </header>
+          <div className="scanner-frame-wrapper">
+            <div className="result-card holiday-card glass-panel" style={{ marginTop: '40px' }}>
+              <div className="sc-icon-badge sc-icon-badge--holiday">
+                <CalendarOff size={48} />
+              </div>
+
+              <h2 className="res-title">Hari Libur</h2>
+
+              {liburInfo?.keterangan && (
+                <div className="sc-info-badge sc-info-badge--amber">
+                  🎉 {liburInfo.keterangan}
+                </div>
+              )}
+
+              <p className="sc-date-text">{formatTanggalHariIni()}</p>
+
+              <p className="res-desc">
+                Pencatatan izin atau sakit tidak dapat dilakukan pada hari libur.
+                <br />
+                Sampai jumpa di hari sekolah berikutnya!
+              </p>
+
+              <div className="sc-notice-box sc-notice-box--amber">
+                <Zap size={14} color="#F59E0B" />
+                <span>Streak tidak putus karena hari libur.</span>
+              </div>
+
+              <button className="btn-outline full-width" onClick={() => router.back()}>
+                <ArrowLeft size={16} /> Kembali
+              </button>
+            </div>
+          </div>
         </div>
       </main>
     );
@@ -263,9 +349,50 @@ export default function GuruIzinPage() {
             )}
 
             {selectedKelas && siswaLoading && (
-              <div className="iz-loading-state">
-                <Loader2 size={16} className="iz-spin" style={{ color: "#0d9488" }} />
-                <span>Memuat siswa...</span>
+              <div className="ls-siswa-card glass-panel">
+
+                {/* Orbit spinner */}
+                <div className="ls-siswa-orbit">
+                  <div className="ls-siswa-orbit-ring" />
+                  <div className="ls-siswa-orbit-arc ls-siswa-orbit-arc--outer" />
+                  <div className="ls-siswa-orbit-arc ls-siswa-orbit-arc--inner" />
+                  <div className="ls-siswa-orbit-center">
+                    {/* User icon via inline SVG — tidak perlu import */}
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+                      stroke="#179EFF" strokeWidth="1.5" strokeLinecap="round">
+                      <circle cx="8" cy="6" r="3" />
+                      <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Label */}
+                <div className="ls-siswa-label">
+                  <span className="ls-siswa-label-main">Memuat data siswa</span>
+                  <span className="ls-siswa-label-sub">Menyiapkan daftar kelas...</span>
+                </div>
+
+                {/* Skeleton rows — simulasi list siswa */}
+                <div className="ls-siswa-skel-list">
+                  {[70, 55, 80, 62].map((w, i) => (
+                    <div key={i} className="ls-siswa-skel-row" style={{ animationDelay: `${i * 0.12}s` }}>
+                      <div className="ls-siswa-skel ls-siswa-skel-avatar" />
+                      <div className="ls-siswa-skel-texts">
+                        <div className="ls-siswa-skel ls-siswa-skel-name" style={{ width: `${w}%` }} />
+                        <div className="ls-siswa-skel ls-siswa-skel-nis" />
+                      </div>
+                      <div className="ls-siswa-skel ls-siswa-skel-badge" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bouncing dots */}
+                <div className="ls-siswa-dots">
+                  <div className="ls-siswa-dot ls-siswa-dot--1" />
+                  <div className="ls-siswa-dot ls-siswa-dot--2" />
+                  <div className="ls-siswa-dot ls-siswa-dot--3" />
+                </div>
+
               </div>
             )}
 
@@ -278,13 +405,29 @@ export default function GuruIzinPage() {
 
             {selectedKelas && !siswaLoading && rows.length > 0 && (
               <>
-                {/* Header count */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <label className="iz-label" style={{ margin: 0 }}>
-                    <Users size={14} /> Daftar Siswa Belum Absen
+                {/* ── Select All header ── */}
+                <div className="iz-select-all-bar">
+                  <label className="iz-select-all-label">
+                    <span
+                      className={`iz-checkbox ${allChecked ? "iz-checkbox--on" : someChecked ? "iz-checkbox--partial" : ""}`}
+                      onClick={handleToggleAll}
+                      role="checkbox"
+                      aria-checked={allChecked ? true : someChecked ? "mixed" : false}
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === " " && handleToggleAll()}
+                    >
+                      {allChecked && <CheckCircle2 size={13} />}
+                      {someChecked && <span className="iz-checkbox-dash" />}
+                    </span>
+                    <span className="iz-select-all-text" onClick={handleToggleAll}>
+                      {allChecked ? "Batalkan Semua" : "Pilih Semua"}
+                    </span>
                   </label>
-                  <span style={{ marginLeft: "auto", fontSize: "0.76rem", color: "var(--iz-nis)" }}>
-                    {rows.length} siswa
+                  <span className="iz-select-all-counter">
+                    <span className="iz-counter-num">{checkedRows.length}</span>
+                    <span className="iz-counter-sep">/</span>
+                    <span>{rows.length}</span>
+                    <span className="iz-counter-lbl">siswa dipilih</span>
                   </span>
                 </div>
 
@@ -293,11 +436,21 @@ export default function GuruIzinPage() {
                   {rows.map((r, i) => (
                     <div
                       key={r.nis}
-                      className="iz-siswa-row"
+                      className={`iz-siswa-row ${!r.checked ? "iz-siswa-row--unchecked" : ""}`}
                       style={{ animationDelay: `${i * 28}ms` }}
                     >
-                      {/* Top: nomor + nama */}
+                      {/* Top: checkbox + nomor + nama */}
                       <div className="iz-row-top">
+                        {/* Checkbox */}
+                        <button
+                          type="button"
+                          className={`iz-row-checkbox ${r.checked ? "iz-row-checkbox--on" : ""}`}
+                          onClick={() => toggleRowCheck(r.nis)}
+                          aria-label={r.checked ? `Batalkan ${r.nama}` : `Pilih ${r.nama}`}
+                        >
+                          {r.checked && <CheckCircle2 size={13} />}
+                        </button>
+
                         <span className="iz-row-num">{i + 1}</span>
                         <div className="iz-row-name-wrap">
                           <div className="iz-row-nama">{r.nama}</div>
@@ -305,29 +458,31 @@ export default function GuruIzinPage() {
                         </div>
                       </div>
 
-                      {/* Tipe pills */}
-                      <div className="iz-tipe-pills">
-                        {TIPE_OPTS.map((t) => (
-                          <button
-                            key={t.value}
-                            type="button"
-                            className={`iz-pill iz-pill--${t.value} ${r.tipe === t.value ? "iz-pill--on" : ""}`}
-                            onClick={() => setRowTipe(r.nis, t.value)}
-                          >
-                            {t.icon}
-                            {t.label}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Catatan */}
-                      <textarea
-                        className="iz-row-catatan"
-                        rows={2}
-                        placeholder="Catatan (opsional)..."
-                        value={r.catatan}
-                        onChange={(e) => setRowCatatan(r.nis, e.target.value)}
-                      />
+                      {/* Tipe pills + Catatan — hanya tampil jika checked */}
+                      {r.checked && (
+                        <>
+                          <div className="iz-tipe-pills">
+                            {TIPE_OPTS.map((t) => (
+                              <button
+                                key={t.value}
+                                type="button"
+                                className={`iz-pill iz-pill--${t.value} ${r.tipe === t.value ? "iz-pill--on" : ""}`}
+                                onClick={() => setRowTipe(r.nis, t.value)}
+                              >
+                                {t.icon}
+                                {t.label}
+                              </button>
+                            ))}
+                          </div>
+                          <textarea
+                            className="iz-row-catatan"
+                            rows={2}
+                            placeholder="Catatan (opsional)..."
+                            value={r.catatan}
+                            onChange={(e) => setRowCatatan(r.nis, e.target.value)}
+                          />
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -336,20 +491,24 @@ export default function GuruIzinPage() {
                 <div className="iz-submit-section">
                   <button
                     type="submit"
-                    disabled={submitting || success}
+                    disabled={submitting || success || checkedRows.length === 0}
                     className={`iz-submit-btn ${success ? "iz-submit-btn--success" : ""}`}
                   >
                     {success ? (
-                      <><CheckCircle2 size={18} /> {rows.length} Siswa Berhasil Dicatat!</>
+                      <><CheckCircle2 size={18} /> {checkedRows.length} Siswa Berhasil Dicatat!</>
                     ) : submitting ? (
                       <><Loader2 size={18} className="iz-spin" /> Menyimpan...</>
+                    ) : checkedRows.length === 0 ? (
+                      <><BookOpen size={18} /> Pilih siswa terlebih dahulu</>
                     ) : (
-                      <><BookOpen size={18} /> Catat Izin ({rows.length} Siswa)</>
+                      <><BookOpen size={18} /> Catat Izin ({checkedRows.length} Siswa)</>
                     )}
                   </button>
-                  {!submitting && !success && (
+                  {!submitting && !success && checkedRows.length > 0 && (
                     <p className="iz-submit-hint">
-                      Semua siswa di atas akan langsung tercatat sebagai izin hari ini
+                      {checkedRows.length === rows.length
+                        ? `Semua ${rows.length} siswa akan dicatat izin hari ini`
+                        : `${checkedRows.length} dari ${rows.length} siswa akan dicatat izin hari ini`}
                     </p>
                   )}
                 </div>

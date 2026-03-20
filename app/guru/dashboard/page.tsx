@@ -20,17 +20,18 @@ import {
 import { ErrorState } from "@/components/common/AsyncState";
 import { logout } from "@/lib/services/shared";
 import BrandLogo from "@/components/common/BrandLogo";
+import LoadingScreen from "@/components/guru/Loadingscreen";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const KATEGORI_OPTIONS = [
   { value: "ringan", label: "Ringan", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
   { value: "sedang", label: "Sedang", color: "#F97316", bg: "rgba(249,115,22,0.15)" },
-  { value: "berat",  label: "Berat",  color: "#EF4444", bg: "rgba(239,68,68,0.15)"  },
+  { value: "berat", label: "Berat", color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
 ];
 
 const PERAN_META = {
-  konselor:   { label: "Konselor",           color: "#A855F7" },
-  wali_kelas: { label: "Wali Kelas",          color: "#10b981" },
+  konselor: { label: "Konselor", color: "#A855F7" },
+  wali_kelas: { label: "Wali Kelas", color: "#10b981" },
   guru_mapel: { label: "Guru Mata Pelajaran", color: "#179EFF" },
 } as const;
 
@@ -72,8 +73,8 @@ function ToastContainer({ toasts }: { toasts: ToastItem[] }) {
   const clr: Record<ToastType, string> = { success: "#10b981", error: "#ef4444", info: "#179EFF" };
   const ico: Record<ToastType, React.ReactNode> = {
     success: <CheckCircle2 size={16} />,
-    error:   <XCircle size={16} />,
-    info:    <Leaf size={16} />,
+    error: <XCircle size={16} />,
+    info: <Leaf size={16} />,
   };
   return (
     <div className="toast-container">
@@ -251,19 +252,19 @@ export default function GuruDashboard() {
   const router = useRouter();
   const toast = useToast();
 
-  const [profil, setProfil]                   = useState<ProfilGuru | null>(null);
-  const [kelasList, setKelasList]             = useState<KelasItem[]>([]);
+  const [profil, setProfil] = useState<ProfilGuru | null>(null);
+  const [kelasList, setKelasList] = useState<KelasItem[]>([]);
   const [selectedKelasId, setSelectedKelasId] = useState<number | null>(null);
-  const [statistik, setStatistik]             = useState<StatistikKelas | null>(null);
-  const [topSiswa, setTopSiswa]               = useState<TopSiswa[]>([]);
-  const [pelanggaran, setPelanggaran]         = useState<PelanggaranItem[]>([]);
+  const [statistik, setStatistik] = useState<StatistikKelas | null>(null);
+  const [topSiswa, setTopSiswa] = useState<TopSiswa[]>([]);
+  const [pelanggaran, setPelanggaran] = useState<PelanggaranItem[]>([]);
 
-  const [loadingInit, setLoadingInit]   = useState(true);
+  const [loadingInit, setLoadingInit] = useState(true);
   const [loadingStats, setLoadingStats] = useState(false);
-  const [loadingTop, setLoadingTop]     = useState(false);
-  const [loadingPel, setLoadingPel]     = useState(false);
-  const [refreshing, setRefreshing]     = useState(false);
-  const [loadError, setLoadError]       = useState<string | null>(null);
+  const [loadingTop, setLoadingTop] = useState(false);
+  const [loadingPel, setLoadingPel] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   // ── Init ────────────────────────────────────────────
@@ -326,29 +327,22 @@ export default function GuruDashboard() {
 
   // ── Derived ────────────────────────────────────────
   const selectedKelas = kelasList.find((k) => k.id === selectedKelasId);
-  const kelasLabel    = selectedKelas ? `${toRomanTingkat(selectedKelas.tingkat)} ${selectedKelas.nama}` : "—";
-  const peranKey      = profil?.peran ?? "guru_mapel";
-  const peranMeta     = PERAN_META[peranKey];
-  const hadirPct      = statistik?.persentaseHadir ?? 0;
-  const barColor      = hadirPct >= 80
+  const kelasLabel = selectedKelas ? `${toRomanTingkat(selectedKelas.tingkat)} ${selectedKelas.nama}` : "—";
+  const peranKey = profil?.peran ?? "guru_mapel";
+  const peranMeta = PERAN_META[peranKey];
+  const hadirPct = statistik?.persentaseHadir ?? 0;
+  const barColor = hadirPct >= 80
     ? "linear-gradient(90deg,#10b981,#34d399)"
     : hadirPct >= 50
-    ? "linear-gradient(90deg,#F59E0B,#FCD34D)"
-    : "linear-gradient(90deg,#EF4444,#F87171)";
+      ? "linear-gradient(90deg,#F59E0B,#FCD34D)"
+      : "linear-gradient(90deg,#EF4444,#F87171)";
 
   const hadirPctColor = hadirPct >= 80 ? "#10b981" : hadirPct >= 50 ? "#F59E0B" : "#EF4444";
 
   // ── Full-page loading ─────────────────────────────
   if (loadingInit) {
     return (
-      <main className="dashboard-page">
-        <div className="bg-blob blob-1" />
-        <div className="bg-blob blob-2" />
-        <div className="loading-fullscreen">
-          <Loader2 size={34} className="spin" style={{ color: "#179EFF" }} />
-          <span className="loading-text">Memuat dashboard...</span>
-        </div>
-      </main>
+      <LoadingScreen />
     );
   }
 
@@ -433,8 +427,8 @@ export default function GuruDashboard() {
               {profil?.isWaliKelas && profil.kelasWali
                 ? `Wali Kelas ${profil.kelasWali.label}`
                 : profil?.isKonselor
-                ? "Konselor Sekolah"
-                : "Guru Mata Pelajaran"}
+                  ? "Konselor Sekolah"
+                  : "Guru Mata Pelajaran"}
             </p>
           </div>
           <div className="welcome-decor">
@@ -513,14 +507,14 @@ export default function GuruDashboard() {
 
               {/* Stat cards */}
               <div className="stat-cards-row">
-                <StatCard icon={Users}        label="Total Siswa"  value={statistik?.totalSiswa ?? "—"} color="#179EFF" loading={loadingStats} />
+                <StatCard icon={Users} label="Total Siswa" value={statistik?.totalSiswa ?? "—"} color="#179EFF" loading={loadingStats} />
                 <StatCard icon={CalendarCheck} label="Bawa Tumber"
                   value={statistik ? `${statistik.hadirHariIni}/${statistik.totalSiswa}` : "—"}
                   sub={statistik ? `${statistik.persentaseHadir}%` : undefined}
                   color="#10b981" loading={loadingStats}
                 />
-                <StatCard icon={Coins}        label="Rata-rata Koin"   value={statistik?.rataRataCoins ?? "—"}            color="#F59E0B" loading={loadingStats} />
-                <StatCard icon={TrendingUp}   label="Rata-rata Streak" value={statistik ? `${statistik.rataRataStreak} hr` : "—"} color="#F97316" loading={loadingStats} />
+                <StatCard icon={Coins} label="Rata-rata Koin" value={statistik?.rataRataCoins ?? "—"} color="#F59E0B" loading={loadingStats} />
+                <StatCard icon={TrendingUp} label="Rata-rata Streak" value={statistik ? `${statistik.rataRataStreak} hr` : "—"} color="#F97316" loading={loadingStats} />
               </div>
 
               {/* Progress bar kehadiran */}
@@ -570,8 +564,8 @@ export default function GuruDashboard() {
                       <div key={i} className="pelanggaran-skeleton-row">
                         <div className="skeleton-bar" />
                         <div className="skeleton-line skeleton-name" style={{ animationDelay: "0s" }} />
-                        <div className="skeleton-line skeleton-mid"  style={{ animationDelay: "0.1s" }} />
-                        <div className="skeleton-line skeleton-sm"   style={{ animationDelay: "0.2s" }} />
+                        <div className="skeleton-line skeleton-mid" style={{ animationDelay: "0.1s" }} />
+                        <div className="skeleton-line skeleton-sm" style={{ animationDelay: "0.2s" }} />
                       </div>
                     ))}
                   </div>
@@ -586,16 +580,16 @@ export default function GuruDashboard() {
 
                     const statusColor =
                       p.status === "approved" ? "#10b981" :
-                      p.status === "rejected" ? "#ef4444" :
-                      "#F59E0B";
+                        p.status === "rejected" ? "#ef4444" :
+                          "#F59E0B";
                     const statusBg =
                       p.status === "approved" ? "rgba(16,185,129,0.1)" :
-                      p.status === "rejected" ? "rgba(239,68,68,0.1)" :
-                      "rgba(245,158,11,0.1)";
+                        p.status === "rejected" ? "rgba(239,68,68,0.1)" :
+                          "rgba(245,158,11,0.1)";
                     const statusBorder =
                       p.status === "approved" ? "rgba(16,185,129,0.2)" :
-                      p.status === "rejected" ? "rgba(239,68,68,0.2)" :
-                      "rgba(245,158,11,0.2)";
+                        p.status === "rejected" ? "rgba(239,68,68,0.2)" :
+                          "rgba(245,158,11,0.2)";
 
                     return (
                       <div
@@ -656,8 +650,8 @@ export default function GuruDashboard() {
                         style={{ animationDelay: `${i * 0.1}s` }}
                       />
                       <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
-                        <div className="skeleton-line skeleton-name"  />
-                        <div className="skeleton-line skeleton-mid"   />
+                        <div className="skeleton-line skeleton-name" />
+                        <div className="skeleton-line skeleton-mid" />
                       </div>
                     </div>
                   ))

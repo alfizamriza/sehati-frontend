@@ -102,13 +102,12 @@
    BASE
    ======================================== */
 .login-page {
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg);
   color: var(--text-primary);
   font-family: 'Nunito', system-ui, sans-serif;
   position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   transition: background 0.4s ease;
 }
 

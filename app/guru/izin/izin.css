@@ -66,6 +66,23 @@
 
     --iz-empty: rgba(255, 255, 255, 0.28);
     --iz-skeleton: rgba(255, 255, 255, 0.07);
+
+    /* Checkbox tokens */
+    --iz-cb-border: rgba(255, 255, 255, 0.20);
+    --iz-cb-bg: rgba(255, 255, 255, 0.05);
+    --iz-cb-on-bg: #0d9488;
+    --iz-cb-on-border: #0d9488;
+    --iz-cb-on-color: #ffffff;
+    --iz-cb-partial-bg: rgba(13, 148, 136, 0.25);
+    --iz-cb-partial-border: #0d9488;
+
+    /* Select-all bar */
+    --iz-sal-bg: rgba(13, 148, 136, 0.07);
+    --iz-sal-border: rgba(13, 148, 136, 0.20);
+    --iz-sal-text: rgba(255, 255, 255, 0.72);
+    --iz-counter-num: #0d9488;
+    --iz-counter-sep: rgba(255, 255, 255, 0.20);
+    --iz-counter-lbl: rgba(255, 255, 255, 0.35);
 }
 
 @media (prefers-color-scheme: light) {
@@ -128,6 +145,23 @@
 
         --iz-empty: #94a3b8;
         --iz-skeleton: rgba(15, 23, 42, 0.07);
+
+        /* Checkbox tokens */
+        --iz-cb-border: #cbd5e1;
+        --iz-cb-bg: #f8fafc;
+        --iz-cb-on-bg: #0d9488;
+        --iz-cb-on-border: #0d9488;
+        --iz-cb-on-color: #ffffff;
+        --iz-cb-partial-bg: #f0fdfa;
+        --iz-cb-partial-border: #0d9488;
+
+        /* Select-all bar */
+        --iz-sal-bg: #f0fdfa;
+        --iz-sal-border: #99f6e4;
+        --iz-sal-text: #374151;
+        --iz-counter-num: #0d9488;
+        --iz-counter-sep: #cbd5e1;
+        --iz-counter-lbl: #64748b;
     }
 }
 
@@ -333,6 +367,98 @@
 }
 
 /* =========================================
+   SELECT ALL BAR
+   ========================================= */
+.iz-select-all-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--iz-sal-bg);
+    border: 1px solid var(--iz-sal-border);
+    border-radius: 10px;
+    gap: 12px;
+}
+
+.iz-select-all-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.iz-select-all-text {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--iz-sal-text);
+    cursor: pointer;
+}
+
+/* Master checkbox (the span-based one in select-all bar) */
+.iz-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--iz-cb-border);
+    background: var(--iz-cb-bg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    color: var(--iz-cb-on-color);
+    outline: none;
+}
+
+.iz-checkbox:focus-visible {
+    box-shadow: 0 0 0 3px var(--iz-input-focus);
+}
+
+.iz-checkbox--on {
+    background: var(--iz-cb-on-bg);
+    border-color: var(--iz-cb-on-border);
+}
+
+.iz-checkbox--partial {
+    background: var(--iz-cb-partial-bg);
+    border-color: var(--iz-cb-partial-border);
+}
+
+.iz-checkbox-dash {
+    width: 10px;
+    height: 2px;
+    border-radius: 1px;
+    background: #0d9488;
+    display: block;
+}
+
+/* Counter */
+.iz-select-all-counter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.iz-counter-num {
+    font-weight: 700;
+    color: var(--iz-counter-num);
+}
+
+.iz-counter-sep {
+    color: var(--iz-counter-sep);
+}
+
+.iz-counter-lbl {
+    color: var(--iz-counter-lbl);
+}
+
+/* =========================================
    SISWA ROWS — satu baris per siswa
    ========================================= */
 .iz-siswa-list {
@@ -351,7 +477,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    transition: background 0.12s;
+    transition: background 0.12s, opacity 0.18s;
     animation: iz-row-in 0.22s ease both;
 }
 
@@ -361,6 +487,15 @@
 
 .iz-siswa-row:hover {
     background: var(--iz-row-hover);
+}
+
+/* Unchecked row — redup */
+.iz-siswa-row--unchecked {
+    opacity: 0.48;
+}
+
+.iz-siswa-row--unchecked:hover {
+    opacity: 0.65;
 }
 
 @keyframes iz-row-in {
@@ -375,11 +510,44 @@
     }
 }
 
-/* Row top: nomor + nama + NIS */
+/* Row top: checkbox + nomor + nama + NIS */
 .iz-row-top {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+/* Per-row checkbox button */
+.iz-row-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 1.5px solid var(--iz-cb-border);
+    background: var(--iz-cb-bg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    color: var(--iz-cb-on-color);
+    padding: 0;
+    font-family: inherit;
+}
+
+.iz-row-checkbox--on {
+    background: var(--iz-cb-on-bg);
+    border-color: var(--iz-cb-on-border);
+}
+
+.iz-row-checkbox:focus-visible {
+    box-shadow: 0 0 0 3px var(--iz-input-focus);
+    outline: none;
+}
+
+.iz-row-checkbox:hover:not(.iz-row-checkbox--on) {
+    border-color: #0d9488;
+    background: rgba(13, 148, 136, 0.08);
 }
 
 .iz-row-num {
@@ -516,7 +684,7 @@
     text-align: center;
 }
 
-/* THE BUTTON — fully self-contained */
+/* THE BUTTON */
 .iz-submit-btn {
     width: 100%;
     padding: 14px 20px;
@@ -531,7 +699,6 @@
     font-family: 'Inter', sans-serif;
     cursor: pointer;
     transition: opacity 0.16s, transform 0.12s, box-shadow 0.16s;
-    /* always visible teal — fix masalah #button */
     background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
     color: #ffffff;
     box-shadow: 0 8px 22px rgba(13, 148, 136, 0.32);
@@ -750,5 +917,271 @@
 @keyframes iz-spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+/* =========================================
+   LOADING SISWA — inline skeleton state
+   Tambahkan ke izin.css atau file terpisah
+   ========================================= */
+
+/* ── Card wrapper ── */
+.ls-siswa-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 28px 24px;
+    border-radius: 16px;
+    animation: ls-siswa-in 0.3s ease both;
+}
+
+@keyframes ls-siswa-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Orbit spinner ── */
+.ls-siswa-orbit {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+.ls-siswa-orbit-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--iz-row-border);
+}
+
+.ls-siswa-orbit-arc {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    animation: ls-siswa-spin linear infinite;
+}
+
+.ls-siswa-orbit-arc--outer {
+    inset: 0;
+    border-top-color: #179EFF;
+    border-right-color: #179EFF;
+    animation-duration: 0.9s;
+}
+
+.ls-siswa-orbit-arc--inner {
+    inset: 6px;
+    border-bottom-color: #0d9488;
+    border-left-color: #0d9488;
+    animation-duration: 1.5s;
+    animation-direction: reverse;
+}
+
+@keyframes ls-siswa-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.ls-siswa-orbit-center {
+    position: absolute;
+    inset: 15px;
+    border-radius: 50%;
+    background: rgba(23, 158, 255, 0.10);
+    border: 1px solid rgba(23, 158, 255, 0.20);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ls-siswa-orbit-center svg {
+    animation: ls-siswa-icon-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ls-siswa-icon-pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ── Label ── */
+.ls-siswa-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.ls-siswa-label-main {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--iz-nama);
+    font-family: 'Inter', sans-serif;
+}
+
+.ls-siswa-label-sub {
+    font-size: 0.76rem;
+    color: var(--iz-nis);
+    font-family: 'Inter', sans-serif;
+    animation: ls-siswa-blink 1.9s ease-in-out infinite;
+}
+
+@keyframes ls-siswa-blink {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ── Skeleton list ── */
+.ls-siswa-skel-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.ls-siswa-skel-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 13px;
+    background: var(--iz-row-bg);
+    border: 1px solid var(--iz-row-border);
+    border-radius: 10px;
+}
+
+/* Base skeleton piece */
+.ls-siswa-skel {
+    background: var(--iz-skeleton);
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shimmer */
+.ls-siswa-skel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.06) 50%,
+            transparent 100%);
+    animation: ls-siswa-shim 1.6s ease-in-out infinite;
+}
+
+@media (prefers-color-scheme: light) {
+    .ls-siswa-skel::after {
+        background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.55) 50%,
+                transparent 100%);
+    }
+}
+
+@keyframes ls-siswa-shim {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+/* Skeleton size variants */
+.ls-siswa-skel-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.ls-siswa-skel-texts {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.ls-siswa-skel-name {
+    height: 11px;
+}
+
+.ls-siswa-skel-nis {
+    height: 9px;
+    width: 50%;
+}
+
+.ls-siswa-skel-badge {
+    width: 48px;
+    height: 22px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+/* ── Bouncing dots ── */
+.ls-siswa-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.ls-siswa-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: ls-siswa-bounce 1.3s ease-in-out infinite;
+}
+
+.ls-siswa-dot--1 {
+    background: #179EFF;
+    animation-delay: 0s;
+}
+
+.ls-siswa-dot--2 {
+    background: #0d9488;
+    animation-delay: 0.2s;
+}
+
+.ls-siswa-dot--3 {
+    background: #179EFF;
+    opacity: 0.5;
+    animation-delay: 0.4s;
+}
+
+@keyframes ls-siswa-bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scaleY(0.5);
+        opacity: 0.35;
+    }
+
+    40% {
+        transform: scaleY(1.25);
+        opacity: 1;
     }
 }

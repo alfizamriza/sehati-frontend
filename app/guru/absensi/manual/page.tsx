@@ -261,11 +261,53 @@ export default function ManualAttendancePage() {
 
         {/* ── Loading siswa ── */}
         {loadingSiswa && (
-          <div className="loading-state glass-panel">
-            <Loader2 size={30} className="spinner-anim" style={{ color: "#179EFF" }} />
-            <p>Memuat data siswa...</p>
+          <div className="ls-siswa-card glass-panel">
+
+            {/* Orbit spinner */}
+            <div className="ls-siswa-orbit">
+              <div className="ls-siswa-orbit-ring" />
+              <div className="ls-siswa-orbit-arc ls-siswa-orbit-arc--outer" />
+              <div className="ls-siswa-orbit-arc ls-siswa-orbit-arc--inner" />
+              <div className="ls-siswa-orbit-center">
+                {/* User icon via inline SVG — tidak perlu import */}
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+                  stroke="#179EFF" strokeWidth="1.5" strokeLinecap="round">
+                  <circle cx="8" cy="6" r="3" />
+                  <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Label */}
+            <div className="ls-siswa-label">
+              <span className="ls-siswa-label-main">Memuat data siswa</span>
+              <span className="ls-siswa-label-sub">Menyiapkan daftar kelas...</span>
+            </div>
+
+            {/* Skeleton rows — simulasi list siswa */}
+            <div className="ls-siswa-skel-list">
+              {[70, 55, 80, 62].map((w, i) => (
+                <div key={i} className="ls-siswa-skel-row" style={{ animationDelay: `${i * 0.12}s` }}>
+                  <div className="ls-siswa-skel ls-siswa-skel-avatar" />
+                  <div className="ls-siswa-skel-texts">
+                    <div className="ls-siswa-skel ls-siswa-skel-name" style={{ width: `${w}%` }} />
+                    <div className="ls-siswa-skel ls-siswa-skel-nis" />
+                  </div>
+                  <div className="ls-siswa-skel ls-siswa-skel-badge" />
+                </div>
+              ))}
+            </div>
+
+            {/* Bouncing dots */}
+            <div className="ls-siswa-dots">
+              <div className="ls-siswa-dot ls-siswa-dot--1" />
+              <div className="ls-siswa-dot ls-siswa-dot--2" />
+              <div className="ls-siswa-dot ls-siswa-dot--3" />
+            </div>
+
           </div>
         )}
+
 
         {/* ── List Siswa ── */}
         {selectedKelas && !loadingSiswa && (
