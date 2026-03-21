@@ -63,9 +63,6 @@ interface Props {
 const CANVAS_SIZE = 400;   // output square px
 const MAX_BYTES = 1.8 * 1024 * 1024; // target < 1.8 MB (leaves headroom to 2 MB)
 const MIN_QUALITY = 0.45;
-const INIT_ZOOM = 1.0;
-const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 4.0;
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -130,7 +127,9 @@ export default function ModalGantiFoto({ fotoUrl, nama, onClose, onSuccess }: Pr
     const imgRef = useRef<HTMLImageElement | null>(null);
 
     const [rawSrc, setRawSrc] = useState<string | null>(null);
-    const [zoom, setZoom] = useState(INIT_ZOOM);
+    const [zoom, setZoom] = useState(1.0);
+    const [minZoom, setMinZoom] = useState(0.1);
+    const [maxZoom, setMaxZoom] = useState(4.0);
     const [offset, setOffset] = useState({ x: 0, y: 0 }); // pan in image px
 
     const [sizeKb, setSizeKb] = useState<number | null>(null);
@@ -191,7 +190,9 @@ export default function ModalGantiFoto({ fotoUrl, nama, onClose, onSuccess }: Pr
             imgRef.current = img;
             // Initial zoom: fill the crop circle
             const fit = CANVAS_SIZE / Math.min(img.naturalWidth, img.naturalHeight);
-            setZoom(Math.max(fit, 1));
+            setMinZoom(fit); // Batas minimal agar tidak bocor dari canvas
+            setMaxZoom(Math.max(4.0, fit * 5.0));
+            setZoom(fit);
             setOffset({ x: 0, y: 0 });
             draw();
         });
@@ -239,7 +240,7 @@ export default function ModalGantiFoto({ fotoUrl, nama, onClose, onSuccess }: Pr
             e.touches[0].clientX - e.touches[1].clientX,
             e.touches[0].clientY - e.touches[1].clientY,
         );
-        const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinch.current.zoom0 * (d / pinch.current.dist0)));
+        const newZoom = Math.min(maxZoom, Math.max(minZoom, pinch.current.zoom0 * (d / pinch.current.dist0)));
         setZoom(newZoom);
     }
     function onTouchEnd() { pinch.current.active = false; }
@@ -247,14 +248,14 @@ export default function ModalGantiFoto({ fotoUrl, nama, onClose, onSuccess }: Pr
     // ── Scroll-to-zoom (desktop) ─────────────────────────────────────────────
     function onWheel(e: React.WheelEvent<HTMLCanvasElement>) {
         e.preventDefault();
-        setZoom((z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z - e.deltaY * 0.004)));
+        setZoom((z) => Math.min(maxZoom, Math.max(minZoom, z - e.deltaY * 0.004)));
     }
 
     // ── Reset ────────────────────────────────────────────────────────────────
     function handleReset() {
         if (!imgRef.current) return;
         const fit = CANVAS_SIZE / Math.min(imgRef.current.naturalWidth, imgRef.current.naturalHeight);
-        setZoom(Math.max(fit, 1));
+        setZoom(fit);
         setOffset({ x: 0, y: 0 });
     }
 
@@ -324,21 +325,21 @@ export default function ModalGantiFoto({ fotoUrl, nama, onClose, onSuccess }: Pr
 
                     {/* Zoom controls */}
                     <div className="foto-zoom-row">
-                        <button className="foto-zoom-btn" onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z - 0.15))} title="Perkecil">
+                        <button className="foto-zoom-btn" onClick={() => setZoom((z) => Math.max(minZoom, z - 0.15))} title="Perkecil">
                             <ZoomOut size={15} />
                         </button>
                         <div className="foto-zoom-track">
                             <input
                                 type="range"
-                                min={MIN_ZOOM * 100}
-                                max={MAX_ZOOM * 100}
+                                min={minZoom * 100}
+                                max={maxZoom * 100}
                                 step={5}
                                 value={Math.round(zoom * 100)}
                                 onChange={(e) => setZoom(Number(e.target.value) / 100)}
                                 className="foto-zoom-slider"
                             />
                         </div>
-                        <button className="foto-zoom-btn" onClick={() => setZoom((z) => Math.min(MAX_ZOOM, z + 0.15))} title="Perbesar">
+                        <button className="foto-zoom-btn" onClick={() => setZoom((z) => Math.min(maxZoom, z + 0.15))} title="Perbesar">
                             <ZoomIn size={15} />
                         </button>
                         <button className="foto-zoom-btn" onClick={handleReset} title="Reset posisi">
