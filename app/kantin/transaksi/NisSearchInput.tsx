@@ -1,8 +1,9 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Search, Clock, X, Users, AlertCircle } from "lucide-react";
-
+import SharedAvatar from "@/components/common/SharedAvatar";
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 export interface SiswaSearchResult {
@@ -78,25 +79,6 @@ function Hi({ text, q }: { text: string; q: string }) {
     </>
   );
 }
-
-function Avatar({ fotoUrl, nama }: { fotoUrl: string | null; nama: string }) {
-  const ini = nama.split(" ").slice(0, 2).map((w) => w[0] ?? "").join("").toUpperCase();
-  return (
-    <div style={{
-      width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-      background: "linear-gradient(135deg,rgba(23,158,255,.35),rgba(139,92,246,.25))",
-      border: "1.5px solid rgba(23,158,255,.22)",
-      display: "grid", placeItems: "center", overflow: "hidden",
-      fontSize: 11, fontWeight: 800, color: "#fff",
-    }}>
-      {fotoUrl
-        ? <img src={fotoUrl} alt={nama} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        : ini}
-    </div>
-  );
-}
-
-// ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 export default function NisSearchInput({
   value, onChange, onSelect, loading, disabled,
@@ -320,7 +302,7 @@ export default function NisSearchInput({
                 onClick={() => handleSelect(s)}
                 onMouseEnter={() => setActiveIdx(i)}
               >
-                <Avatar fotoUrl={s.fotoUrl} nama={s.nama} />
+                <SharedAvatar size={40} className="w-full h-full" fotoUrl={s.fotoUrl} nama={s.nama} />
                 <div className="nis-drop-item-info">
                   <div className="nis-drop-item-nama">
                     <Hi text={s.nama} q={value} />

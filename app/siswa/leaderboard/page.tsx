@@ -20,6 +20,7 @@ import {
   Coins,
 } from "lucide-react";
 import BottomNavSiswa from "@/components/siswa/BottomNavSiswa";
+import SharedAvatar from "@/components/common/SharedAvatar";
 import BrandLogo from "@/components/common/BrandLogo";
 import {
   useLeaderboardKelasSaya,
@@ -304,9 +305,7 @@ const Podium = ({ top3, metric }: PodiumProps) => {
                     transition={{ type: "spring", stiffness: 300 }}
                   >
                     {p.fotoUrl ? (
-                      <img src={p.fotoUrl} alt={p.nama}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-                      />
+                      <SharedAvatar fotoUrl={p.fotoUrl} nama={p.nama} size="100%" />
                     ) : (
                       getInitials(p.nama)
                     )}
@@ -416,9 +415,7 @@ const SiswaItem = ({ row, idx, expandedNis, onToggleBubble, metric }: SiswaItemP
         transition={{ duration: 0.4 }}
       >
         {row.fotoUrl ? (
-          <img src={row.fotoUrl} alt={row.nama}
-            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-          />
+          <SharedAvatar fotoUrl={row.fotoUrl} nama={row.nama} size="100%" />
         ) : (
           getInitials(row.nama)
         )}

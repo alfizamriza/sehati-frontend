@@ -54,7 +54,7 @@ function setStorageCache<T>(key: string, data: T): void {
   if (!isBrowser()) return;
   try {
     sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
-  } catch {}
+  } catch { }
 }
 
 async function getWithCache<T>(
@@ -98,7 +98,7 @@ export function clearGuruDashboardCache(): void {
   try {
     const keys = Object.keys(sessionStorage).filter((k) => k.startsWith("sehati_guru_"));
     keys.forEach((k) => sessionStorage.removeItem(k));
-  } catch {}
+  } catch { }
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────

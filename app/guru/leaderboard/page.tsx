@@ -7,6 +7,7 @@ import {
   Flame, Loader2, Medal, School, Search,
   Star, TrendingUp, Trophy, Users,
 } from "lucide-react";
+import SharedAvatar from "@/components/common/SharedAvatar";
 import BrandLogo from "@/components/common/BrandLogo";
 import {
   exportLeaderboardPdf,
@@ -435,11 +436,7 @@ function SiswaItem({ row, isLast }: { row: LeaderboardSiswaRow; isLast: boolean 
 
         <div className={getAvatarClass(row.rank)}>
           {row.fotoUrl ? (
-            <img
-              src={row.fotoUrl}
-              alt={row.nama}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
+            <SharedAvatar fotoUrl={row.fotoUrl} nama={row.nama} size="100%" />
           ) : (
             getInitial(row.nama)
           )}

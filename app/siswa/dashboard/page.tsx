@@ -14,6 +14,7 @@ import BottomNavSiswa from "@/components/siswa/BottomNavSiswa";
 import AchievementPopup from "@/components/siswa/AchievementPopup";
 import { ErrorState } from "@/components/common/AsyncState";
 import BrandLogo from "@/components/common/BrandLogo";
+import SharedAvatar from "@/components/common/SharedAvatar";
 import {
   getDashboardSiswa, clearDashboardCache, isCacheStale, isDashboardCached,
   type SiswaDashboard, type CalendarDay,
@@ -92,7 +93,7 @@ function CoinsInfoPopup({ coins, onClose }: { coins: number; onClose: () => void
 }
 
 // ─── PROFILE DROPDOWN ─────────────────────────────────────────────────────────
-function ProfileDropdown({ nama, kelas }: { nama: string; kelas: string }) {
+function ProfileDropdown({ nama, kelas, fotoUrl }: { nama: string; kelas: string; fotoUrl: string | null }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -121,7 +122,11 @@ function ProfileDropdown({ nama, kelas }: { nama: string; kelas: string }) {
         className={`profile-trigger-btn ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="avatar-circle">{initials}</div>
+        {fotoUrl ? (
+          <SharedAvatar fotoUrl={fotoUrl} nama={nama} size={32} />
+        ) : (
+          <div className="avatar-circle">{initials}</div>
+        )}
         <ChevronDown
           size={14}
           style={{
@@ -133,7 +138,13 @@ function ProfileDropdown({ nama, kelas }: { nama: string; kelas: string }) {
       {isOpen && (
         <div className="profile-dropdown-menu glass-panel">
           <div className="dropdown-user-info">
-            <div className="dropdown-avatar">{initials}</div>
+            {fotoUrl ? (
+              <div style={{ width: 40, height: 40, overflow: 'hidden', borderRadius: '50%' }}>
+                <SharedAvatar fotoUrl={fotoUrl} nama={nama} size={40} />
+              </div>
+            ) : (
+              <div className="dropdown-avatar">{initials}</div>
+            )}
             <div>
               <p className="dropdown-nama">{nama}</p>
               <p className="dropdown-kelas">{kelas}</p>
@@ -300,7 +311,7 @@ export default function DashboardSiswaPage() {
             </div>
           </div>
           <div className="header-actions">
-            <ProfileDropdown nama={profile.nama} kelas={profile.kelas} />
+            <ProfileDropdown nama={profile.nama} kelas={profile.kelas} fotoUrl={profile.fotoUrl} />
           </div>
         </header>
 
@@ -455,7 +466,8 @@ export default function DashboardSiswaPage() {
                         />
                       ) : <span className="rank-num">#{item.rank}</span>}
                     </div>
-                    <div className="student-info">
+                    <div className="student-info" style={{ display: "flex", alignItems: "center", gap: "10px", flexDirection: "row" }}>
+                      <SharedAvatar fotoUrl={item.fotoUrl || null} nama={item.nama} size={30} />
                       <div className="student-name">{item.nama} {item.isMe && "(Kamu)"}</div>
                     </div>
                     <div className="student-score">

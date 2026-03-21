@@ -34,11 +34,11 @@ export interface RecentHistoryItem {
 export interface LeaderboardItem {
   rank: number; nis: string; nama: string; kelas: string;
   streak: number; coins: number;
-  medal: "gold" | "silver" | "bronze" | "none"; isMe: boolean;
+  medal: "gold" | "silver" | "bronze" | "none"; isMe: boolean; fotoUrl?: string | null;
 }
 
 export interface SiswaDashboard {
-  profile: { nama: string; nis: string; kelas: string; coins: number };
+  profile: { nama: string; nis: string; kelas: string; coins: number; fotoUrl: string | null };
   streak: { current: number; isActiveToday: boolean; shouldShowFaded: boolean };
   ranking: { position: number; totalSiswa: number };
   pelanggaran: number;
@@ -199,6 +199,7 @@ export async function getDashboardSiswa(
       nis:    payload?.profile?.nis    ?? "",
       kelas:  payload?.profile?.kelas  ?? "-",
       coins:  Number(payload?.profile?.coins ?? 0),
+      fotoUrl:payload?.profile?.foto_url ?? null,
     },
     streak: {
       current:        Number(payload?.streak?.current ?? 0),
@@ -220,6 +221,7 @@ export async function getDashboardSiswa(
           coins: Number(item?.coins ?? 0),
           medal: item?.medal ?? "none",
           isMe: Boolean(item?.isMe),
+          fotoUrl: item?.foto_url ?? null,
         }))
       : [],
     recentHistory:  Array.isArray(payload?.recentHistory)  ? payload.recentHistory  : [],

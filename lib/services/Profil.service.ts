@@ -102,7 +102,7 @@ export async function getProfil(forceRefresh = false): Promise<ProfilData> {
       streak: Number(payload?.profil?.streak ?? 0),
       lastStreakDate: payload?.profil?.lastStreakDate ?? null,
       joinDate: payload?.profil?.joinDate ?? "-",
-      fotoUrl: payload?.profil?.fotoUrl ?? null,
+      fotoUrl: payload?.profil?.fotoUrl ?? payload?.profil?.foto_url ?? null,
       rankingKelas: Number(payload?.profil?.rankingKelas ?? 0),
       rankingSekolah: Number(payload?.profil?.rankingSekolah ?? 0),
       totalTumbler: Number(payload?.profil?.totalTumbler ?? 0),
@@ -172,6 +172,18 @@ export async function uploadFotoProfil(file: File): Promise<string> {
   }
 
   return publicUrl;
+}
+
+
+export async function saveFotoUrl(url: string): Promise<string> {
+  const patchRes = await api.patch("/profil/foto", { fotoUrl: url });
+  if (!patchRes.data?.success) throw new Error("Gagal menyimpan URL foto");
+
+  if (_cache) {
+    _cache.data.profil.fotoUrl = url;
+    _cache.ts = Date.now();
+  }
+  return url;
 }
 
 export async function updatePassword(passwordLama: string, passwordBaru: string): Promise<void> {

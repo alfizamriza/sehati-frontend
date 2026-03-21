@@ -8,6 +8,7 @@ import {
   Loader2, ShoppingCart, AlertTriangle, Coins, Camera,
   ChevronRight, CheckCircle2,
 } from "lucide-react";
+import SharedAvatar from "@/components/common/SharedAvatar";
 import BrandLogo from "@/components/common/BrandLogo";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import {
@@ -94,7 +95,7 @@ function AvatarMini({ fotoUrl, nama }: { fotoUrl: string | null; nama: string })
       display: "grid", placeItems: "center", overflow: "hidden",
     }}>
       {fotoUrl
-        ? <img src={fotoUrl} alt={nama} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ? <SharedAvatar fotoUrl={fotoUrl} nama={nama} size="100%" />
         : <span style={{ fontSize: "0.9rem", fontWeight: 800, color: "#fff" }}>{initials}</span>
       }
     </div>
@@ -608,7 +609,7 @@ function ModalKonfirmasi({ siswa, cart, voucher, metodeBayar, onKonfirmasi, onCl
     <ModalSheet onClose={onClose} title="Konfirmasi Pembayaran" accentColor={accent} wide>
       {/* ── Siswa info ── */}
       <div className="konfirm-siswa-row">
-        <AvatarMini fotoUrl={siswa.fotoUrl} nama={siswa.nama} />
+        <SharedAvatar fotoUrl={siswa.fotoUrl} nama={siswa.nama} />
         <div>
           <div className="konfirm-siswa-nama">{siswa.nama}</div>
           <div className="konfirm-siswa-sub">{siswa.kelas} · {siswa.nis}</div>
@@ -1132,7 +1133,7 @@ export default function TransaksiPage() {
           )}
           {!loadingSiswa && siswa && (
             <div className="student-card-mini">
-              <AvatarMini fotoUrl={siswa.fotoUrl} nama={siswa.nama} />
+              <SharedAvatar fotoUrl={siswa.fotoUrl} nama={siswa.nama} />
               <div className="info">
                 <h4>{siswa.nama}</h4>
                 <p>{siswa.nis}</p>

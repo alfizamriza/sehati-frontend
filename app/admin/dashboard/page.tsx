@@ -19,6 +19,7 @@ import ComplianceChart from "@/components/admin/ComplianceChart";
 import { ErrorState, LoadingState } from "@/components/common/AsyncState";
 import authService from "@/lib/auth";
 import { getAdminUser, getDashboardData } from "@/lib/services/admin";
+import SharedAvatar from "@/components/common/SharedAvatar";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface DashboardStats {
@@ -39,6 +40,7 @@ interface LeaderboardItem {
   kelas: string;
   coins: number;
   streak: number;
+  fotoUrl?: string | null;
 }
 
 interface ActivityItem {
@@ -338,18 +340,21 @@ export default function DashboardPage() {
                   >
                     {i + 1}
                   </div>
-                  <div className="student-profile">
-                    <span className="student-name-bold">{s.nama}</span>
-                    <span className="student-class-tag flex items-center gap-1 ml-1">
-                      {s.kelas}
-                      {s.streak > 0 && (
-                        <>
-                          <span>·</span>
-                          <Flame size={12} stroke="#e32424"/>
-                          <span>{s.streak} hari</span>
-                        </>
-                      )}
-                    </span>
+                  <div className="student-profile" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexDirection: 'row' }}>
+                    <SharedAvatar fotoUrl={s.fotoUrl || null} nama={s.nama} size={32} />
+                    <div>
+                      <span className="student-name-bold">{s.nama}</span>
+                      <span className="student-class-tag flex items-center gap-1 ml-1" style={{ marginLeft: 0 }}>
+                        {s.kelas}
+                        {s.streak > 0 && (
+                          <>
+                            <span>·</span>
+                            <Flame size={12} stroke="#e32424"/>
+                            <span>{s.streak} hari</span>
+                          </>
+                        )}
+                      </span>
+                    </div>
                   </div>
                   <div className="student-points">
                     <span className="coin-val">{fmtNumber(s.coins)}</span>

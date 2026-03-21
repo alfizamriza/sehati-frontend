@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import BottomNavSiswa from "@/components/siswa/BottomNavSiswa";
 import { ErrorState } from "@/components/common/AsyncState";
+import SharedAvatar from "@/components/common/SharedAvatar";
 import BrandLogo from "@/components/common/BrandLogo";
 import {
   getProfil, updatePassword,
@@ -55,44 +56,6 @@ function ModalSheet({
         <div className="profil-modal-title">{title}</div>
         {children}
       </div>
-    </div>
-  );
-}
-
-// ─── AVATAR ───────────────────────────────────────────────────────────────────
-function AvatarDisplay({
-  fotoUrl, nama, size = 80, onClick,
-}: {
-  fotoUrl: string | null; nama: string; size?: number; onClick?: () => void;
-}) {
-  const initials = nama
-    .split(" ").slice(0, 2)
-    .map((w) => w[0] ?? "").join("").toUpperCase();
-
-  return (
-    <div
-      className="profil-avatar-circle"
-      onClick={onClick}
-      style={{
-        width: size,
-        height: size,
-        cursor: onClick ? "pointer" : "default",
-      }}
-    >
-      {fotoUrl ? (
-        <img
-          src={fotoUrl}
-          alt={nama}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-      ) : (
-        <span
-          className="profil-avatar-initials"
-          style={{ fontSize: size * 0.36 }}
-        >
-          {initials}
-        </span>
-      )}
     </div>
   );
 }
@@ -820,6 +783,7 @@ export default function ProfilSiswaPage() {
               prev ? { ...prev, profil: { ...prev.profil, fotoUrl: url } } : prev,
             );
             setModalFoto(false);
+            void load(true);
           }}
         />
       )}
@@ -863,7 +827,7 @@ export default function ProfilSiswaPage() {
         {/* ── HERO ── */}
         <div className="glass-panel profil-hero">
           <div className="profil-avatar-wrap">
-            <AvatarDisplay fotoUrl={profil.fotoUrl} nama={profil.nama} size={90} />
+            <SharedAvatar fotoUrl={profil.fotoUrl} nama={profil.nama} size={90} />
             <button
               className="profil-avatar-edit-btn"
               onClick={() => setModalFoto(true)}
