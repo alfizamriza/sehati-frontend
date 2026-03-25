@@ -7,6 +7,7 @@ export interface Siswa {
   kelas: string;           // Format: "XI-RPL"
   kelasId: number | null;
   statusAktif: boolean;
+  permissions?: string[];
   coins: number;
   streak: number;
   createdAt?: string;
@@ -19,6 +20,7 @@ export interface CreateSiswaDto {
   kelasId: number;
   password: string;
   statusAktif?: boolean;
+  permissions?: string[];
 }
 
 export interface UpdateSiswaDto {
@@ -26,6 +28,7 @@ export interface UpdateSiswaDto {
   kelasId?: number;
   password?: string;
   statusAktif?: boolean;
+  permissions?: string[];
 }
 
 export interface ImportResult {

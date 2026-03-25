@@ -16,6 +16,7 @@ import {
   Coins,
   ArrowDownAZ,
   ArrowUpAZ,
+  Shield,
 } from "lucide-react";
 
 type SortField = "nis" | "nama" | "kelas" | "status" | "coins" | "streak";
@@ -63,6 +64,7 @@ export default function SiswaPage() {
     nis: "", nama: "", password: "",
     kelasId: "" as number | "",
     statusAktif: true,
+    permissions: [] as string[],
   });
 
   // ── Helpers ──
@@ -169,7 +171,7 @@ export default function SiswaPage() {
   // ── Modal helpers ──
   const openAdd = () => {
     setModalMode("add");
-    setFormData({ nis: "", nama: "", password: "", kelasId: "", statusAktif: true });
+    setFormData({ nis: "", nama: "", password: "", kelasId: "", statusAktif: true, permissions: [] });
     setIsModalOpen(true);
     void loadKelasDropdown();
   };
@@ -177,7 +179,7 @@ export default function SiswaPage() {
   const openEdit = (s: Siswa) => {
     setModalMode("edit");
     setCurrentNis(s.nis);
-    setFormData({ nis: s.nis, nama: s.nama, password: "", kelasId: s.kelasId || "", statusAktif: s.statusAktif });
+    setFormData({ nis: s.nis, nama: s.nama, password: "", kelasId: s.kelasId || "", statusAktif: s.statusAktif, permissions: s.permissions || [] });
     setIsModalOpen(true);
     void loadKelasDropdown();
   };
@@ -199,12 +201,14 @@ export default function SiswaPage() {
           nis: formData.nis, nama: formData.nama,
           kelasId: Number(formData.kelasId),
           password: formData.password, statusAktif: formData.statusAktif,
+          permissions: formData.permissions,
         } as CreateSiswaDto);
         showToast("Siswa berhasil ditambahkan!", "success");
       } else {
         const update: UpdateSiswaDto = {
           nama: formData.nama, kelasId: Number(formData.kelasId),
           statusAktif: formData.statusAktif,
+          permissions: formData.permissions,
         };
         if (formData.password) update.password = formData.password;
         await updateSiswa(currentNis!, update);
@@ -386,7 +390,14 @@ export default function SiswaPage() {
                     <td>
                       <div className="cell-name-row">
                         <div className="avatar-circle">{s.nama.charAt(0).toUpperCase()}</div>
-                        {s.nama}
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span>{s.nama}</span>
+                          {s.permissions && s.permissions.length > 0 && (
+                            <span style={{ fontSize: "0.75em", color: "var(--primary)", marginTop: 2, fontWeight: 500 }}>
+                              <Shield size={10} style={{ display: "inline", marginRight: 2 }} /> OSIS
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td><span className="kelas-pill">{s.kelas}</span></td>
@@ -512,6 +523,42 @@ export default function SiswaPage() {
                 {modalMode === "edit" && (
                   <span className="form-hint">* Hanya isi jika ingin mereset password siswa</span>
                 )}
+              </div>
+
+              <div className="form-group" style={{ marginTop: 8 }}>
+                <label className="form-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <Shield size={16} /> Akses Khusus (Opsional)
+                </label>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 12, background: "var(--surface-2, #f5f7fb)", borderRadius: 8 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: "0.9rem" }}>
+                    <input 
+                      type="checkbox" 
+                      className="form-checkbox"
+                      checked={formData.permissions.includes('manage_absensi')}
+                      onChange={(e) => {
+                        const newPerms = e.target.checked 
+                          ? [...formData.permissions, 'manage_absensi']
+                          : formData.permissions.filter(p => p !== 'manage_absensi');
+                        setFormData({ ...formData, permissions: newPerms });
+                      }}
+                    />
+                    Akses Fitur Absensi (OSIS)
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: "0.9rem" }}>
+                    <input 
+                      type="checkbox" 
+                      className="form-checkbox"
+                      checked={formData.permissions.includes('manage_pelanggaran')}
+                      onChange={(e) => {
+                        const newPerms = e.target.checked 
+                          ? [...formData.permissions, 'manage_pelanggaran']
+                          : formData.permissions.filter(p => p !== 'manage_pelanggaran');
+                        setFormData({ ...formData, permissions: newPerms });
+                      }}
+                    />
+                    Akses Fitur Pelanggaran (OSIS)
+                  </label>
+                </div>
               </div>
             </div>
 

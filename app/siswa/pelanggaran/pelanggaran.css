@@ -1,0 +1,984 @@
+/* =========================================
+   pelanggaran.css
+   Halaman Lapor Pelanggaran — Siswa
+   Full dark & light mode · Mobile-first
+   ========================================= */
+
+/* ─────────────────────────────────────────
+   CSS CUSTOM PROPERTIES
+───────────────────────────────────────── */
+:root {
+  /* Page */
+  --pel-page-bg: transparent;
+
+  /* Icon badge */
+  --pel-icon-bg: rgba(239, 68, 68, 0.12);
+  --pel-icon-border: rgba(239, 68, 68, 0.22);
+  --pel-icon-bg-blue: rgba(23, 158, 255, 0.12);
+  --pel-icon-border-blue: rgba(23, 158, 255, 0.22);
+
+  /* Title */
+  --pel-title-color: #ffffff;
+  --pel-subtitle-color: rgba(255, 255, 255, 0.45);
+
+  /* Stats */
+  --pel-stat-label: rgba(255, 255, 255, 0.40);
+
+  /* Tab nav */
+  --pel-tab-border: rgba(255, 255, 255, 0.07);
+  --pel-tab-inactive-color: rgba(255, 255, 255, 0.40);
+  --pel-tab-active-color: #EF4444;
+  --pel-tab-active-bg: rgba(239, 68, 68, 0.09);
+
+  /* Form card */
+  --pel-card-header-border: rgba(239, 68, 68, 0.15);
+  --pel-card-title-color: #EF4444;
+
+  /* Form inputs — reuse laporan.css variables where possible */
+  --pel-label-color: rgba(255, 255, 255, 0.55);
+  --pel-hint-color: rgba(255, 255, 255, 0.32);
+  --pel-required-color: #EF4444;
+  --pel-input-bg: rgba(255, 255, 255, 0.05);
+  --pel-input-border: rgba(255, 255, 255, 0.10);
+  --pel-input-color: #ffffff;
+  --pel-input-placeholder: rgba(255, 255, 255, 0.28);
+  --pel-input-focus-bg: rgba(23, 158, 255, 0.08);
+  --pel-input-focus-border: rgba(23, 158, 255, 0.50);
+
+  /* Upload zone */
+  --pel-upload-border: rgba(255, 255, 255, 0.12);
+  --pel-upload-bg: rgba(255, 255, 255, 0.03);
+  --pel-upload-icon: rgba(255, 255, 255, 0.35);
+  --pel-upload-label: rgba(255, 255, 255, 0.55);
+  --pel-upload-hint: rgba(255, 255, 255, 0.28);
+  --pel-upload-hover-border: rgba(23, 158, 255, 0.40);
+  --pel-upload-hover-bg: rgba(23, 158, 255, 0.06);
+
+  /* Photo preview */
+  --pel-photo-remove-bg: rgba(0, 0, 0, 0.55);
+  --pel-photo-size-bg: rgba(0, 0, 0, 0.55);
+  --pel-photo-size-color: rgba(255, 255, 255, 0.85);
+  --pel-photo-border: rgba(255, 255, 255, 0.10);
+
+  /* Jenis preview */
+  --pel-jenis-name: rgba(255, 255, 255, 0.85);
+
+  /* Summary box */
+  --pel-summary-bg: rgba(239, 68, 68, 0.06);
+  --pel-summary-border: rgba(239, 68, 68, 0.20);
+  --pel-summary-title: #EF4444;
+  --pel-summary-lbl: rgba(255, 255, 255, 0.45);
+  --pel-summary-val: rgba(255, 255, 255, 0.85);
+  --pel-summary-meta: rgba(255, 255, 255, 0.45);
+  --pel-summary-penalty: #EF4444;
+
+  /* Submit button */
+  --pel-submit-active-from: #EF4444;
+  --pel-submit-active-to: #DC2626;
+  --pel-submit-active-shadow: rgba(239, 68, 68, 0.35);
+  --pel-submit-disabled-bg: rgba(255, 255, 255, 0.06);
+  --pel-submit-disabled-color: rgba(255, 255, 255, 0.22);
+  --pel-submit-success-bg: #10b981;
+
+  /* Riwayat section */
+  --pel-riwayat-border: rgba(255, 255, 255, 0.07);
+  --pel-riwayat-bg: rgba(255, 255, 255, 0.025);
+  --pel-riwayat-hover: rgba(255, 255, 255, 0.035);
+  --pel-riwayat-jenis: rgba(255, 255, 255, 0.90);
+  --pel-riwayat-siswa: rgba(255, 255, 255, 0.55);
+  --pel-riwayat-nis: rgba(255, 255, 255, 0.38);
+  --pel-riwayat-catatan-bg: rgba(255, 255, 255, 0.03);
+  --pel-riwayat-catatan-border: rgba(255, 255, 255, 0.07);
+  --pel-riwayat-catatan-color: rgba(255, 255, 255, 0.50);
+  --pel-riwayat-empty: rgba(255, 255, 255, 0.25);
+  --pel-riwayat-loading: rgba(255, 255, 255, 0.45);
+
+  /* Tag chips */
+  --pel-tag-date-bg: rgba(23, 158, 255, 0.10);
+  --pel-tag-date-color: #179EFF;
+  --pel-tag-date-border: rgba(23, 158, 255, 0.22);
+  --pel-tag-coins-bg: rgba(239, 68, 68, 0.10);
+  --pel-tag-coins-color: #EF4444;
+  --pel-tag-coins-border: rgba(239, 68, 68, 0.22);
+
+  /* Bukti link */
+  --pel-bukti-color: #179EFF;
+
+  /* Delete button */
+  --pel-delete-bg: rgba(239, 68, 68, 0.09);
+  --pel-delete-border: rgba(239, 68, 68, 0.28);
+  --pel-delete-color: #EF4444;
+
+  /* Badge base */
+  --badge-kategori-radius: 20px;
+
+  /* Access denied */
+  --pel-access-denied-pad: 28px;
+}
+
+/* ─────────────────────────────────────────
+   LIGHT MODE OVERRIDES
+───────────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  :root {
+    --pel-icon-bg: #fff1f2;
+    --pel-icon-border: #fecdd3;
+    --pel-icon-bg-blue: #eff6ff;
+    --pel-icon-border-blue: #bfdbfe;
+
+    --pel-title-color: #0f172a;
+    --pel-subtitle-color: #64748b;
+
+    --pel-stat-label: #64748b;
+
+    --pel-tab-border: rgba(15, 23, 42, 0.09);
+    --pel-tab-inactive-color: #64748b;
+    --pel-tab-active-color: #dc2626;
+    --pel-tab-active-bg: rgba(220, 38, 38, 0.06);
+
+    --pel-card-header-border: rgba(220, 38, 38, 0.12);
+    --pel-card-title-color: #dc2626;
+
+    --pel-label-color: #475569;
+    --pel-hint-color: #94a3b8;
+    --pel-required-color: #dc2626;
+    --pel-input-bg: #f8fafc;
+    --pel-input-border: rgba(15, 23, 42, 0.12);
+    --pel-input-color: #0f172a;
+    --pel-input-placeholder: #94a3b8;
+    --pel-input-focus-bg: #f0f9ff;
+    --pel-input-focus-border: rgba(3, 105, 161, 0.50);
+
+    --pel-upload-border: rgba(15, 23, 42, 0.14);
+    --pel-upload-bg: #f8fafc;
+    --pel-upload-icon: #94a3b8;
+    --pel-upload-label: #475569;
+    --pel-upload-hint: #94a3b8;
+    --pel-upload-hover-border: rgba(3, 105, 161, 0.40);
+    --pel-upload-hover-bg: #f0f9ff;
+
+    --pel-photo-remove-bg: rgba(0, 0, 0, 0.45);
+    --pel-photo-size-bg: rgba(0, 0, 0, 0.45);
+    --pel-photo-size-color: #ffffff;
+    --pel-photo-border: rgba(15, 23, 42, 0.10);
+
+    --pel-jenis-name: #0f172a;
+
+    --pel-summary-bg: #fff5f5;
+    --pel-summary-border: #fecaca;
+    --pel-summary-title: #dc2626;
+    --pel-summary-lbl: #64748b;
+    --pel-summary-val: #0f172a;
+    --pel-summary-meta: #64748b;
+    --pel-summary-penalty: #dc2626;
+
+    --pel-submit-active-from: #ef4444;
+    --pel-submit-active-to: #dc2626;
+    --pel-submit-active-shadow: rgba(239, 68, 68, 0.28);
+    --pel-submit-disabled-bg: #f1f5f9;
+    --pel-submit-disabled-color: #94a3b8;
+    --pel-submit-success-bg: #10b981;
+
+    --pel-riwayat-border: rgba(15, 23, 42, 0.08);
+    --pel-riwayat-bg: #ffffff;
+    --pel-riwayat-hover: #f8fafc;
+    --pel-riwayat-jenis: #0f172a;
+    --pel-riwayat-siswa: #374151;
+    --pel-riwayat-nis: #94a3b8;
+    --pel-riwayat-catatan-bg: #f8fafc;
+    --pel-riwayat-catatan-border: rgba(15, 23, 42, 0.08);
+    --pel-riwayat-catatan-color: #64748b;
+    --pel-riwayat-empty: #94a3b8;
+    --pel-riwayat-loading: #64748b;
+
+    --pel-tag-date-bg: rgba(3, 105, 161, 0.08);
+    --pel-tag-date-color: #0369a1;
+    --pel-tag-date-border: rgba(3, 105, 161, 0.20);
+    --pel-tag-coins-bg: rgba(220, 38, 38, 0.08);
+    --pel-tag-coins-color: #dc2626;
+    --pel-tag-coins-border: rgba(220, 38, 38, 0.20);
+
+    --pel-bukti-color: #0369a1;
+
+    --pel-delete-bg: rgba(220, 38, 38, 0.07);
+    --pel-delete-border: rgba(220, 38, 38, 0.25);
+    --pel-delete-color: #dc2626;
+  }
+}
+
+/* ─────────────────────────────────────────
+   PAGE WRAPPER
+───────────────────────────────────────── */
+.pel-page {
+  /* inherits dashboard-page layout */
+}
+
+/* ─────────────────────────────────────────
+   PAGE HEADER
+───────────────────────────────────────── */
+.pel-page-header {
+  margin-bottom: 16px;
+}
+
+.pel-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pel-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--pel-icon-bg);
+  border: 1px solid var(--pel-icon-border);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.pel-icon-badge--blue {
+  background: var(--pel-icon-bg-blue);
+  border-color: var(--pel-icon-border-blue);
+}
+
+.pel-title-text h1,
+.pel-title-text h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pel-title-color);
+  line-height: 1.3;
+}
+
+.pel-title-text p {
+  margin: 3px 0 0;
+  font-size: 0.80rem;
+  color: var(--pel-subtitle-color);
+  line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────
+   STAT CARDS
+───────────────────────────────────────── */
+.pel-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pel-stat-card {
+  padding: 14px 10px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.pel-stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pel-stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pel-stat-label {
+  font-size: 0.70rem;
+  font-weight: 700;
+  color: var(--pel-stat-label);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ─────────────────────────────────────────
+   TAB NAVIGATION
+───────────────────────────────────────── */
+.pel-tab-nav {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--pel-tab-border);
+}
+
+.pel-tab-btn {
+  flex: 1;
+  padding: 11px 16px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.pel-tab-btn--inactive {
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  color: var(--pel-tab-inactive-color);
+}
+
+.pel-tab-btn--inactive:hover {
+  color: var(--pel-title-color);
+}
+
+.pel-tab-btn--active {
+  background: var(--pel-tab-active-bg);
+  border-bottom: 2px solid #EF4444;
+  color: var(--pel-tab-active-color);
+}
+
+/* ─────────────────────────────────────────
+   FORM CARD
+───────────────────────────────────────── */
+.pel-form-card {
+  border-radius: 18px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: pelFadeIn 0.22s ease;
+}
+
+.pel-form-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--pel-card-header-border);
+}
+
+.pel-form-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #EF4444;
+  box-shadow: 0 0 7px rgba(239, 68, 68, 0.55);
+  flex-shrink: 0;
+}
+
+.pel-form-card-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--pel-card-title-color);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ─────────────────────────────────────────
+   FORM HELPERS  (override / extend laporan.css)
+───────────────────────────────────────── */
+.pel-required {
+  color: var(--pel-required-color);
+  margin-left: 2px;
+}
+
+.pel-label-hint {
+  font-weight: 500;
+  color: var(--pel-hint-color);
+  font-size: 0.76rem;
+  margin-left: 4px;
+}
+
+.pel-inline-loader {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ─────────────────────────────────────────
+   JENIS PELANGGARAN PREVIEW
+───────────────────────────────────────── */
+.pel-jenis-preview {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border-radius: 10px;
+  margin-top: 8px;
+  animation: pelFadeIn 0.18s ease;
+}
+
+.pel-jenis-preview-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pel-jenis-name);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pel-jenis-preview-coins {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.83rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────
+   UPLOAD ZONE
+───────────────────────────────────────── */
+.pel-upload-zone {
+  width: 100%;
+  padding: 26px 20px;
+  border-radius: 13px;
+  border: 2px dashed var(--pel-upload-border);
+  background: var(--pel-upload-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: inherit;
+}
+
+.pel-upload-zone:hover:not(:disabled) {
+  border-color: var(--pel-upload-hover-border);
+  background: var(--pel-upload-hover-bg);
+}
+
+.pel-upload-zone:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.pel-upload-icon {
+  color: var(--pel-upload-icon);
+}
+
+.pel-upload-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--pel-upload-label);
+}
+
+.pel-upload-hint {
+  font-size: 0.75rem;
+  color: var(--pel-upload-hint);
+}
+
+/* ─────────────────────────────────────────
+   PHOTO PREVIEW
+───────────────────────────────────────── */
+.pel-photo-preview {
+  position: relative;
+  border-radius: 13px;
+  overflow: hidden;
+  border: 1px solid var(--pel-photo-border);
+}
+
+.pel-photo-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 280px;
+  object-fit: cover;
+}
+
+.pel-photo-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--pel-photo-remove-bg);
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s;
+  backdrop-filter: blur(4px);
+}
+
+.pel-photo-remove:hover {
+  background: rgba(239, 68, 68, 0.75);
+}
+
+.pel-photo-size {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--pel-photo-size-bg);
+  color: var(--pel-photo-size-color);
+  font-size: 0.72rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+/* ─────────────────────────────────────────
+   SUMMARY BOX
+───────────────────────────────────────── */
+.pel-summary {
+  padding: 14px 16px;
+  border-radius: 13px;
+  background: var(--pel-summary-bg);
+  border: 1px solid var(--pel-summary-border);
+  animation: pelFadeIn 0.2s ease;
+}
+
+.pel-summary-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--pel-summary-title);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 11px;
+}
+
+.pel-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 0.84rem;
+  margin-bottom: 5px;
+}
+
+.pel-summary-lbl {
+  color: var(--pel-summary-lbl);
+  flex-shrink: 0;
+}
+
+.pel-summary-val {
+  font-weight: 600;
+  color: var(--pel-summary-val);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 65%;
+}
+
+.pel-summary-meta {
+  color: var(--pel-summary-meta);
+  font-weight: 400;
+}
+
+.pel-summary-penalty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  color: var(--pel-summary-penalty);
+  margin-left: auto;
+}
+
+/* ─────────────────────────────────────────
+   SUBMIT BUTTON
+───────────────────────────────────────── */
+.pel-submit-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.18s, box-shadow 0.18s, background 0.2s, opacity 0.2s;
+}
+
+.pel-submit-btn--active {
+  background: linear-gradient(135deg, var(--pel-submit-active-from), var(--pel-submit-active-to));
+  color: #ffffff;
+}
+
+.pel-submit-btn--active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px var(--pel-submit-active-shadow);
+}
+
+.pel-submit-btn--active:active {
+  transform: scale(0.98);
+}
+
+.pel-submit-btn--disabled {
+  background: var(--pel-submit-disabled-bg);
+  color: var(--pel-submit-disabled-color);
+  cursor: not-allowed;
+}
+
+.pel-submit-btn--success {
+  background: var(--pel-submit-success-bg);
+  color: #ffffff;
+  cursor: default;
+}
+
+/* ─────────────────────────────────────────
+   RIWAYAT SECTION
+───────────────────────────────────────── */
+.pel-riwayat-section {
+  border-radius: 18px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: pelFadeIn 0.22s ease;
+}
+
+.pel-riwayat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pel-riwayat-title {
+  font-size: 1.1rem !important;
+}
+
+.pel-refresh-btn {
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+.pel-riwayat-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  padding: 28px 16px;
+  color: var(--pel-riwayat-loading);
+  font-size: 0.875rem;
+}
+
+.pel-riwayat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 44px 20px;
+  color: var(--pel-riwayat-empty);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.pel-riwayat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ─────────────────────────────────────────
+   RIWAYAT CARD
+───────────────────────────────────────── */
+.pel-riwayat-card {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--pel-riwayat-border);
+  background: var(--pel-riwayat-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  transition: background 0.15s;
+}
+
+.pel-riwayat-card:hover {
+  background: var(--pel-riwayat-hover);
+}
+
+.pel-riwayat-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pel-riwayat-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pel-riwayat-jenis {
+  font-size: 0.935rem;
+  font-weight: 700;
+  color: var(--pel-riwayat-jenis);
+  line-height: 1.35;
+}
+
+.pel-riwayat-siswa {
+  font-size: 0.80rem;
+  color: var(--pel-riwayat-siswa);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.pel-riwayat-nis {
+  color: var(--pel-riwayat-nis);
+}
+
+.pel-riwayat-kelas {
+  color: var(--pel-riwayat-nis);
+}
+
+.pel-status-badge {
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────
+   TAG CHIPS
+───────────────────────────────────────── */
+.pel-riwayat-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pel-tag-date {
+  background: var(--pel-tag-date-bg) !important;
+  color: var(--pel-tag-date-color) !important;
+  border: 1px solid var(--pel-tag-date-border) !important;
+}
+
+.pel-tag-coins {
+  background: var(--pel-tag-coins-bg) !important;
+  color: var(--pel-tag-coins-color) !important;
+  border: 1px solid var(--pel-tag-coins-border) !important;
+}
+
+/* ─────────────────────────────────────────
+   CATATAN
+───────────────────────────────────────── */
+.pel-riwayat-catatan {
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: var(--pel-riwayat-catatan-bg);
+  border: 1px solid var(--pel-riwayat-catatan-border);
+  font-size: 0.82rem;
+  color: var(--pel-riwayat-catatan-color);
+  line-height: 1.65;
+}
+
+/* ─────────────────────────────────────────
+   BUKTI FOTO LINK
+───────────────────────────────────────── */
+.pel-riwayat-bukti {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--pel-bukti-color);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.pel-riwayat-bukti:hover {
+  opacity: 0.78;
+  text-decoration: underline;
+}
+
+/* ─────────────────────────────────────────
+   RIWAYAT ACTIONS
+───────────────────────────────────────── */
+.pel-riwayat-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pel-delete-btn {
+  padding: 7px 14px !important;
+  background: var(--pel-delete-bg) !important;
+  border: 1px solid var(--pel-delete-border) !important;
+  color: var(--pel-delete-color) !important;
+  font-size: 0.80rem !important;
+  transition: opacity 0.15s, transform 0.15s !important;
+}
+
+.pel-delete-btn:hover:not(:disabled) {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.pel-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────
+   TOAST
+───────────────────────────────────────── */
+.pel-toast-container {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.pel-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 24px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  animation: pelToastPop 0.25s ease;
+}
+
+.pel-toast--success {
+  background: rgba(16, 185, 129, 0.92);
+}
+
+.pel-toast--error {
+  background: rgba(239, 68, 68, 0.92);
+}
+
+/* ─────────────────────────────────────────
+   BADGE KATEGORI (shared)
+───────────────────────────────────────── */
+.badge-kategori {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+}
+
+/* ─────────────────────────────────────────
+   ACCESS DENIED
+───────────────────────────────────────── */
+.pel-access-denied {
+  padding: var(--pel-access-denied-pad);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────── */
+@keyframes pelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pelToastPop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 480px) {
+  .pel-stat-grid {
+    gap: 8px;
+  }
+
+  .pel-stat-value {
+    font-size: 1.5rem;
+  }
+
+  .pel-stat-label {
+    font-size: 0.65rem;
+  }
+
+  .pel-form-card,
+  .pel-riwayat-section {
+    padding: 16px;
+  }
+
+  .pel-tab-btn {
+    font-size: 0.80rem;
+    padding: 10px 10px;
+  }
+
+  .pel-riwayat-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pel-refresh-btn {
+    align-self: flex-end;
+  }
+
+  .pel-submit-btn {
+    font-size: 0.88rem;
+    padding: 13px 16px;
+  }
+
+  .pel-toast {
+    font-size: 0.78rem;
+    padding: 10px 16px;
+    max-width: calc(100vw - 32px);
+    white-space: normal;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 768px) {
+  .pel-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 200px));
+    justify-content: start;
+    gap: 14px;
+  }
+
+  .pel-form-card,
+  .pel-riwayat-section {
+    padding: 28px;
+  }
+
+  .pel-riwayat-header {
+    align-items: center;
+  }
+
+  .pel-upload-zone {
+    padding: 32px 24px;
+  }
+}

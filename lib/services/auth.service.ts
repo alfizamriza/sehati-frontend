@@ -7,6 +7,7 @@ const AUTH_PROFILE_KEY = 'auth_profile';
 const LOCAL_STORAGE_KEYS = [AUTH_TOKEN_KEY, AUTH_ROLE_KEY, AUTH_USER_KEY, AUTH_PROFILE_KEY];
 const SESSION_KEY_PATTERNS = ['sehati_', 'auth', 'user'];
 
+
 export interface LoginRequest {
   role: string;
   identifier: string;
@@ -23,6 +24,7 @@ export interface LoginResponse {
       nama?: string;
       username?: string;
       role: string;
+      permissions?: string[];
     };
     redirectTo: string;
   };
@@ -203,5 +205,15 @@ export function getUser() {
   } catch (e) {
     console.error('Error getting user:', e);
     return null;
+  }
+}
+
+export function hasPermission(permission: string): boolean {
+  try {
+    const user = getUser();
+    if (!user || user.role !== 'siswa') return false;
+    return Array.isArray(user.permissions) && user.permissions.includes(permission);
+  } catch (e) {
+    return false;
   }
 }

@@ -1,4 +1,5 @@
 import api from "@/lib/api";
+import { ReactNode } from "react";
 
 type ApiEnvelope<T> = {
   success?: boolean;
@@ -51,7 +52,7 @@ function setStorageCache<T>(key: string, data: T): void {
   if (!isBrowser()) return;
   try {
     sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
-  } catch {}
+  } catch { }
 }
 
 async function getWithCache<T>(
@@ -93,7 +94,7 @@ export function clearGuruPelanggaranCache(): void {
   try {
     const keys = Object.keys(sessionStorage).filter((k) => k.startsWith("sehati_guru_pelanggaran_"));
     keys.forEach((k) => sessionStorage.removeItem(k));
-  } catch {}
+  } catch { }
 }
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -152,7 +153,9 @@ export interface RiwayatPelanggaranGuruItem {
   catatan: string | null;
   buktiUrl: string | null;
   siswa: { nis: string; nama: string; kelasLabel: string };
-  jenisPelanggaran: { id: number; nama: string; kategori: string };
+  jenisPelanggaran: {
+    bobot_coins: ReactNode; id: number; nama: string; kategori: string
+  };
 }
 
 // ─── DROPDOWN DATA ─────────────────────────────────────────────────────────────
@@ -317,10 +320,10 @@ export async function compressImage(
 
       // Skala dimensi proporsional agar ukuran file turun
       const ratio = Math.sqrt(maxBytes / file.size);
-      width  = Math.floor(width  * ratio);
+      width = Math.floor(width * ratio);
       height = Math.floor(height * ratio);
 
-      canvas.width  = width;
+      canvas.width = width;
       canvas.height = height;
 
       const ctx = canvas.getContext("2d");
