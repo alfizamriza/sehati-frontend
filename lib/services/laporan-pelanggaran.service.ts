@@ -154,7 +154,10 @@ export interface RiwayatPelanggaranGuruItem {
   buktiUrl: string | null;
   siswa: { nis: string; nama: string; kelasLabel: string };
   jenisPelanggaran: {
-    bobot_coins: ReactNode; id: number; nama: string; kategori: string
+    bobot_coins: number;
+    id: number;
+    nama: string;
+    kategori: string;
   };
 }
 

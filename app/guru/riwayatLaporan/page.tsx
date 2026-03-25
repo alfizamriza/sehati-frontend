@@ -336,7 +336,12 @@ export default function RiwayatLaporanPage() {
           catatan: catatan.trim() || null,
           coinspenalty: updatedJenis?.bobot_coins ?? r.coinspenalty,
           jenisPelanggaran: updatedJenis
-            ? { id: updatedJenis.id, nama: updatedJenis.nama, kategori: updatedJenis.kategori }
+            ? {
+              id: updatedJenis.id,
+              nama: updatedJenis.nama,
+              kategori: updatedJenis.kategori,
+              bobot_coins: updatedJenis.bobot_coins,
+            }
             : r.jenisPelanggaran,
         } : r
       ));
