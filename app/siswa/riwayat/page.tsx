@@ -767,7 +767,7 @@ function EmptyState({ tab }: { tab: TabKey }) {
     all: { icon: <Clock size={30} strokeWidth={1} />, text: "Belum ada aktivitas" },
     tumbler: { icon: <Droplets size={30} strokeWidth={1} />, text: "Belum ada riwayat tumbler" },
     belanja: { icon: <ShoppingBag size={30} strokeWidth={1} />, text: "Belum ada riwayat belanja" },
-    pelanggaran: { icon: <ShieldAlert size={30} strokeWidth={1} />, text: "Tidak ada pelanggaran 🎉" },
+    pelanggaran: { icon: <ShieldAlert size={30} strokeWidth={1} />, text: "Tidak ada pelanggaran" },
   }[tab];
   return (
     <div className="rw-empty">

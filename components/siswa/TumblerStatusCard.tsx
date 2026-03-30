@@ -11,7 +11,7 @@ interface TumblerStatusCardProps {
 }
 
 const HAPPY_MESSAGES = [
-  "Keren! Kamu udah bantu bumi hari ini 🌍",
+  "Keren! Kamu udah bantu bumi hari ini",
   "Tumbler hero sejati! Terus semangat ya!",
   "Mantap! Kamu berhasil kurangi sampah plastik!",
   "Luar biasa! Streak kamu makin panjang nih!",
@@ -20,17 +20,17 @@ const HAPPY_MESSAGES = [
 
 const SAD_MESSAGES = [
   "Aduh, tumbler ketinggalan nih… Besok jangan lupa ya!",
-  "Yuk bawa tumbler besok, bumi butuh kamu! 🌱",
+  "Yuk bawa tumbler besok, bumi butuh kamu!",
   "Sayang banget… Ayo mulai lagi besok, semangat!",
-  "Jangan menyerah! Besok pasti lebih baik 💪",
+  "Jangan menyerah! Besok pasti lebih baik",
   "Oops! Tumbler di rumah ya? Besok ingat dibawa!",
 ];
 
 const IZIN_MESSAGES = [
-  "Semoga lekas pulih ya! Streak kamu tetap aman 💙",
+  "Semoga lekas pulih ya! Streak kamu tetap aman",
   "Istirahat yang cukup, besok semangat lagi!",
   "Tidak apa-apa, kesehatanmu lebih penting!",
-  "Get well soon! Streak tidak putus kok 🛡️",
+  "Get well soon! Streak tidak putus kok",
   "Pulih dulu ya, bumi tetap menantimu!",
 ];
 
@@ -85,17 +85,13 @@ export default function TumblerStatusCard({
 
         {/* Lottie */}
         <div className="tumbler-lottie-wrap">
-          {scriptLoaded ? (
-            /* @ts-ignore */
-            <dotlottie-wc
-              src={lottieUrl}
-              style={{ width: "100%", height: "100%" }}
-              autoplay
-              loop
-            />
-          ) : (
-            <div className="tumbler-lottie-placeholder">{placeholder}</div>
-          )}
+          <dotlottie-wc
+            src={lottieUrl}
+            style={{ width: "100%", height: "100%" }}
+            autoplay
+            loop
+          />
+
         </div>
 
         {/* Content */}
@@ -105,10 +101,10 @@ export default function TumblerStatusCard({
             <span className={`status-dot dot-${mode === "hadir" ? "green" : mode === "izin" ? "blue" : "red"}`} />
             <span>
               {mode === "hadir"
-                ? "Tumbler Terbawa! 🎉"
+                ? "Tumbler Terbawa!"
                 : mode === "izin"
-                  ? `${tipeLabel} Hari Ini 🛡️`
-                  : "Tumbler Terlupa 😞"}
+                  ? `${tipeLabel} Hari Ini`
+                  : "Tumbler Terlupa"}
             </span>
           </div>
 
