@@ -20,6 +20,13 @@ export interface SiswaInfo {
   voucherAktif: VoucherInfo[];
 }
 
+export interface GuruInfo {
+  nip: string;
+  nama: string;
+  peran: string;
+  fotoUrl: string | null;
+}
+
 export interface ProdukItem {
   id: number;
   nama: string;
@@ -45,10 +52,26 @@ export interface KemasPenaltyDetail {
 }
 
 export interface TransaksiPayload {
-  nis: string;
+  tipePelanggan?: "siswa" | "guru" | "umum";
+  nis?: string;
+  nip?: string;
+  namaUmum?: string;
   items: { produkId: number; quantity: number; isByoc?: boolean }[];
-  paymentMethod: "voucher" | "tunai";
+  paymentMethod: "voucher" | "tunai" | "ngutang";
+  nominalDibayar?: number;
   voucherId?: number;
+}
+
+export interface KasbonItem {
+  id: number;
+  kodeTransaksi: string;
+  tipePelanggan: "siswa" | "guru" | "umum";
+  identitas: string | null;
+  namaPembeli: string | null;
+  totalTagihan: number;
+  sudahDibayar: number;
+  sisaUtang: number;
+  tanggal: string;
 }
 
 export interface SiswaListItem {
@@ -108,6 +131,18 @@ export async function lookupSiswa(nis: string): Promise<SiswaInfo> {
   return data;
 }
 
+export async function lookupGuru(nip: string): Promise<GuruInfo> {
+  const res = await api.get(`/transaksi/guru?nip=${encodeURIComponent(nip)}`, {
+    suppressErrorLog: true,
+  } as any);
+  if (!res.data?.success) throw new Error(res.data?.message ?? "Guru tidak ditemukan");
+  const data = unwrapResponseData<GuruInfo>(res.data);
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("Format data guru tidak valid");
+  }
+  return data;
+}
+
 /**
  * listSiswa
  * Ambil semua siswa aktif — hanya field minimal untuk autocomplete kasir.
@@ -119,6 +154,14 @@ export async function listSiswa(): Promise<SiswaListItem[]> {
   if (!res.data?.success) throw new Error(res.data?.message ?? "Gagal mengambil daftar siswa");
   const data = unwrapResponseData<SiswaListItem[]>(res.data);
   if (!Array.isArray(data)) throw new Error("Format daftar siswa tidak valid");
+  return data;
+}
+
+export async function listGuru(): Promise<{ nip: string; nama: string; peran: string }[]> {
+  const res = await api.get("/transaksi/guru/list");
+  if (!res.data?.success) throw new Error(res.data?.message ?? "Gagal mengambil daftar guru");
+  const data = unwrapResponseData<any[]>(res.data);
+  if (!Array.isArray(data)) throw new Error("Format daftar guru tidak valid");
   return data;
 }
 
@@ -158,6 +201,20 @@ export async function createTransaksi(payload: TransaksiPayload): Promise<Transa
   }
   clearProdukCache();
   return data;
+}
+
+export async function getDaftarKasbon(): Promise<KasbonItem[]> {
+  const res = await api.get("/transaksi/kasbon");
+  if (!res.data?.success) throw new Error(res.data?.message ?? "Gagal mengambil daftar kasbon");
+  const data = unwrapResponseData<KasbonItem[]>(res.data);
+  if (!Array.isArray(data)) throw new Error("Format daftar kasbon tidak valid");
+  return data;
+}
+
+export async function lunasiKasbon(transaksiId: number, nominalBayar: number): Promise<any> {
+  const res = await api.post(`/transaksi/kasbon/${transaksiId}/bayar`, { nominalBayar });
+  if (!res.data?.success) throw new Error(res.data?.message ?? "Gagal mencatat pelunasan");
+  return unwrapResponseData(res.data);
 }
 
 // ─── CART HELPERS ─────────────────────────────────────────────────────────────
@@ -213,13 +270,15 @@ export function getCartCoinsPenalty(cart: CartItem[]): {
 }
 
 export function buildPayload(
-  nis: string,
+  tipePelanggan: "siswa" | "guru" | "umum",
+  identitas: { nis?: string; nip?: string; namaUmum?: string },
   cart: CartItem[],
-  method: "voucher" | "tunai",
-  extra?: { voucherId?: number }
+  method: "voucher" | "tunai" | "ngutang",
+  extra?: { voucherId?: number; nominalDibayar?: number }
 ): TransaksiPayload {
   return {
-    nis,
+    tipePelanggan,
+    ...identitas,
     items: cart.map((c) => ({ produkId: c.id, quantity: c.qty, isByoc: c.isByoc })),
     paymentMethod: method,
     ...extra,

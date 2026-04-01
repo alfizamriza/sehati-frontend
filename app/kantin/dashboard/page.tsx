@@ -488,7 +488,7 @@ export default function KantinDashboard() {
       {showPasswordModal && (
         <ChangePasswordModal
           onClose={() => setShowPasswordModal(false)}
-          onSuccess={() => {}}
+          onSuccess={() => { }}
         />
       )}
 
@@ -615,6 +615,13 @@ export default function KantinDashboard() {
             desc="Laporan penjualan"
             onClick={() => router.push("/kantin/riwayat")}
             accent="#F59E0B"
+          />
+          <NavCard
+            icon={<CreditCard size={26} />}
+            title="Kasbon"
+            desc="Kelola tagihan & utang siswa"
+            onClick={() => router.push("/kantin/kasbon")}
+            accent="#8B5CF6"
           />
         </div>
 

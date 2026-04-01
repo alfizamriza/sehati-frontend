@@ -68,6 +68,8 @@ export type {
 // 4. transaksi.service
 export {
   lookupSiswa,
+  listGuru,
+  lookupGuru,
   cekVoucher,
   getProdukKatalog,
   createTransaksi,
@@ -82,17 +84,21 @@ export {
   kemasanInfo,
   penaltyLabel,
   listSiswa,
-  toggleCartByoc
+  toggleCartByoc,
+  getDaftarKasbon,
+  lunasiKasbon
 } from "../transaksi.service";
 
 export type {
   VoucherInfo,
   SiswaInfo,
+  GuruInfo,
   CartItem,
   KemasPenaltyDetail,
   TransaksiPayload,
   TransaksiResult,
-  CekVoucherResult
+  CekVoucherResult,
+  KasbonItem
 } from "../transaksi.service";
 
 // 5. kantin.service

@@ -56,6 +56,7 @@ export interface KantinDashboardData {
   transaksiTerbaru: TransaksiTerbaru[];
   stokRendah: ProdukStokRendah[];
   kantinNama: string;
+  totalPiutang: number;
 }
 
 type ApiEnvelope<T = unknown> = {
@@ -128,6 +129,7 @@ function normalizeDashboardPayload(raw: any): KantinDashboardData {
         }))
       : [],
     kantinNama: payload?.kantinNama ?? "Kantin",
+    totalPiutang: Number(payload?.totalPiutang ?? 0),
   };
 }
 
