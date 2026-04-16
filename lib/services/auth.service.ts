@@ -73,6 +73,15 @@ function syncRoleCookie(role: string | null): void {
   setCookie(AUTH_ROLE_KEY, role, 7);
 }
 
+function syncTokenCookie(token: string | null): void {
+  if (!token) {
+    clearCookie(AUTH_TOKEN_KEY);
+    return;
+  }
+
+  setCookie(AUTH_TOKEN_KEY, token, 7);
+}
+
 function clearSessionArtifacts(): void {
   if (typeof window === 'undefined') return;
 
@@ -113,6 +122,7 @@ export async function loginUser(loginRequest: LoginRequest): Promise<LoginRespon
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.data.user));
         localStorage.setItem(AUTH_PROFILE_KEY, JSON.stringify(data.data.user));
         localStorage.setItem(AUTH_TOKEN_KEY, data.data.token);
+        syncTokenCookie(data.data.token);
         syncRoleCookie(data.data.user.role);
       }
     } else {
@@ -169,6 +179,7 @@ export function logout(): void {
   try {
     clearSessionArtifacts();
     clearCookie(AUTH_ROLE_KEY);
+    clearCookie(AUTH_TOKEN_KEY);
 
     setTimeout(() => {
       window.location.href = '/auth';
