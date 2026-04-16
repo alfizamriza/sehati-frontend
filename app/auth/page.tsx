@@ -11,6 +11,7 @@ import BrandLogo from "@/components/common/BrandLogo";
 
 import Script from "next/script";
 
+/* eslint-disable @typescript-eslint/no-namespace */
 // Define custom elements for TypeScript
 declare global {
   namespace React {
@@ -25,6 +26,7 @@ declare global {
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 const ROLES = [
   { id: "admin", label: "Admin", icon: Shield },
@@ -225,12 +227,13 @@ export default function LoginPage() {
                 )}
 
                 <div className="field">
-                  <label>{ID_LABEL[activeRole]}</label>
+                  <label htmlFor="login-identifier">{ID_LABEL[activeRole]}</label>
                   <div className="input-wrap">
                     <span className="input-icon" aria-hidden>
                       <ActiveIcon size={18} />
                     </span>
                     <input
+                      id="login-identifier"
                       type="text"
                       required
                       placeholder={
@@ -248,13 +251,14 @@ export default function LoginPage() {
 
                 <div className="field">
                   <div className="pass-row">
-                    <label style={{ margin: 0 }}>Kata Sandi</label>
+                    <label htmlFor="login-password" style={{ margin: 0 }}>Kata Sandi</label>
                   </div>
                   <div className="input-wrap">
                     <span className="input-icon" aria-hidden>
                       <Shield size={18} />
                     </span>
                     <input
+                      id="login-password"
                       type={showPassword ? "text" : "password"}
                       required
                       placeholder="••••••••"
@@ -286,8 +290,8 @@ export default function LoginPage() {
 
               <div className="footer">
                 Aplikasi Sekolah Hijau v2.0 •{" "}
-                <span onClick={() => setShowTerms(true)} tabIndex={0} role="button">Ketentuan</span> •{" "}
-                <span onClick={() => setShowPrivacy(true)} tabIndex={0} role="button">Privasi</span>
+                <button type="button" className="linklike-button" onClick={() => setShowTerms(true)}>Ketentuan</button> •{" "}
+                <button type="button" className="linklike-button" onClick={() => setShowPrivacy(true)}>Privasi</button>
               </div>
             </div>
           </section>

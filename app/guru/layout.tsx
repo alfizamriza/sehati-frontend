@@ -1,8 +1,11 @@
-"use client";
+import type { Metadata } from "next";
+import GuruLayoutClient from "./GuruLayoutClient";
 
-import ProtectedRoute from "@/components/ProtectedRoute";
-import "./dashboard/dashboard.css";
+export const metadata: Metadata = {
+  title: "Guru",
+  description: "Dashboard dan layanan guru di aplikasi SEHATI.",
+};
 
 export default function GuruLayout({ children }: { children: React.ReactNode }) {
-  return <ProtectedRoute allowedRoles={["guru"]}>{children}</ProtectedRoute>;
+  return <GuruLayoutClient>{children}</GuruLayoutClient>;
 }

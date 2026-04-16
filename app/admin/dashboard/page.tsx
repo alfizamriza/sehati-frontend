@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
 import {
   Users,
   School,
@@ -15,11 +16,15 @@ import {
   Flame,
   Coins,
 } from "lucide-react";
-import ComplianceChart from "@/components/admin/ComplianceChart";
 import { ErrorState, LoadingState } from "@/components/common/AsyncState";
 import authService from "@/lib/auth";
 import { getAdminUser, getDashboardData } from "@/lib/services/admin";
 import SharedAvatar from "@/components/common/SharedAvatar";
+
+const ComplianceChart = dynamic(() => import("@/components/admin/ComplianceChart"), {
+  ssr: false,
+  loading: () => <div style={{ height: 260 }} aria-hidden="true" />,
+});
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface DashboardStats {
@@ -94,46 +99,42 @@ function rankClass(i: number) {
 
 // ─── PAGE ─────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [admin, setAdmin] = useState<AdminUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const cachedAdmin = authService.getCachedProfile();
 
-  const load = useCallback(async (force = false) => {
-    try {
-      const dash = await getDashboardData(force);
-      setData(dash);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal memuat dashboard");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const adminQuery = useQuery<AdminUser | null>({
+    queryKey: ["admin-profile"],
+    queryFn: async () => {
+      const admin = await getAdminUser();
+      if (admin) {
+        await authService.saveProfile(admin);
+      }
+      return admin;
+    },
+    initialData: cachedAdmin?.nama ? { nama: cachedAdmin.nama } : null,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  useEffect(() => {
-    // Tampilkan nama dari cache dulu (tidak blank saat load)
-    const cached = authService.getCachedProfile();
-    if (cached?.nama) setAdmin({ nama: cached.nama });
+  const dashboardQuery = useQuery<DashboardData>({
+    queryKey: ["admin-dashboard"],
+    queryFn: () => getDashboardData(),
+    staleTime: 30_000,
+  });
 
-    load();
+  const data = dashboardQuery.data ?? null;
+  const admin = adminQuery.data ?? null;
+  const loading = dashboardQuery.isLoading;
+  const refreshing = dashboardQuery.isRefetching || adminQuery.isRefetching;
+  const error =
+    (dashboardQuery.error instanceof Error && dashboardQuery.error.message) ||
+    (adminQuery.error instanceof Error && adminQuery.error.message) ||
+    null;
 
-    // Non-blocking: update nama admin dari API
-    getAdminUser()
-      .then((a) => {
-        if (a) {
-          setAdmin(a);
-          authService.saveProfile(a).catch(() => {});
-        }
-      })
-      .catch(() => {});
-  }, [load]);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    load(true);
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] }),
+      queryClient.invalidateQueries({ queryKey: ["admin-profile"] }),
+    ]);
   };
 
   if (loading) return <LoadingState message="Menyiapkan dashboard..." />;
@@ -142,11 +143,7 @@ export default function DashboardPage() {
       <ErrorState
         title="Dashboard Gagal Dimuat"
         message={error || "Data dashboard tidak tersedia."}
-        onRetry={() => {
-          setError(null);
-          setLoading(true);
-          load(true);
-        }}
+        onRetry={handleRefresh}
       />
     );
 

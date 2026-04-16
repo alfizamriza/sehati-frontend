@@ -1,7 +1,11 @@
-"use client";
+import type { Metadata } from "next";
+import SiswaLayoutClient from "./SiswaLayoutClient";
 
-import ProtectedRoute from "@/components/ProtectedRoute";
+export const metadata: Metadata = {
+  title: "Siswa",
+  description: "Fitur siswa SEHATI untuk dashboard, absensi, profil, dan riwayat.",
+};
 
 export default function SiswaLayout({ children }: { children: React.ReactNode }) {
-  return <ProtectedRoute allowedRoles={["siswa"]}>{children}</ProtectedRoute>;
+  return <SiswaLayoutClient>{children}</SiswaLayoutClient>;
 }

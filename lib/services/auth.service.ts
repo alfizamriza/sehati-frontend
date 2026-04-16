@@ -7,7 +7,6 @@ const AUTH_PROFILE_KEY = 'auth_profile';
 const LOCAL_STORAGE_KEYS = [AUTH_TOKEN_KEY, AUTH_ROLE_KEY, AUTH_USER_KEY, AUTH_PROFILE_KEY];
 const SESSION_KEY_PATTERNS = ['sehati_', 'auth', 'user'];
 
-
 export interface LoginRequest {
   role: string;
   identifier: string;
@@ -35,34 +34,43 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/a
 function setCookie(name: string, value: string, days: number = 7): void {
   const expiryDate = new Date();
   expiryDate.setTime(expiryDate.getTime() + days * 24 * 60 * 60 * 1000);
-  
+
   const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
   const secure = isSecure ? 'Secure;' : '';
-  
+
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expiryDate.toUTCString()}; ${secure} SameSite=Strict`;
 }
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
-  
+
   const nameEQ = name + '=';
   const cookies = document.cookie.split(';');
-  
+
   for (let cookie of cookies) {
     cookie = cookie.trim();
     if (cookie.indexOf(nameEQ) === 0) {
       return decodeURIComponent(cookie.substring(nameEQ.length));
     }
   }
-  
+
   return null;
 }
 
 function clearCookie(name: string): void {
   const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
   const secure = isSecure ? 'Secure;' : '';
-  
+
   document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; ${secure} SameSite=Strict`;
+}
+
+function syncRoleCookie(role: string | null): void {
+  if (!role) {
+    clearCookie(AUTH_ROLE_KEY);
+    return;
+  }
+
+  setCookie(AUTH_ROLE_KEY, role, 7);
 }
 
 function clearSessionArtifacts(): void {
@@ -99,31 +107,13 @@ export async function loginUser(loginRequest: LoginRequest): Promise<LoginRespon
     const data: LoginResponse = await response.json();
 
     if (data.success && data.data.token) {
-      // Store token, role, and user in localStorage
       if (typeof window !== 'undefined') {
         clearSessionArtifacts();
-        localStorage.setItem(AUTH_TOKEN_KEY, data.data.token);
         localStorage.setItem(AUTH_ROLE_KEY, data.data.user.role);
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.data.user));
         localStorage.setItem(AUTH_PROFILE_KEY, JSON.stringify(data.data.user));
-        
-        // Set cookies dengan expiry 7 hari
-        setCookie(AUTH_TOKEN_KEY, data.data.token, 7);
-        setCookie(AUTH_ROLE_KEY, data.data.user.role, 7);
-        
-        // Verify cookies were set
-        const verifyToken = getCookie(AUTH_TOKEN_KEY);
-        const verifyRole = getCookie(AUTH_ROLE_KEY);
-        
-        if (!verifyToken || !verifyRole) {
-          console.warn('⚠️ Cookie setting verification failed, but continuing...');
-        }
-        
-        console.log('✅ Login successful, token stored:', {
-          hasToken: !!data.data.token,
-          role: data.data.user.role,
-          cookies: { token: !!verifyToken, role: !!verifyRole },
-        });
+        localStorage.setItem(AUTH_TOKEN_KEY, data.data.token);
+        syncRoleCookie(data.data.user.role);
       }
     } else {
       throw new Error(data.message || 'Login gagal without token');
@@ -143,7 +133,7 @@ export function getAuthToken(): string | null {
     return null;
   }
   try {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
+    return getCookie(AUTH_TOKEN_KEY) || localStorage.getItem(AUTH_TOKEN_KEY);
   } catch (e) {
     console.error('Error getting auth token:', e);
     return null;
@@ -155,7 +145,7 @@ export function getUserRole(): string | null {
     return null;
   }
   try {
-    return localStorage.getItem(AUTH_ROLE_KEY);
+    return getCookie(AUTH_ROLE_KEY) || localStorage.getItem(AUTH_ROLE_KEY);
   } catch (e) {
     console.error('Error getting user role:', e);
     return null;
@@ -164,7 +154,7 @@ export function getUserRole(): string | null {
 
 export function isAuthenticated(): boolean {
   try {
-    return !!getAuthToken();
+    return !!getAuthToken() || !!getUserRole();
   } catch (e) {
     console.error('Error checking authentication:', e);
     return false;
@@ -175,17 +165,11 @@ export function logout(): void {
   if (typeof window === 'undefined') {
     return;
   }
-  
+
   try {
     clearSessionArtifacts();
-    
-    // Clear cookies
-    clearCookie(AUTH_TOKEN_KEY);
     clearCookie(AUTH_ROLE_KEY);
-    
-    console.log('✅ Logout successful');
-    
-    // Redirect after short delay
+
     setTimeout(() => {
       window.location.href = '/auth';
     }, 100);
@@ -213,7 +197,7 @@ export function hasPermission(permission: string): boolean {
     const user = getUser();
     if (!user || user.role !== 'siswa') return false;
     return Array.isArray(user.permissions) && user.permissions.includes(permission);
-  } catch (e) {
+  } catch {
     return false;
   }
 }

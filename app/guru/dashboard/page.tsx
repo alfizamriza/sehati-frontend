@@ -1,8 +1,8 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   LogOut, Zap, Leaf, Milk, TriangleAlert, History,
   Presentation, Trophy, Medal, Coins, LayoutDashboard,
@@ -16,6 +16,7 @@ import {
   type ProfilGuru, type KelasItem, type StatistikKelas,
   type TopSiswa, type PelanggaranItem,
   updateGuruPassword,
+  clearGuruDashboardCache,
 } from "@/lib/services/guru";
 import { ErrorState } from "@/components/common/AsyncState";
 import { logout } from "@/lib/services/shared";
@@ -117,18 +118,6 @@ function StatCard({ icon: Icon, label, value, sub, color, loading }: {
 }
 
 // ─── SECTION TITLE ────────────────────────────────────────────────────────────
-function SectionTitle({ icon: Icon, label, color = "#179EFF" }: {
-  icon: React.ElementType; label: string; color?: string;
-}) {
-  return (
-    <div className="section-title-inline">
-      <div className="section-title-bar" style={{ background: color }} />
-      <Icon size={15} style={{ color }} />
-      <h3 className="section-title-text">{label}</h3>
-    </div>
-  );
-}
-
 function ChangePasswordModal({
   onClose,
   onSuccess,
@@ -170,8 +159,8 @@ function ChangePasswordModal({
       await updateGuruPassword(form.passwordLama, form.passwordBaru);
       onSuccess();
       onClose();
-    } catch (e: any) {
-      setError(e.message || "Gagal mengubah password.");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Gagal mengubah password.");
     } finally {
       setLoading(false);
     }
@@ -249,84 +238,89 @@ function ChangePasswordModal({
 
 // ─── MAIN DASHBOARD ───────────────────────────────────────────────────────────
 export default function GuruDashboard() {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const toast = useToast();
 
-  const [profil, setProfil] = useState<ProfilGuru | null>(null);
-  const [kelasList, setKelasList] = useState<KelasItem[]>([]);
   const [selectedKelasId, setSelectedKelasId] = useState<number | null>(null);
-  const [statistik, setStatistik] = useState<StatistikKelas | null>(null);
-  const [topSiswa, setTopSiswa] = useState<TopSiswa[]>([]);
-  const [pelanggaran, setPelanggaran] = useState<PelanggaranItem[]>([]);
-
-  const [loadingInit, setLoadingInit] = useState(true);
-  const [loadingStats, setLoadingStats] = useState(false);
-  const [loadingTop, setLoadingTop] = useState(false);
-  const [loadingPel, setLoadingPel] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const lastErrorRef = useRef<string | null>(null);
 
   // ── Init ────────────────────────────────────────────
-  useEffect(() => {
-    async function init() {
-      try {
-        const [p, kelas] = await Promise.all([getProfilGuru(), getKelasList()]);
-        setProfil(p);
-        setKelasList(kelas);
-        const defaultId = (p.isWaliKelas && p.kelasWali)
-          ? p.kelasWali.id
-          : kelas[0]?.id ?? null;
-        setSelectedKelasId(defaultId);
-      } catch (e: any) {
-        setLoadError(e.message || "Gagal memuat data awal dashboard guru.");
-        toast.show(e.message || "Gagal memuat profil", "error");
-      } finally {
-        setLoadingInit(false);
-      }
-    }
-    init();
-  }, []);
+  const profilQuery = useQuery<ProfilGuru>({
+    queryKey: ["guru-dashboard", "profil"],
+    queryFn: () => getProfilGuru(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kelasListQuery = useQuery<KelasItem[]>({
+    queryKey: ["guru-dashboard", "kelas"],
+    queryFn: () => getKelasList(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const profil = profilQuery.data ?? null;
+  const kelasList = kelasListQuery.data ?? [];
+  const defaultSelectedKelasId = profil
+    ? ((profil.isWaliKelas && profil.kelasWali)
+        ? profil.kelasWali.id
+        : kelasList[0]?.id ?? null)
+    : null;
+  const activeKelasId = selectedKelasId ?? defaultSelectedKelasId;
+
+  const statistikQuery = useQuery<StatistikKelas>({
+    queryKey: ["guru-dashboard", "statistik", activeKelasId],
+    queryFn: () => getStatistikKelas(activeKelasId!),
+    enabled: activeKelasId !== null,
+    staleTime: 60 * 1000,
+  });
+
+  const topSiswaQuery = useQuery<TopSiswa[]>({
+    queryKey: ["guru-dashboard", "top-siswa", activeKelasId, 5],
+    queryFn: () => getTopSiswa(activeKelasId!, 5),
+    enabled: activeKelasId !== null,
+    staleTime: 60 * 1000,
+  });
+
+  const pelanggaranQuery = useQuery<PelanggaranItem[]>({
+    queryKey: ["guru-dashboard", "pelanggaran-terbaru", activeKelasId, 5],
+    queryFn: () => getPelanggaranTerbaru(activeKelasId!, 5),
+    enabled: activeKelasId !== null,
+    staleTime: 45 * 1000,
+  });
+
+  const statistik = statistikQuery.data ?? null;
+  const topSiswa = topSiswaQuery.data ?? [];
+  const pelanggaran = pelanggaranQuery.data ?? [];
+  const loadingInit = profilQuery.isLoading || kelasListQuery.isLoading;
+  const loadingStats = statistikQuery.isFetching;
+  const loadingTop = topSiswaQuery.isFetching;
+  const loadingPel = pelanggaranQuery.isFetching;
+  const refreshing =
+    statistikQuery.isRefetching ||
+    topSiswaQuery.isRefetching ||
+    pelanggaranQuery.isRefetching;
+  const loadError =
+    (profilQuery.error instanceof Error && profilQuery.error.message) ||
+    (kelasListQuery.error instanceof Error && kelasListQuery.error.message) ||
+    (statistikQuery.error instanceof Error && statistikQuery.error.message) ||
+    (topSiswaQuery.error instanceof Error && topSiswaQuery.error.message) ||
+    (pelanggaranQuery.error instanceof Error && pelanggaranQuery.error.message) ||
+    null;
 
   useEffect(() => {
-    if (!selectedKelasId) return;
-    loadKelasData(selectedKelasId);
-  }, [selectedKelasId]);
+    if (!loadError || loadError === lastErrorRef.current) return;
+    lastErrorRef.current = loadError;
+    toast.show(loadError, "error");
+  }, [loadError, toast]);
 
-  async function loadKelasData(kelasId: number, isRefresh = false) {
-    if (isRefresh) setRefreshing(true);
-    setLoadingStats(true);
-    setLoadingTop(true);
-    setLoadingPel(true);
-    try {
-      const [stats, top, pel] = await Promise.all([
-        getStatistikKelas(kelasId, isRefresh),
-        getTopSiswa(kelasId, 5, isRefresh),
-        getPelanggaranTerbaru(kelasId, 5, isRefresh),
-      ]);
-      setStatistik(stats);
-      setTopSiswa(top);
-      setPelanggaran(pel);
-      setLoadError(null);
-    } catch (e: any) {
-      setLoadError(e.message || "Gagal memuat data kelas.");
-      toast.show(e.message || "Gagal memuat data kelas", "error");
-    } finally {
-      setLoadingStats(false);
-      setLoadingTop(false);
-      setLoadingPel(false);
-      if (isRefresh) setRefreshing(false);
-    }
-  }
-
-  function handleRefresh() {
-    if (!selectedKelasId) return;
-    loadKelasData(selectedKelasId, true);
+  async function handleRefresh() {
+    clearGuruDashboardCache();
+    await queryClient.invalidateQueries({ queryKey: ["guru-dashboard"] });
     toast.show("Data diperbarui", "info");
   }
 
   // ── Derived ────────────────────────────────────────
-  const selectedKelas = kelasList.find((k) => k.id === selectedKelasId);
+  const selectedKelas = kelasList.find((k) => k.id === activeKelasId);
   const kelasLabel = selectedKelas ? `${toRomanTingkat(selectedKelas.tingkat)} ${selectedKelas.nama}` : "—";
   const peranKey = profil?.peran ?? "guru_mapel";
   const peranMeta = PERAN_META[peranKey];
@@ -492,7 +486,7 @@ export default function GuruDashboard() {
                 <div className="class-selector-wrapper">
                   <select
                     className="custom-select"
-                    value={selectedKelasId ?? ""}
+                    value={activeKelasId ?? ""}
                     onChange={(e) => setSelectedKelasId(Number(e.target.value))}
                   >
                     {kelasList.map((k) => (

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo } from "react";
+import Image from "next/image";
+import React, { useEffect, useMemo, useState } from "react";
 import Avatar, { genConfig, AvatarConfig } from "react-nice-avatar";
 
 export interface SharedAvatarProps {
@@ -19,6 +20,11 @@ export default function SharedAvatar({
   onClick,
 }: SharedAvatarProps) {
   const isNiceAvatar = fotoUrl && fotoUrl.startsWith("nice-avatar://?");
+  const [imageSrc, setImageSrc] = useState(fotoUrl);
+
+  useEffect(() => {
+    setImageSrc(fotoUrl);
+  }, [fotoUrl]);
 
   const config = useMemo(() => {
     if (isNiceAvatar && fotoUrl) {
@@ -26,7 +32,7 @@ export default function SharedAvatar({
         const queryParams = new URLSearchParams(fotoUrl.replace("nice-avatar://?", ""));
         const parsed = Object.fromEntries(queryParams.entries());
         return { ...genConfig(nama), ...parsed } as AvatarConfig;
-      } catch (e) {
+      } catch {
         return genConfig(nama);
       }
     }
@@ -67,18 +73,19 @@ export default function SharedAvatar({
     `}</style>
   );
 
-  if (fotoUrl && !isNiceAvatar) {
+  if (imageSrc && !isNiceAvatar) {
     return (
       <>
         <div className={`shared-avatar ${className}`} style={style} onClick={onClick}>
-          <img
-            src={fotoUrl}
+          <Image
+            src={imageSrc}
             alt={nama}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                nama
-              )}&background=random`;
+            fill
+            sizes={typeof size === "number" ? `${size}px` : "96px"}
+            unoptimized={imageSrc.startsWith("data:") || imageSrc.startsWith("blob:")}
+            style={{ objectFit: "cover", display: "block" }}
+            onError={() => {
+              setImageSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(nama)}&background=random`);
             }}
           />
         </div>

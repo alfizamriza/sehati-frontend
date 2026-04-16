@@ -1,7 +1,11 @@
-"use client";
+import type { Metadata } from "next";
+import KantinLayoutClient from "./KantinLayoutClient";
 
-import ProtectedRoute from "@/components/ProtectedRoute";
+export const metadata: Metadata = {
+  title: "Kantin",
+  description: "Dashboard dan transaksi kantin pada aplikasi SEHATI.",
+};
 
 export default function KantinLayout({ children }: { children: React.ReactNode }) {
-  return <ProtectedRoute allowedRoles={["kantin"]}>{children}</ProtectedRoute>;
+  return <KantinLayoutClient>{children}</KantinLayoutClient>;
 }

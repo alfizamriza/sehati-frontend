@@ -90,6 +90,14 @@ const SVG = ({
     "#6A286F",
     "#604483",
   ];
+  const transitions = paths.map((_, idx) => ({
+    duration: svgOptions?.duration || 10,
+    ease: "linear" as const,
+    repeat: Infinity,
+    repeatType: "loop" as const,
+    delay: idx % 10,
+    repeatDelay: (idx % 10) + 2,
+  }));
   return (
     <motion.svg
       viewBox="0 0 1440 900"
@@ -109,14 +117,7 @@ const SVG = ({
           variants={pathVariants}
           initial="initial"
           animate="animate"
-          transition={{
-            duration: svgOptions?.duration || 10,
-            ease: "linear",
-            repeat: Infinity,
-            repeatType: "loop",
-            delay: Math.floor(Math.random() * 10),
-            repeatDelay: Math.floor(Math.random() * 10 + 2),
-          }}
+          transition={transitions[idx]}
           key={`path-first-${idx}`}
         />
       ))}
@@ -131,14 +132,7 @@ const SVG = ({
           variants={pathVariants}
           initial="initial"
           animate="animate"
-          transition={{
-            duration: svgOptions?.duration || 10,
-            ease: "linear",
-            repeat: Infinity,
-            repeatType: "loop",
-            delay: Math.floor(Math.random() * 10),
-            repeatDelay: Math.floor(Math.random() * 10 + 2),
-          }}
+          transition={transitions[idx]}
           key={`path-second-${idx}`}
         />
       ))}

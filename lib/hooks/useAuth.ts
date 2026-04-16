@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { isAuthenticated, getAuthToken, getUserRole } from '@/lib/services/shared';
+import { useState } from 'react';
+import { getAuthToken, getUserRole } from '@/lib/services/shared';
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -11,24 +11,17 @@ export interface AuthState {
 }
 
 export function useAuth(): AuthState {
-  const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: false,
-    token: null,
-    role: null,
-    isLoading: true,
-  });
-
-  useEffect(() => {
+  const [authState] = useState<AuthState>(() => {
     const token = getAuthToken();
     const role = getUserRole();
 
-    setAuthState({
-      isAuthenticated: !!token,
+    return {
+      isAuthenticated: !!token || !!role,
       token,
       role,
       isLoading: false,
-    });
-  }, []);
+    };
+  });
 
   return authState;
 }

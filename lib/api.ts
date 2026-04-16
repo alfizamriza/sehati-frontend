@@ -52,54 +52,23 @@ function toLogString(value: unknown): string {
   }
 }
 
-function getTokenFromStorage(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return localStorage.getItem("auth_token");
-  } catch (error) {
-    console.error("Error reading token from storage:", error);
-    return null;
-  }
-}
-
-function getTokenFromCookie(): string | null {
-  if (typeof document === "undefined") return null;
-  try {
-    const nameEQ = "auth_token=";
-    const cookies = document.cookie.split(";");
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.indexOf(nameEQ) === 0) {
-        return decodeURIComponent(cookie.substring(nameEQ.length));
-      }
-    }
-  } catch (error) {
-    console.error("Error reading token from cookie:", error);
-  }
-  return null;
-}
-
 api.interceptors.request.use(
   (config) => {
-    // Let browser set multipart boundary automatically for file uploads.
     if (
       typeof FormData !== "undefined" &&
       config.data instanceof FormData &&
       config.headers
     ) {
-      if (typeof (config.headers as any).delete === "function") {
-        (config.headers as any).delete("Content-Type");
+      const headers = config.headers as Record<string, unknown> & {
+        delete?: (key: string) => void;
+      };
+      if (typeof headers.delete === "function") {
+        headers.delete("Content-Type");
       } else {
-        delete (config.headers as any)["Content-Type"];
+        delete headers["Content-Type"];
       }
     }
 
-    if (typeof window !== "undefined" && config.headers) {
-      const token = getTokenFromStorage() || getTokenFromCookie();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
     return config;
   },
   (error) => {
@@ -109,17 +78,16 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (res) => {
-    return res;
-  },
+  (res) => res,
   (error) => {
     const isAxiosErr = axios.isAxiosError(error);
     const status = error?.response?.status;
     const path = error?.config?.url || error?.request?.responseURL;
     const method = (error?.config?.method || "").toUpperCase() || "UNKNOWN";
-    const suppressErrorLog = Boolean((error?.config as any)?.suppressErrorLog);
+    const suppressErrorLog = Boolean(
+      (error?.config as { suppressErrorLog?: boolean } | undefined)?.suppressErrorLog,
+    );
 
-    // Handle standardized error response from backend
     const serverData = (error?.response?.data || {}) as StandardApiResponse;
     const serverMessage =
       serverData?.message ||
@@ -149,20 +117,17 @@ api.interceptors.response.use(
       }
     }
 
-    // Handle 401 Unauthorized
     if (status === 401 && typeof window !== "undefined") {
       const isAuthEndpoint =
         path && (path.includes("/login") || path.includes("/register"));
 
-      // For protected endpoints, force fresh login when token is invalid/expired.
       if (!isAuthEndpoint) {
-        localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_profile");
+        localStorage.removeItem("auth_role");
         window.location.href = "/auth";
       }
     }
 
-    // Keep backward-compatible shape for existing service catch blocks.
     const normalizedError = Object.assign(new Error(serverMessage), {
       name: "ApiClientError",
       status,
