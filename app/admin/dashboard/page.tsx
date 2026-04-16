@@ -65,7 +65,8 @@ interface DashboardData {
 }
 
 interface AdminUser {
-  nama: string;
+  role?: string | null;
+  nama?: string | null;
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
