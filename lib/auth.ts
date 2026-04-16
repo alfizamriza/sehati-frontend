@@ -73,8 +73,10 @@ export const authService = {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(PROFILE_KEY);
     localStorage.removeItem(PROFILE_TS_KEY);
-    document.cookie = `${TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax`;
-    document.cookie = `auth_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax`;
+    const isSecure = window.location.protocol === 'https:';
+    const sameSite = isSecure ? 'None; Secure' : 'Lax';
+    document.cookie = `${TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=${sameSite}`;
+    document.cookie = `auth_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=${sameSite}`;
     inMemoryProfile = null;
     profileRequestPromise = null;
   },
