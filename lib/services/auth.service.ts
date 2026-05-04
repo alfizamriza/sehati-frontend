@@ -38,7 +38,7 @@ function setCookie(name: string, value: string, days: number = 7): void {
   const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
   const secure = isSecure ? 'Secure;' : '';
 
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expiryDate.toUTCString()}; ${secure} SameSite=Strict`;
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expiryDate.toUTCString()}; ${secure} SameSite=Lax`;
 }
 
 function getCookie(name: string): string | null {
@@ -61,7 +61,7 @@ function clearCookie(name: string): void {
   const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
   const secure = isSecure ? 'Secure;' : '';
 
-  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; ${secure} SameSite=Strict`;
+  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; ${secure} SameSite=Lax`;
 }
 
 function syncRoleCookie(role: string | null): void {
