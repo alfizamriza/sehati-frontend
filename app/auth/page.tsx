@@ -93,7 +93,7 @@ export default function LoginPage() {
         const savedToken = localStorage.getItem('auth_token');
         if (!savedToken) throw new Error('Token tidak tersimpan. Silakan coba lagi.');
         await new Promise(resolve => setTimeout(resolve, 300));
-        router.push(response.data.redirectTo);
+        window.location.href = response.data.redirectTo;
       } else {
         throw new Error(response.message || 'Login gagal');
       }
