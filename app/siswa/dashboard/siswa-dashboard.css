@@ -1,11 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
 /* --- GLOBAL LAYOUT --- */
 .dashboard-page {
   min-height: 100vh;
   background: #0a0e27;
   color: #fff;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
   position: relative;
   overflow-x: hidden;
   padding-bottom: 40px;

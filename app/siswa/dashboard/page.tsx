@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { QRCodeCanvas } from "qrcode.react";
+import dynamic from "next/dynamic";
 import {
   Coins, Trophy, Medal, QrCode, X,
   TrendingUp, ShieldAlert, CalendarDays, Loader2, LogOut, User, ChevronDown,
@@ -11,7 +11,6 @@ import "./siswa-dashboard.css";
 import { AttendanceCalendar } from "@/components/siswa/AttendanceCalendar";
 import TumblerStatusCard from "@/components/siswa/TumblerStatusCard";
 import BottomNavSiswa from "@/components/siswa/BottomNavSiswa";
-import AchievementPopup from "@/components/siswa/AchievementPopup";
 import { ErrorState } from "@/components/common/AsyncState";
 import BrandLogo from "@/components/common/BrandLogo";
 import SharedAvatar from "@/components/common/SharedAvatar";
@@ -22,6 +21,19 @@ import {
 import { getUndisplayedAchievements, type Achievement } from "@/lib/services/achievement.service";
 import { logout } from "@/lib/services/shared";
 import SehatiLoadingScreen from "@/components/siswa/SehatiLoadingScreen";
+
+const QRCodeCanvas = dynamic(
+  () => import("qrcode.react").then((mod) => mod.QRCodeCanvas),
+  {
+    ssr: false,
+    loading: () => <div className="qr-placeholder" aria-hidden="true" />,
+  },
+);
+
+const AchievementPopup = dynamic(
+  () => import("@/components/siswa/AchievementPopup"),
+  { ssr: false },
+);
 
 // ─── COINS INFO POPUP ─────────────────────────────────────────────────────────
 function CoinsInfoPopup({ coins, onClose }: { coins: number; onClose: () => void }) {

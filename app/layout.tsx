@@ -4,6 +4,8 @@ import Script from "next/script";
 import "@/app/admin/admin.css";
 import Providers from "./providers";
 
+const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -49,19 +51,23 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
-        <Script
-          id="gtag-src"
-          strategy="afterInteractive"
-          src="https://www.googletagmanager.com/gtag/js?id=G-QNGHQKZH24"
-        />
-        <Script id="gtag-inline" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-QNGHQKZH24');
-          `}
-        </Script>
+        {gaId && (
+          <>
+            <Script
+              id="gtag-src"
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            />
+            <Script id="gtag-inline" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');
+              `}
+            </Script>
+          </>
+        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
