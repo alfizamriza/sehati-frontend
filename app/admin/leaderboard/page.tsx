@@ -272,7 +272,7 @@ export default function LeaderboardAdminPage() {
   const DropdownSelect = ({
     refEl, dropKey, value, options, onChange,
   }: {
-    refEl: React.RefObject<HTMLDivElement>;
+    refEl: React.RefObject<HTMLDivElement | null>;
     dropKey: "kelas" | "jenjangKelas" | "jenjangSiswa";
     value: string;
     options: { value: string; label: string }[];
