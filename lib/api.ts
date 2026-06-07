@@ -54,6 +54,33 @@ function toLogString(value: unknown): string {
 
 api.interceptors.request.use(
   (config) => {
+    // Add Authorization token if present in cookies or localStorage
+    if (typeof window !== "undefined") {
+      let token: string | null = null;
+      
+      try {
+        // Try to get token from cookies
+        const match = document.cookie
+          .split(";")
+          .map((cookie) => cookie.trim())
+          .find((cookie) => cookie.startsWith("auth_token="));
+        if (match) {
+          token = decodeURIComponent(match.slice("auth_token=".length));
+        }
+
+        // Fallback to localStorage
+        if (!token) {
+          token = localStorage.getItem("auth_token");
+        }
+
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (e) {
+        console.error("Failed to append authorization token:", e);
+      }
+    }
+
     if (
       typeof FormData !== "undefined" &&
       config.data instanceof FormData &&
