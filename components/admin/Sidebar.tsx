@@ -21,16 +21,16 @@ import {
 import BrandLogo from "@/components/common/BrandLogo";
 
 const nav = [
-  { href: "/admin/dashboard",   label: "Dashboard",          icon: <LayoutDashboard size={20} /> },
-  { href: "/admin/siswa",       label: "Data Siswa",          icon: <GraduationCap size={20} /> },
-  { href: "/admin/guru",        label: "Data Guru",           icon: <UserCog size={20} /> },
-  { href: "/admin/kantin",      label: "Mitra Kantin",        icon: <Store size={20} /> },
-  { href: "/admin/kelas",       label: "Manajemen Kelas",     icon: <School size={20} /> },
-  { href: "/admin/leaderboard", label: "Leaderboard",         icon: <Crown size={20} /> },
-  { href: "/admin/voucher",     label: "Voucher & Poin",      icon: <TicketPercent size={20} /> },
-  { href: "/admin/analytics",   label: "Laporan & Analitik",  icon: <BarChart2 size={20} /> },
-  { href: "/admin/login-logs",  label: "Riwayat Login",       icon: <History size={20} /> },
-  { href: "/admin/pengaturan",  label: "Pengaturan",          icon: <Settings size={20} /> },
+  { href: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
+  { href: "/admin/siswa", label: "Data Siswa", icon: <GraduationCap size={20} /> },
+  { href: "/admin/guru", label: "Data Guru", icon: <UserCog size={20} /> },
+  { href: "/admin/kantin", label: "Mitra Kantin", icon: <Store size={20} /> },
+  { href: "/admin/kelas", label: "Manajemen Kelas", icon: <School size={20} /> },
+  { href: "/admin/leaderboard", label: "Leaderboard", icon: <Crown size={20} /> },
+  { href: "/admin/voucher", label: "Voucher", icon: <TicketPercent size={20} /> },
+  { href: "/admin/analytics", label: "Laporan & Analitik", icon: <BarChart2 size={20} /> },
+  { href: "/admin/login-logs", label: "Riwayat Login", icon: <History size={20} /> },
+  { href: "/admin/pengaturan", label: "Pengaturan", icon: <Settings size={20} /> },
 ];
 
 interface SidebarProps {

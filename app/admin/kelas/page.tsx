@@ -10,29 +10,30 @@ import {
   Plus, Search, Users, School, Pencil, Trash2, X, Save,
   ChevronDown, ChevronUp, User, CheckCircle2, AlertCircle, Loader2,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 
 type JenjangOption = Class["jenjang"];
 type TingkatOption = Class["tingkat"];
 
 const TINGKAT_OPTIONS: Record<JenjangOption, TingkatOption[]> = {
-  SD:  ["I","II","III","IV","V","VI"],
-  SMP: ["VII","VIII","IX"],
-  SMA: ["X","XI","XII"],
+  SD: ["I", "II", "III", "IV", "V", "VI"],
+  SMP: ["VII", "VIII", "IX"],
+  SMA: ["X", "XI", "XII"],
 };
 const TINGKAT_TO_NUMBER: Record<TingkatOption, number> = {
-  I:1,II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8,IX:9,X:10,XI:11,XII:12,
+  I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12,
 };
 
 export default function KelasPage() {
-  const [dataKelas,     setDataKelas]     = useState<Class[]>(() => getCachedClasses() || []);
-  const [isLoading,     setIsLoading]     = useState(() => !getCachedClasses());
-  const [query,         setQuery]         = useState("");
+  const [dataKelas, setDataKelas] = useState<Class[]>(() => getCachedClasses() || []);
+  const [isLoading, setIsLoading] = useState(() => !getCachedClasses());
+  const [query, setQuery] = useState("");
   const [filterJenjang, setFilterJenjang] = useState<"ALL" | JenjangOption>("ALL");
-  const [expandedId,    setExpandedId]    = useState<string | number | null>(null);
-  const [isModalOpen,   setIsModalOpen]   = useState(false);
-  const [modalMode,     setModalMode]     = useState<"add" | "edit">("add");
-  const [currentId,     setCurrentId]     = useState<string | number | null>(null);
-  const [isSubmitting,  setIsSubmitting]  = useState(false);
+  const [expandedId, setExpandedId] = useState<string | number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [currentId, setCurrentId] = useState<string | number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<{ show: boolean; msg: string; type: "success" | "error" }>(
     { show: false, msg: "", type: "success" }
   );
@@ -40,6 +41,7 @@ export default function KelasPage() {
     namaKelas: "", jenjang: "" as JenjangOption | "",
     tingkat: "" as TingkatOption | "", kapasitas: 32,
   });
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string | number } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error") => {
     setToast({ show: true, msg, type });
@@ -82,13 +84,21 @@ export default function KelasPage() {
     } finally { setIsSubmitting(false); }
   };
 
-  const handleDelete = async (id: string | number) => {
-    if (!confirm("Hapus kelas ini secara permanen?")) return;
+  const confirmDelete = (id: string | number) => {
+    setDeleteConfirm({ id });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await deleteKelas(Number(id));
-      setDataKelas((p) => p.filter((k) => k.id !== id));
+      await deleteKelas(Number(deleteConfirm.id));
+      setDataKelas((p) => p.filter((k) => k.id !== deleteConfirm.id));
       showToast("Kelas berhasil dihapus", "success");
-    } catch { showToast("Gagal menghapus kelas", "error"); }
+    } catch {
+      showToast("Gagal menghapus kelas", "error");
+    } finally {
+      setDeleteConfirm(null);
+    }
   };
 
   return (
@@ -103,7 +113,7 @@ export default function KelasPage() {
           }}>
             {toast.type === "success"
               ? <CheckCircle2 size={15} style={{ color: "var(--green)", flexShrink: 0 }} />
-              : <AlertCircle  size={15} style={{ color: "var(--red)",   flexShrink: 0 }} />}
+              : <AlertCircle size={15} style={{ color: "var(--red)", flexShrink: 0 }} />}
             {toast.msg}
           </div>
         )}
@@ -119,7 +129,7 @@ export default function KelasPage() {
                 value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
             <div className="jenjang-filter-group">
-              {(["ALL","SD","SMP","SMA"] as const).map((j) => (
+              {(["ALL", "SD", "SMP", "SMA"] as const).map((j) => (
                 <button key={j} type="button"
                   className={`jenjang-filter-btn ${filterJenjang === j ? "active" : ""}`}
                   onClick={() => setFilterJenjang(j)}>
@@ -140,9 +150,9 @@ export default function KelasPage() {
         {/* Grid */}
         {isLoading ? (
           <div className="kelas-grid">
-            {[1,2,3,4].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="kelas-card" style={{ minHeight: 230 }}>
-                {[46,20,14,60].map((_, j) => (
+                {[46, 20, 14, 60].map((_, j) => (
                   <div key={j} className="skeleton-shimmer" style={{
                     width: j === 0 ? 46 : j === 1 ? "55%" : "80%",
                     height: j === 0 ? 46 : 14, marginBottom: 14,
@@ -208,8 +218,14 @@ export default function KelasPage() {
                       setFormData({ namaKelas: k.namaKelas, jenjang: k.jenjang, tingkat: k.tingkat, kapasitas: k.kapasitas });
                       setIsModalOpen(true);
                     }}><Pencil size={15} /></button>
-                    <button type="button" className="btn-icon-sq delete" title="Hapus"
-                      onClick={() => handleDelete(k.id)}><Trash2 size={15} /></button>
+                    <button
+                      type="button"
+                      className="btn-icon-sq delete"
+                      title="Hapus"
+                      onClick={() => confirmDelete(k.id)} // ← ganti ini
+                    >
+                      <Trash2 size={15} />
+                    </button>
                   </div>
 
                   {expandedId === k.id && (
@@ -232,6 +248,60 @@ export default function KelasPage() {
           </div>
         )}
       </div>
+      {/* ── Modal Konfirmasi Hapus ── */}
+      {deleteConfirm && createPortal(
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 400 }}
+          >
+            <div className="modal-header">
+              <h3 className="modal-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Trash2 size={18} style={{ color: "var(--red)" }} />
+                Hapus Kelas
+              </h3>
+              <button className="modal-close-btn" onClick={() => setDeleteConfirm(null)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ textAlign: "center", padding: "24px 32px" }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: "50%",
+                background: "var(--red-bg)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 16px",
+              }}>
+                <School size={22} style={{ color: "var(--red)" }} />
+              </div>
+              <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: 6 }}>
+                Apakah kamu yakin ingin menghapus kelas
+              </p>
+              <p style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-main)", marginBottom: 8 }}>
+                "{dataKelas.find((k) => k.id === deleteConfirm.id)?.namaKelas ?? ""}"?
+              </p>
+              <p style={{ fontSize: "0.78rem", color: "var(--text-faint)" }}>
+                Kelas tidak dapat dihapus jika masih terdapat siswa di dalam kelas ini.
+              </p>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)}>
+                Batal
+              </button>
+              <button
+                className="btn"
+                onClick={handleDelete}
+                style={{ background: "var(--red)", color: "#fff", border: "none" }}
+              >
+                <Trash2 size={15} /> Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Modal */}
       {isModalOpen && (

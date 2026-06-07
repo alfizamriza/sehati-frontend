@@ -14,7 +14,7 @@ const PAGE_META: Record<string, { title: string; subtitle: string }> = {
   "/admin/kantin": { title: "Mitra Kantin", subtitle: "Kelola mitra kantin sekolah" },
   "/admin/kelas": { title: "Manajemen Kelas", subtitle: "Atur kelas & rombongan belajar" },
   "/admin/leaderboard": { title: "Leaderboard", subtitle: "Peringkat siswa terbaik" },
-  "/admin/voucher": { title: "Voucher & Poin", subtitle: "Kelola voucher dan poin siswa" },
+  "/admin/voucher": { title: "Voucher", subtitle: "Kelola voucher" },
   "/admin/analytics": { title: "Laporan & Analitik", subtitle: "Lihat laporan dan statistik" },
   "/admin/login-logs": { title: "Riwayat Login", subtitle: "Pantau aktivitas masuk pengguna sistem" },
   "/admin/pengaturan": { title: "Pengaturan", subtitle: "Konfigurasi sistem" },

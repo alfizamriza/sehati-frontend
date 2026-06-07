@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Trophy, Medal, Flame, Search, Download, TrendingUp, Users, Crown,
   School, ChevronDown, Building2, GraduationCap, Users2, Award,
-  Coins, Loader2,
+  Coins, Loader2, CheckCircle,
 } from "lucide-react";
 import {
   useLeaderboardKelasSaya, useLeaderboardAntarKelas,
@@ -15,6 +15,7 @@ import {
   getKelasDropdown,
 } from "@/lib/services/admin";
 import SharedAvatar from "@/components/common/SharedAvatar";
+import { createPortal } from "react-dom";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TabKey = "kelas" | "antarKelas" | "sekolah" | "antarJenjang" | "siswaAntarJenjang";
@@ -29,7 +30,6 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 const JENJANG_LIST = ["SD", "SMP", "SMA"] as const;
 
-// Jenjang colors — use CSS var tokens where possible
 const JENJANG_COLOR: Record<string, string> = {
   SD: "var(--green)", SMP: "var(--primary)", SMA: "var(--pink)",
 };
@@ -81,7 +81,7 @@ function StatCard({ icon, label, value, sub }: {
   );
 }
 
-// ─── Podium Card (siswa / kelas) ──────────────────────────────────────────────
+// ─── Podium Card ──────────────────────────────────────────────────────────────
 function PodiumCard({ nama, subLabel, coins, rank, fotoUrl }: {
   nama: string; subLabel: string; coins: number; rank: number; fotoUrl?: string | null;
 }) {
@@ -93,7 +93,6 @@ function PodiumCard({ nama, subLabel, coins, rank, fotoUrl }: {
 
   return (
     <div className="podium-column" style={{ width: isFirst ? 140 : 120, zIndex: isFirst ? 10 : 1 }}>
-      {/* Avatar */}
       <div className="podium-avatar-wrap" style={{
         width: avatarSize, height: avatarSize,
         border: `3px solid ${bord}`,
@@ -105,7 +104,6 @@ function PodiumCard({ nama, subLabel, coins, rank, fotoUrl }: {
             {getInitial(nama)}
           </span>}
       </div>
-      {/* Block */}
       <div className="podium-block" style={{ height: blockH, width: isFirst ? 140 : 120 }}>
         <div className="podium-rank-num" style={{
           fontSize: isFirst ? 20 : 16,
@@ -199,6 +197,23 @@ export default function LeaderboardAdminPage() {
   const [kelasList, setKelasList] = useState<any[]>([]);
   const [isExporting, setIsExporting] = useState(false);
 
+  // ── Custom dropdown state ──
+  const [openDropdown, setOpenDropdown] = useState<"kelas" | "jenjangKelas" | "jenjangSiswa" | null>(null);
+  const kelasRef = useRef<HTMLDivElement>(null);
+  const jenjangKelasRef = useRef<HTMLDivElement>(null);
+  const jenjangSiswaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const refs = [kelasRef, jenjangKelasRef, jenjangSiswaRef];
+      if (!refs.some((r) => r.current?.contains(e.target as Node))) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   useEffect(() => {
     getKelasDropdown()
       .then((data) => setKelasList(data.map((k) => ({ id: String(k.id), label: k.label }))))
@@ -253,16 +268,106 @@ export default function LeaderboardAdminPage() {
       .filter((r): r is LeaderboardRow => Boolean(r));
   }, [filteredData]);
 
+  // ─── Custom Dropdown Component ────────────────────────────────────────────
+  const DropdownSelect = ({
+    refEl, dropKey, value, options, onChange,
+  }: {
+    refEl: React.RefObject<HTMLDivElement>;
+    dropKey: "kelas" | "jenjangKelas" | "jenjangSiswa";
+    value: string;
+    options: { value: string; label: string }[];
+    onChange: (v: string) => void;
+  }) => {
+    const isOpen = openDropdown === dropKey;
+    const selectedLabel = options.find((o) => o.value === value)?.label ?? value;
+    const rect = refEl.current?.getBoundingClientRect();
+
+    return (
+      <div ref={refEl} style={{ position: "relative" }}>
+        <button
+          type="button"
+          onClick={() => setOpenDropdown(isOpen ? null : dropKey)}
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "7px 32px 7px 12px",
+            background: "var(--surface-2)",
+            borderWidth: "1px", borderStyle: "solid",
+            borderColor: isOpen ? "var(--primary)" : "var(--border-glass)",
+            borderRadius: "var(--r-md)",
+            color: "var(--text-main)",
+            cursor: "pointer", fontSize: "0.8rem",
+            fontFamily: "inherit", fontWeight: 600,
+            minWidth: 130, whiteSpace: "nowrap",
+            boxShadow: "var(--shadow-xs)",
+            transition: "border-color 0.15s",
+            position: "relative",
+          }}
+        >
+          {selectedLabel}
+          <ChevronDown size={13} style={{
+            position: "absolute", right: 9,
+            color: "var(--text-faint)",
+            transform: isOpen ? "rotate(180deg)" : "none",
+            transition: "transform 0.2s",
+          }} />
+        </button>
+
+        {isOpen && rect && createPortal(
+          <div
+            style={{
+              position: "fixed",
+              top: rect.bottom + 6,
+              left: rect.left,
+              minWidth: rect.width,
+              background: "var(--surface-0)",
+              border: "1px solid var(--border-glass)",
+              borderRadius: "var(--r-md)",
+              boxShadow: "var(--shadow-md)",
+              zIndex: 9999,
+              overflow: "hidden",
+              animation: "dropIn 0.15s var(--ease)",
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { onChange(opt.value); setOpenDropdown(null); }}
+                style={{
+                  width: "100%", padding: "9px 14px",
+                  background: value === opt.value ? "var(--surface-active)" : "transparent",
+                  border: "none",
+                  color: value === opt.value ? "var(--primary)" : "var(--text-main)",
+                  fontWeight: value === opt.value ? 700 : 400,
+                  fontSize: "0.875rem", fontFamily: "inherit",
+                  textAlign: "left", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 8,
+                }}
+                onMouseEnter={(e) => {
+                  if (value !== opt.value)
+                    (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-hover)";
+                }}
+                onMouseLeave={(e) => {
+                  if (value !== opt.value)
+                    (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                }}
+              >
+                {value === opt.value && <CheckCircle size={13} />}
+                {opt.label}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
+      </div>
+    );
+  };
+
   const handleExport = () => {
     if (!filteredData.length) return;
     const dateStr = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
-
-    let csvContent = "";
-
-    // Header Report
-    csvContent += `Laporan Leaderboard SEHATI\n`;
-    csvContent += `Tanggal Export:,${dateStr}\n`;
-    csvContent += `Kategori:,${TABS.find(t => t.key === tab)?.label}\n\n`;
+    let csvContent = `Laporan Leaderboard SEHATI\nTanggal Export:,${dateStr}\nKategori:,${TABS.find(t => t.key === tab)?.label}\n\n`;
 
     if (tab === "antarJenjang") {
       csvContent += "Rank,Jenjang,Rata-rata Coins,Total Siswa,Total Coins\n";
@@ -275,10 +380,7 @@ export default function LeaderboardAdminPage() {
       csvContent += (filteredData as LeaderboardSiswaRow[]).map((r) => `${r.rank},"${r.nama}",${r.kelas},${r.jenjang},${r.coins},${r.streak}`).join("\n");
     }
 
-    // Footer Stats
-    csvContent += `\n\nRingkasan\n`;
-    csvContent += `Total Partisipan:,${stats.partisipan}\n`;
-    csvContent += `Total Koin:,${stats.totalCoins}\n`;
+    csvContent += `\n\nRingkasan\nTotal Partisipan:,${stats.partisipan}\nTotal Koin:,${stats.totalCoins}\n`;
     if (stats.avgStreak !== null) csvContent += `Rata-rata Streak:,${stats.avgStreak} Hari\n`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -287,6 +389,7 @@ export default function LeaderboardAdminPage() {
     URL.revokeObjectURL(a.href);
   };
 
+  // ─── RENDER ───────────────────────────────────────────────────────────────
   return (
     <div className="dashboard-wrapper">
 
@@ -302,39 +405,40 @@ export default function LeaderboardAdminPage() {
 
         {/* Filter Kelas — Kelas Saya */}
         {tab === "kelas" && (
-          <div style={{ marginLeft: "auto", position: "relative" }}>
-            <select className="lb-filter-select"
+          <div style={{ marginLeft: "auto" }}>
+            <DropdownSelect
+              refEl={kelasRef}
+              dropKey="kelas"
               value={selectedKelas}
-              onChange={(e) => setSelectedKelas(e.target.value)}>
-              <option value="">Semua Kelas</option>
-              {kelasList.map((k) => <option key={k.id} value={k.id}>{k.label}</option>)}
-            </select>
-            <ChevronDown size={13} style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "var(--text-faint)" }} />
+              options={[{ value: "", label: "Semua Kelas" }, ...kelasList.map((k) => ({ value: k.id, label: k.label }))]}
+              onChange={setSelectedKelas}
+            />
           </div>
         )}
 
         {/* Jenjang filter — Antar Kelas */}
         {tab === "antarKelas" && (
-          <div style={{ marginLeft: "auto", position: "relative" }}>
-            <select className="lb-filter-select"
+          <div style={{ marginLeft: "auto" }}>
+            <DropdownSelect
+              refEl={jenjangKelasRef}
+              dropKey="jenjangKelas"
               value={jenjangKelasFilter}
-              onChange={(e) => setJenjangKelasFilter(e.target.value)}>
-              <option value="">Semua Jenjang</option>
-              {JENJANG_LIST.map((j) => <option key={j} value={j}>{j}</option>)}
-            </select>
-            <ChevronDown size={13} style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "var(--text-faint)" }} />
+              options={[{ value: "", label: "Semua Jenjang" }, ...JENJANG_LIST.map((j) => ({ value: j, label: j }))]}
+              onChange={setJenjangKelasFilter}
+            />
           </div>
         )}
 
-        {/* Jenjang filter — Siswa Se-Jenjang */}
+        {/* Jenjang filter — Se-Jenjang */}
         {tab === "siswaAntarJenjang" && (
-          <div style={{ marginLeft: "auto", position: "relative" }}>
-            <select className="lb-filter-select"
+          <div style={{ marginLeft: "auto" }}>
+            <DropdownSelect
+              refEl={jenjangSiswaRef}
+              dropKey="jenjangSiswa"
               value={jenjangSiswaFilter}
-              onChange={(e) => setJenjangSiswaFilter(e.target.value)}>
-              {JENJANG_LIST.map((j) => <option key={j} value={j}>{j}</option>)}
-            </select>
-            <ChevronDown size={13} style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "var(--text-faint)" }} />
+              options={JENJANG_LIST.map((j) => ({ value: j, label: j }))}
+              onChange={setJenjangSiswaFilter}
+            />
           </div>
         )}
       </div>
@@ -409,11 +513,9 @@ export default function LeaderboardAdminPage() {
                 setIsExporting(false);
               }
             }} disabled={isExporting || filteredData.length === 0}>
-              {isExporting ? (
-                <><Loader2 size={15} style={{ animation: "spin 0.6s linear infinite" }} /> PDF...</>
-              ) : (
-                <><Download size={15} /> PDF</>
-              )}
+              {isExporting
+                ? <><Loader2 size={15} style={{ animation: "spin 0.6s linear infinite" }} /> PDF...</>
+                : <><Download size={15} /> PDF</>}
             </button>
           </div>
         </div>
@@ -459,7 +561,6 @@ export default function LeaderboardAdminPage() {
               ) : filteredData.map((row) => {
                 const isTop3 = row.rank <= 3;
 
-                // ── Siswa rows ──
                 if (tab === "kelas" || tab === "sekolah" || tab === "siswaAntarJenjang") {
                   const r = row as LeaderboardSiswaRow;
                   return (
@@ -495,7 +596,6 @@ export default function LeaderboardAdminPage() {
                   );
                 }
 
-                // ── Kelas rows ──
                 if (tab === "antarKelas") {
                   const r = row as LeaderboardKelasRow;
                   return (
@@ -528,7 +628,6 @@ export default function LeaderboardAdminPage() {
                   );
                 }
 
-                // ── Jenjang rows ──
                 if (tab === "antarJenjang") {
                   const r = row as LeaderboardJenjangRow;
                   return (
@@ -564,6 +663,7 @@ export default function LeaderboardAdminPage() {
           </tbody>
         </table>
       </div>
+
       <style jsx>{`
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>

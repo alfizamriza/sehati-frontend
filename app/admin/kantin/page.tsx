@@ -12,6 +12,7 @@ import {
   CheckCircle, XCircle, Store, Package, Phone, Eye, ChevronRight,
   ShoppingBag, Tag, User, LayoutGrid, CheckSquare, TrendingUp,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function formatRupiah(n: number) {
@@ -21,16 +22,16 @@ function formatRupiah(n: number) {
 }
 
 const KEMASAN_LABEL: Record<string, string> = {
-  plastik:       "Plastik",
-  kertas:        "Kertas",
+  plastik: "Plastik",
+  kertas: "Kertas",
   tanpa_kemasan: "Tanpa Kemasan",
 };
 
 // Each kemasan type gets a color from CSS vars; we map to a CSS class suffix
 const KEMASAN_CLASS: Record<string, { bg: string; color: string }> = {
-  plastik:       { bg: "rgba(59,130,246,0.12)", color: "#3b82f6" },
-  kertas:        { bg: "rgba(5,150,105,0.12)",  color: "var(--green)" },
-  tanpa_kemasan: { bg: "var(--surface-2)",       color: "var(--text-faint)" },
+  plastik: { bg: "rgba(59,130,246,0.12)", color: "#3b82f6" },
+  kertas: { bg: "rgba(5,150,105,0.12)", color: "var(--green)" },
+  tanpa_kemasan: { bg: "var(--surface-2)", color: "var(--text-faint)" },
 };
 
 // ─── SUB-COMPONENTS ───────────────────────────────────────────────────────────
@@ -84,9 +85,9 @@ function ModalDetailProduk({ kantin, onClose }: { kantin: KantinDetail; onClose:
           {/* Stats strip */}
           <div className="detail-stats-strip">
             {[
-              { label: "Total Produk",  value: kantin.produk.length,    color: "var(--primary)" },
-              { label: "Produk Aktif",  value: produkAktif,             color: "var(--green)" },
-              { label: "Nilai Stok",    value: formatRupiah(totalNilaiStok), color: "var(--amber)" },
+              { label: "Total Produk", value: kantin.produk.length, color: "var(--primary)" },
+              { label: "Produk Aktif", value: produkAktif, color: "var(--green)" },
+              { label: "Nilai Stok", value: formatRupiah(totalNilaiStok), color: "var(--amber)" },
             ].map((s) => (
               <div key={s.label} className="detail-stat-chip">
                 <div className="detail-stat-chip-label">{s.label}</div>
@@ -162,23 +163,26 @@ function ModalDetailProduk({ kantin, onClose }: { kantin: KantinDetail; onClose:
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function KantinPage() {
-  const [dataKantin,     setDataKantin]     = useState<Kantin[]>(() => getCachedKantin() || []);
-  const [query,          setQuery]          = useState("");
-  const [isLoading,      setIsLoading]      = useState(() => !getCachedKantin());
-  const [isSubmitting,   setIsSubmitting]   = useState(false);
-  const [detailKantin,   setDetailKantin]   = useState<KantinDetail | null>(null);
+  const [dataKantin, setDataKantin] = useState<Kantin[]>(() => getCachedKantin() || []);
+  const [query, setQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(() => !getCachedKantin());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [detailKantin, setDetailKantin] = useState<KantinDetail | null>(null);
   const [loadingDetailId, setLoadingDetailId] = useState<number | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode,   setModalMode]   = useState<"add" | "edit">("add");
-  const [currentId,   setCurrentId]   = useState<number | null>(null);
-  const [formData,    setFormData]    = useState({
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [currentId, setCurrentId] = useState<number | null>(null);
+  const [formData, setFormData] = useState({
     nama: "", username: "", password: "", noHp: "", statusAktif: true,
   });
 
   const [toast, setToast] = useState<{ show: boolean; msg: string; type: "success" | "error" }>(
     { show: false, msg: "", type: "success" }
   );
+
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: number; nama: string } | null>(null);
+
 
   // ── Helpers ──
   const showToast = (msg: string, type: "success" | "error") => {
@@ -262,17 +266,22 @@ export default function KantinPage() {
   };
 
   // ── Delete ──
-  const handleDelete = async (id: number, nama: string) => {
-    if (!confirm(`Hapus akun kantin "${nama}"?\nAkun tidak dapat dipulihkan.`)) return;
-    try {
-      await deleteKantin(id);
-      showToast(`Kantin ${nama} berhasil dihapus`, "success");
-      setDataKantin((p) => p.filter((k) => k.id !== id));
-    } catch (err: any) {
-      showToast(err.message || "Gagal menghapus", "error");
-    }
+  const confirmDelete = (id: number, nama: string) => {
+    setDeleteConfirm({ id, nama });
   };
 
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await deleteKantin(deleteConfirm.id);
+      showToast(`Kantin ${deleteConfirm.nama} berhasil dihapus`, "success");
+      setDataKantin((p) => p.filter((k) => k.id !== deleteConfirm.id));
+    } catch (err: any) {
+      showToast(err.message || "Gagal menghapus", "error");
+    } finally {
+      setDeleteConfirm(null);
+    }
+  };
   // ── Detail ──
   const handleLihatProduk = async (id: number) => {
     setLoadingDetailId(id);
@@ -455,7 +464,11 @@ export default function KantinPage() {
                   <button className="btn-icon-sq edit" onClick={() => openEdit(kantin)} title="Edit">
                     <Pencil size={15} />
                   </button>
-                  <button className="btn-icon-sq delete" onClick={() => handleDelete(kantin.id, kantin.nama)} title="Hapus">
+                  <button
+                    className="btn-icon-sq delete"
+                    onClick={() => confirmDelete(kantin.id, kantin.nama)}
+                    title="Hapus"
+                  >
                     <Trash2 size={15} />
                   </button>
                 </div>
@@ -465,6 +478,61 @@ export default function KantinPage() {
           </div>
         )}
       </div>
+
+      {/* ── Modal Konfirmasi Hapus ── */}
+      {deleteConfirm && createPortal(
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 400 }}
+          >
+            <div className="modal-header">
+              <h3 className="modal-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Trash2 size={18} style={{ color: "var(--red)" }} />
+                Hapus Kantin
+              </h3>
+              <button className="modal-close-btn" onClick={() => setDeleteConfirm(null)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ textAlign: "center", padding: "24px 32px" }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: "50%",
+                background: "var(--red-bg)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 16px",
+              }}>
+                <Store size={22} style={{ color: "var(--red)" }} />
+              </div>
+              <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: 6 }}>
+                Apakah kamu yakin ingin menghapus kantin
+              </p>
+              <p style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-main)", marginBottom: 8 }}>
+                "{deleteConfirm.nama}"?
+              </p>
+              <p style={{ fontSize: "0.78rem", color: "var(--text-faint)" }}>
+                Semua data produk kantin ini juga akan terhapus.
+              </p>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)}>
+                Batal
+              </button>
+              <button
+                className="btn"
+                onClick={handleDelete}
+                style={{ background: "var(--red)", color: "#fff", border: "none" }}
+              >
+                <Trash2 size={15} /> Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* ── Modal Add / Edit ── */}
       {isModalOpen && (

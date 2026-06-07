@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getGuru, getCachedGuru, createGuru, updateGuru,
   deleteGuru, getKelasTersedia,
@@ -11,8 +11,9 @@ import {
   Search, Plus, Pencil, Trash2, X, Save, Filter,
   CheckCircle, XCircle, Shield, BookOpen, Heart,
   Loader2, AlertCircle, UserCog,
-  ArrowDownAZ, ArrowUpAZ,
+  ArrowDownAZ, ArrowUpAZ, ChevronDown
 } from "lucide-react";
+import { createPortal } from "react-dom";
 
 type SortField = "nip" | "nama" | "mapel" | "peran" | "status";
 
@@ -53,6 +54,8 @@ function RoleBadge({ peran, kelasLabel }: { peran: PeranGuru; kelasLabel?: strin
   );
 }
 
+
+
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 interface ToastState { show: boolean; msg: string; type: "success" | "error" }
 
@@ -92,12 +95,26 @@ export default function GuruPage() {
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [currentNip, setCurrentNip] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormState>(FORM_EMPTY);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ nip: string; nama: string } | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
 
   // ── Toast helper ──
   const showToast = (msg: string, type: "success" | "error") => {
     setToast({ show: true, msg, type });
     setTimeout(() => setToast((p) => ({ ...p, show: false })), 3200);
   };
+
+  // ── Filter handler ──
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   // ── Load data ──
   useEffect(() => {
@@ -266,16 +283,23 @@ export default function GuruPage() {
   };
 
   // ── Delete ──
-  const handleDelete = async (nip: string, nama: string) => {
-    if (!confirm(`Yakin ingin menghapus data guru ${nama}?`)) return;
+  const confirmDelete = (nip: string, nama: string) => {
+    setDeleteConfirm({ nip, nama });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await deleteGuru(nip);
-      showToast(`Guru ${nama} berhasil dihapus`, "success");
-      setDataGuru((p) => p.filter((g) => g.nip !== nip));
+      await deleteGuru(deleteConfirm.nip);
+      showToast(`Guru ${deleteConfirm.nama} berhasil dihapus`, "success");
+      setDataGuru((p) => p.filter((g) => g.nip !== deleteConfirm.nip));
     } catch (err: any) {
       showToast(err.message || "Gagal menghapus guru", "error");
+    } finally {
+      setDeleteConfirm(null);
     }
   };
+
 
   // ─── RENDER ───────────────────────────────────────────────────────────────
   return (
@@ -316,19 +340,113 @@ export default function GuruPage() {
               />
             </div>
 
-            <div className="search-container" style={{ maxWidth: 180 }}>
-              <Filter size={15} style={{ color: "var(--text-faint)", flexShrink: 0 }} />
-              <select
-                className="search-input"
-                value={filterPeran}
-                onChange={(e) => setFilterPeran(e.target.value as any)}
-                style={{ cursor: "pointer" }}
+            <div ref={filterRef} style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setIsFilterOpen((p) => !p)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "10px 14px",
+                  background: "var(--surface-2)",
+                  borderWidth: "1px",
+                  borderStyle: "solid",
+                  borderColor: isFilterOpen ? "var(--primary)" : "var(--border-glass)",
+                  borderRadius: "var(--r-md)",
+                  color: "var(--text-main)",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  fontFamily: "inherit",
+                  fontWeight: 500,
+                  minWidth: 160,
+                  justifyContent: "space-between",
+                  transition: "border-color 0.18s",
+                }}
               >
-                <option value="Semua">Semua Peran</option>
-                <option value="guru_mapel">Guru Mapel</option>
-                <option value="wali_kelas">Wali Kelas</option>
-                <option value="konselor">Konselor</option>
-              </select>
+                <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <Filter size={15} style={{ color: "var(--text-faint)", flexShrink: 0 }} />
+                  {filterPeran === "Semua" ? "Semua Peran"
+                    : filterPeran === "guru_mapel" ? "Guru Mapel"
+                      : filterPeran === "wali_kelas" ? "Wali Kelas"
+                        : "Konselor"}
+                </span>
+                <ChevronDown
+                  size={14}
+                  style={{
+                    color: "var(--text-faint)",
+                    transform: isFilterOpen ? "rotate(180deg)" : "none",
+                    transition: "transform 0.2s",
+                  }}
+                />
+              </button>
+
+              {isFilterOpen && createPortal(
+                <div
+                  style={{
+                    position: "fixed",
+                    top: (() => {
+                      const el = filterRef.current;
+                      if (!el) return 0;
+                      return el.getBoundingClientRect().bottom + 6;
+                    })(),
+                    left: (() => {
+                      const el = filterRef.current;
+                      if (!el) return 0;
+                      return el.getBoundingClientRect().left;
+                    })(),
+                    minWidth: filterRef.current?.offsetWidth ?? 160,
+                    background: "var(--surface-0)",
+                    border: "1px solid var(--border-glass)",
+                    borderRadius: "var(--r-md)",
+                    boxShadow: "var(--shadow-md)",
+                    zIndex: 9999,
+                    overflow: "hidden",
+                    animation: "dropIn 0.15s var(--ease)",
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  {([
+                    { value: "Semua", label: "Semua Peran" },
+                    { value: "guru_mapel", label: "Guru Mapel" },
+                    { value: "wali_kelas", label: "Wali Kelas" },
+                    { value: "konselor", label: "Konselor" },
+                  ] as const).map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => { setFilterPeran(item.value); setIsFilterOpen(false); }}
+                      style={{
+                        width: "100%",
+                        padding: "9px 14px",
+                        background: filterPeran === item.value ? "var(--surface-active)" : "transparent",
+                        border: "none",
+                        color: filterPeran === item.value ? "var(--primary)" : "var(--text-main)",
+                        fontWeight: filterPeran === item.value ? 700 : 400,
+                        fontSize: "0.875rem",
+                        fontFamily: "inherit",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (filterPeran !== item.value)
+                          (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-hover)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (filterPeran !== item.value)
+                          (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                      }}
+                    >
+                      {filterPeran === item.value && <CheckCircle size={13} />}
+                      {item.label}
+                    </button>
+                  ))}
+                </div>,
+                document.body
+              )}
             </div>
           </div>
 
@@ -434,7 +552,7 @@ export default function GuruPage() {
                         </button>
                         <button
                           className="icon-btn btn-delete"
-                          onClick={() => handleDelete(guru.nip, guru.nama)}
+                          onClick={() => confirmDelete(guru.nip, guru.nama)}
                           title="Hapus"
                         >
                           <Trash2 size={15} />
@@ -462,6 +580,63 @@ export default function GuruPage() {
         </div>
 
       </div>
+
+      {
+        deleteConfirm && createPortal(
+          <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+            <div
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: 400 }}
+            >
+              <div className="modal-header">
+                <h3 className="modal-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Trash2 size={18} style={{ color: "var(--red)" }} />
+                  Hapus Guru
+                </h3>
+                <button className="modal-close-btn" onClick={() => setDeleteConfirm(null)}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="modal-body" style={{ textAlign: "center", padding: "24px 32px" }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: "50%",
+                  background: "var(--red-bg)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  margin: "0 auto 16px",
+                }}>
+                  <Trash2 size={22} style={{ color: "var(--red)" }} />
+                </div>
+                <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: 6 }}>
+                  Apakah kamu yakin ingin menghapus guru
+                </p>
+                <p style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-main)", marginBottom: 8 }}>
+                  "{deleteConfirm.nama}"?
+                </p>
+                <p style={{ fontSize: "0.78rem", color: "var(--text-faint)" }}>
+                  Tindakan ini tidak dapat dibatalkan.
+                </p>
+              </div>
+
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)}>
+                  Batal
+                </button>
+                <button
+                  className="btn"
+                  onClick={handleDelete}
+                  style={{ background: "var(--red)", color: "#fff", border: "none" }}
+                >
+                  <Trash2 size={15} /> Ya, Hapus
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      }
+
 
       {/* ── Modal Add / Edit ── */}
       {isModalOpen && (
@@ -582,6 +757,7 @@ export default function GuruPage() {
                   )}
                 </div>
               </div>
+
 
               {/* Password */}
               <div className="form-group">

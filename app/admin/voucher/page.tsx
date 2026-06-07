@@ -11,26 +11,29 @@ import {
   User, Calendar, Copy, Tag, X, Save, ChevronDown,
   AlertCircle, CheckCircle2, Loader2,
 } from "lucide-react";
+import { createPortal } from "react-dom";
+
+
 
 // ─── STATUS CONFIG ────────────────────────────────────────────────────────────
 type StatusKey = "available" | "used" | "expired";
 
 const STATUS_LABEL: Record<StatusKey, string> = {
   available: "Tersedia",
-  used:      "Sudah Dipakai",
-  expired:   "Kadaluarsa",
+  used: "Sudah Dipakai",
+  expired: "Kadaluarsa",
 };
 
 const STATUS_CLASS: Record<StatusKey, string> = {
   available: "available",
-  used:      "used",
-  expired:   "expired",
+  used: "used",
+  expired: "expired",
 };
 
 const STATUS_ICON: Record<StatusKey, React.ReactNode> = {
   available: <CheckCircle size={11} />,
-  used:      <CheckCircle size={11} />,
-  expired:   <XCircle    size={11} />,
+  used: <CheckCircle size={11} />,
+  expired: <XCircle size={11} />,
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -79,16 +82,16 @@ function HeroStat({ value, label, icon, colorVar, bgClass }: {
 function VoucherCard({ voucher, onEdit, onDelete, onCopy }: {
   voucher: Voucher; onEdit: () => void; onDelete: () => void; onCopy: () => void;
 }) {
-  const st         = voucher.status as StatusKey;
-  const isAvail    = st === "available";
-  const isExpired  = st === "expired";
+  const st = voucher.status as StatusKey;
+  const isAvail = st === "available";
+  const isExpired = st === "expired";
 
   // Stripe gradient
   const stripeGrad = isAvail
     ? "linear-gradient(90deg, var(--green), #34d399, #6ee7b7)"
     : isExpired
-    ? "linear-gradient(90deg, var(--red), #f87171)"
-    : "linear-gradient(90deg, var(--surface-hover), var(--text-faint))";
+      ? "linear-gradient(90deg, var(--red), #f87171)"
+      : "linear-gradient(90deg, var(--surface-hover), var(--text-faint))";
 
   return (
     <div className={`voucher-card ${isAvail ? "available" : ""}`}
@@ -116,7 +119,7 @@ function VoucherCard({ voucher, onEdit, onDelete, onCopy }: {
         {/* Info rows */}
         <div className="voucher-info-rows">
           <div className="voucher-info-row">
-            <User     size={12} className="voucher-info-icon" />
+            <User size={12} className="voucher-info-icon" />
             {voucher.penerima?.nama || "Umum"} · {voucher.penerima?.kelas || "—"}
           </div>
           <div className="voucher-info-row">
@@ -157,21 +160,21 @@ function VoucherCard({ voucher, onEdit, onDelete, onCopy }: {
 function VoucherModal({ editing, onClose, onSubmit }: {
   editing: Voucher | null; onClose: () => void; onSubmit: (payload: any) => void;
 }) {
-  const [siswa,       setSiswa]       = useState<SiswaDropdown[]>([]);
+  const [siswa, setSiswa] = useState<SiswaDropdown[]>([]);
   const [siswaLoading, setSiswaLoading] = useState(true);
   const [form, setForm] = useState({
-    namaVoucher:     editing?.namaVoucher     ?? "",
-    nis:             editing?.penerima?.nis   ?? "",
-    tanggalBerlaku:  editing?.tanggalBerlaku  ?? "",
+    namaVoucher: editing?.namaVoucher ?? "",
+    nis: editing?.penerima?.nis ?? "",
+    tanggalBerlaku: editing?.tanggalBerlaku ?? "",
     tanggalBerakhir: editing?.tanggalBerakhir ?? "",
-    nominalVoucher:  editing?.nominalVoucher  ?? 0,
-    tipeVoucher:     editing?.tipeVoucher     ?? "fixed",
-    status:          editing?.status          ?? "available",
+    nominalVoucher: editing?.nominalVoucher ?? 0,
+    tipeVoucher: editing?.tipeVoucher ?? "fixed",
+    status: editing?.status ?? "available",
   });
 
   useEffect(() => {
     getSiswaDropdown()
-      .then(setSiswa).catch(() => {})
+      .then(setSiswa).catch(() => { })
       .finally(() => setSiswaLoading(false));
   }, []);
 
@@ -303,15 +306,16 @@ export default function VoucherPage() {
   const { toast, success, error } = useToast();
   const cached = getCachedVouchers();
 
-  const [vouchers,     setVouchers]     = useState<Voucher[]>(cached?.vouchers ?? []);
-  const [stats,        setStats]        = useState<VoucherStats>(
+  const [vouchers, setVouchers] = useState<Voucher[]>(cached?.vouchers ?? []);
+  const [stats, setStats] = useState<VoucherStats>(
     cached?.stats ?? { tersedia: 0, sudahDitukar: 0, kadaluarsa: 0 }
   );
-  const [isLoading,    setIsLoading]    = useState(!cached);
-  const [query,        setQuery]        = useState("");
+  const [isLoading, setIsLoading] = useState(!cached);
+  const [query, setQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | StatusKey>("all");
-  const [modalOpen,    setModalOpen]    = useState(false);
-  const [editing,      setEditing]      = useState<Voucher | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Voucher | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: number; nama: string } | null>(null);
 
   const loadData = async (force = false) => {
     try {
@@ -322,7 +326,7 @@ export default function VoucherPage() {
     finally { setIsLoading(false); }
   };
 
-  useEffect(() => { loadData(false); }, []); // eslint-disable-line
+  useEffect(() => { loadData(false); }, []);
 
   const safeVouchers = Array.isArray(vouchers) ? vouchers : [];
 
@@ -336,16 +340,27 @@ export default function VoucherPage() {
     });
   }, [query, filterStatus, safeVouchers]);
 
-  const handleRemove = async (id: number) => {
-    if (!confirm("Hapus voucher ini secara permanen?")) return;
-    try { await deleteVoucher(id); success("Voucher berhasil dihapus"); loadData(true); }
-    catch (err: any) { error(err.message); }
+  const confirmRemove = (id: number, nama: string) => {
+    setDeleteConfirm({ id, nama });
+  };
+
+  const handleRemove = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await deleteVoucher(deleteConfirm.id);
+      success("Voucher berhasil dihapus");
+      loadData(true);
+    } catch (err: any) {
+      error(err.message);
+    } finally {
+      setDeleteConfirm(null);
+    }
   };
 
   const handleUpsert = async (payload: any) => {
     try {
       if (editing) { await updateVoucher(editing.id, payload); success("Voucher diperbarui!"); }
-      else         { await createVoucher(payload);             success("Voucher dibuat!");    }
+      else { await createVoucher(payload); success("Voucher dibuat!"); }
       setModalOpen(false);
       loadData(true);
     } catch (err: any) { error(err.message); }
@@ -364,7 +379,7 @@ export default function VoucherPage() {
           }}>
             {toast.type === "success"
               ? <CheckCircle2 size={15} style={{ color: "var(--green)", flexShrink: 0 }} />
-              : <AlertCircle  size={15} style={{ color: "var(--red)",   flexShrink: 0 }} />}
+              : <AlertCircle size={15} style={{ color: "var(--red)", flexShrink: 0 }} />}
             {toast.msg}
           </div>
         )}
@@ -378,7 +393,7 @@ export default function VoucherPage() {
             value={stats.tersedia} label="Voucher Tersedia"
             icon={<Ticket size={24} style={{ color: "var(--green)" }} />}
             colorVar="var(--green)" bgClass=""
-            // inline override for light-compatible background
+          // inline override for light-compatible background
           />
           <HeroStat
             value={stats.sudahDitukar} label="Sudah Ditukar"
@@ -397,10 +412,10 @@ export default function VoucherPage() {
           {/* Filter tabs */}
           <div className="voucher-filter-tabs">
             {([
-              { key: "all",       label: "Semua"      },
-              { key: "available", label: "Tersedia"   },
-              { key: "used",      label: "Dipakai"    },
-              { key: "expired",   label: "Kadaluarsa" },
+              { key: "all", label: "Semua" },
+              { key: "available", label: "Tersedia" },
+              { key: "used", label: "Dipakai" },
+              { key: "expired", label: "Kadaluarsa" },
             ] as const).map(({ key, label }) => (
               <button key={key} type="button"
                 className={`voucher-filter-btn ${filterStatus === key ? "active" : ""}`}
@@ -428,7 +443,7 @@ export default function VoucherPage() {
         {/* ── Voucher Grid ── */}
         {isLoading ? (
           <div className="voucher-grid">
-            {[1,2,3,4].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="voucher-skeleton" style={{ animationDelay: `${i * 0.1}s` }} />
             ))}
           </div>
@@ -450,12 +465,67 @@ export default function VoucherPage() {
                 voucher={v}
                 onCopy={() => success("Kode berhasil disalin!")}
                 onEdit={() => { setEditing(v); setModalOpen(true); }}
-                onDelete={() => handleRemove(v.id)}
+                onDelete={() => confirmRemove(v.id, v.namaVoucher)}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* ── Modal Konfirmasi Hapus ── */}
+      {deleteConfirm && createPortal(
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 400 }}
+          >
+            <div className="modal-header">
+              <h3 className="modal-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Trash2 size={18} style={{ color: "var(--red)" }} />
+                Hapus Voucher
+              </h3>
+              <button className="modal-close-btn" onClick={() => setDeleteConfirm(null)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ textAlign: "center", padding: "24px 32px" }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: "50%",
+                background: "var(--red-bg)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 16px",
+              }}>
+                <Ticket size={22} style={{ color: "var(--red)" }} />
+              </div>
+              <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: 6 }}>
+                Apakah kamu yakin ingin menghapus voucher
+              </p>
+              <p style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-main)", marginBottom: 8 }}>
+                "{deleteConfirm.nama}"?
+              </p>
+              <p style={{ fontSize: "0.78rem", color: "var(--text-faint)" }}>
+                Tindakan ini tidak dapat dibatalkan.
+              </p>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)}>
+                Batal
+              </button>
+              <button
+                className="btn"
+                onClick={handleRemove}
+                style={{ background: "var(--red)", color: "#fff", border: "none" }}
+              >
+                <Trash2 size={15} /> Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* ── Modal ── */}
       {modalOpen && (

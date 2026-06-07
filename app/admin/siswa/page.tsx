@@ -17,7 +17,9 @@ import {
   ArrowDownAZ,
   ArrowUpAZ,
   Shield,
+  ChevronDown,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 
 type SortField = "nis" | "nama" | "kelas" | "status" | "coins" | "streak";
 
@@ -55,10 +57,24 @@ export default function SiswaPage() {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
+  const [nisError, setNisError] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ nis: string; nama: string } | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
 
   const [toast, setToast] = useState<{ show: boolean; msg: string; type: "success" | "error" }>(
     { show: false, msg: "", type: "success" }
   );
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const [formData, setFormData] = useState({
     nis: "", nama: "", password: "",
@@ -66,6 +82,16 @@ export default function SiswaPage() {
     statusAktif: true,
     permissions: [] as string[],
   });
+
+  const handleNisBlur = () => {
+    if (!formData.nis) return;
+    const exists = dataSiswa.some((s) => s.nis === formData.nis);
+    if (exists) {
+      setNisError("NIS ini sudah terdaftar!");
+    } else {
+      setNisError(null);
+    }
+  };
 
   // ── Helpers ──
   const showToast = (msg: string, type: "success" | "error") => {
@@ -224,14 +250,20 @@ export default function SiswaPage() {
   };
 
   // ── Delete ──
-  const handleDelete = async (nis: string, nama: string) => {
-    if (!confirm(`Hapus siswa "${nama}"?`)) return;
+  const confirmDelete = (nis: string, nama: string) => {
+    setDeleteConfirm({ nis, nama });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await deleteSiswa(nis);
+      await deleteSiswa(deleteConfirm.nis);
       showToast("Siswa berhasil dihapus", "success");
-      setDataSiswa((p) => p.filter((s) => s.nis !== nis));
+      setDataSiswa((p) => p.filter((s) => s.nis !== deleteConfirm.nis));
     } catch (err: any) {
       showToast(err.message || "Gagal menghapus siswa", "error");
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
@@ -292,18 +324,98 @@ export default function SiswaPage() {
                 value={query} onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <div className="search-container" style={{ maxWidth: 160 }}>
-              <Filter size={15} style={{ color: "var(--text-faint)", flexShrink: 0 }} />
-              <select
-                className="search-input"
-                value={filterKelas}
-                onChange={(e) => setFilterKelas(e.target.value)}
-                style={{ cursor: "pointer" }}
+            <div
+              ref={filterRef}
+              style={{ position: "relative" }}
+            >
+              <button
+                type="button"
+                onClick={() => setIsFilterOpen((p) => !p)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "10px 14px",
+                  background: "var(--surface-2)",
+                  borderColor: isFilterOpen ? "var(--primary)" : "var(--border-glass)",
+                  borderRadius: "var(--r-md)",
+                  color: "var(--text-main)",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  fontFamily: "inherit",
+                  fontWeight: 500,
+                  minWidth: 140,
+                  justifyContent: "space-between",
+                  transition: "border-color 0.18s",
+                  ...(isFilterOpen ? { borderColor: "var(--primary)" } : {}),
+                }}
               >
-                {uniqueClasses.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <Filter size={15} style={{ color: "var(--text-faint)", flexShrink: 0 }} />
+                  {filterKelas}
+                </span>
+                <ChevronDown
+                  size={14}
+                  style={{
+                    color: "var(--text-faint)",
+                    transform: isFilterOpen ? "rotate(180deg)" : "none",
+                    transition: "transform 0.2s",
+                  }}
+                />
+              </button>
+
+              {isFilterOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 6px)",
+                    left: 0,
+                    minWidth: "100%",
+                    background: "var(--surface-0)",
+                    border: "1px solid var(--border-glass)",
+                    borderRadius: "var(--r-md)",
+                    boxShadow: "var(--shadow-md)",
+                    zIndex: 500,
+                    overflow: "hidden",
+                    animation: "dropIn 0.15s var(--ease)",
+                  }}
+                >
+                  {uniqueClasses.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => { setFilterKelas(c); setIsFilterOpen(false); }}
+                      style={{
+                        width: "100%",
+                        padding: "9px 14px",
+                        background: filterKelas === c ? "var(--surface-active)" : "transparent",
+                        border: "none",
+                        color: filterKelas === c ? "var(--primary)" : "var(--text-main)",
+                        fontWeight: filterKelas === c ? 700 : 400,
+                        fontSize: "0.875rem",
+                        fontFamily: "inherit",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        transition: "background 0.12s",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (filterKelas !== c)
+                          (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-hover)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (filterKelas !== c)
+                          (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                      }}
+                    >
+                      {filterKelas === c && <CheckCircle size={13} />}
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -419,7 +531,11 @@ export default function SiswaPage() {
                         <button className="icon-btn btn-edit" onClick={() => openEdit(s)} title="Edit">
                           <Pencil size={15} />
                         </button>
-                        <button className="icon-btn btn-delete" onClick={() => handleDelete(s.nis, s.nama)} title="Hapus">
+                        <button
+                          className="icon-btn btn-delete"
+                          onClick={() => confirmDelete(s.nis, s.nama)}
+                          title="Hapus"
+                        >
                           <Trash2 size={15} />
                         </button>
                       </div>
@@ -445,8 +561,67 @@ export default function SiswaPage() {
         </div>
       </div>
 
+      {/* ── Modal Konfirmasi Hapus ── */}
+      {deleteConfirm && createPortal(
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 420 }}
+          >
+            <div className="modal-header">
+              <h3 className="modal-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Trash2 size={18} style={{ color: "var(--red)" }} />
+                Hapus Siswa
+              </h3>
+              <button className="modal-close-btn" onClick={() => setDeleteConfirm(null)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ textAlign: "center", padding: "24px 32px" }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: "50%",
+                background: "rgba(239,68,68,0.1)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 16px",
+              }}>
+                <Trash2 size={24} style={{ color: "var(--red)" }} />
+              </div>
+              <p style={{ fontSize: "0.95rem", color: "var(--text-main)", marginBottom: 6 }}>
+                Apakah kamu yakin ingin menghapus siswa
+              </p>
+              <p style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--text-main)", marginBottom: 8 }}>
+                "{deleteConfirm.nama}"?
+              </p>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                Tindakan ini tidak dapat dibatalkan.
+              </p>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)}>
+                Batal
+              </button>
+              <button
+                className="btn"
+                onClick={handleDelete}
+                style={{
+                  background: "var(--red, #ef4444)",
+                  color: "#fff",
+                  border: "none",
+                }}
+              >
+                <Trash2 size={15} /> Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* ── Modal Add/Edit ── */}
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -465,10 +640,22 @@ export default function SiswaPage() {
                   <input
                     type="text" className="form-input" placeholder="Nomor Induk"
                     value={formData.nis}
-                    onChange={(e) => setFormData({ ...formData, nis: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, nis: e.target.value });
+                      setNisError(null); // reset error saat mengetik ulang
+                    }}
+                    onBlur={handleNisBlur} // ← validasi saat pindah fokus
                     disabled={modalMode === "edit"}
-                    style={modalMode === "edit" ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+                    style={{
+                      ...(modalMode === "edit" ? { opacity: 0.5, cursor: "not-allowed" } : {}),
+                      ...(nisError ? { borderColor: "var(--red)", boxShadow: "0 0 0 2px rgba(239,68,68,0.15)" } : {}),
+                    }}
                   />
+                  {nisError && (
+                    <span className="form-hint" style={{ color: "var(--red)", display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+                      <AlertCircle size={12} /> {nisError}
+                    </span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label className="form-label">Nama Lengkap</label>
@@ -531,12 +718,12 @@ export default function SiswaPage() {
                 </label>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 12, background: "var(--surface-2, #f5f7fb)", borderRadius: 8 }}>
                   <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: "0.9rem" }}>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       className="form-checkbox"
                       checked={formData.permissions.includes('manage_absensi')}
                       onChange={(e) => {
-                        const newPerms = e.target.checked 
+                        const newPerms = e.target.checked
                           ? [...formData.permissions, 'manage_absensi']
                           : formData.permissions.filter(p => p !== 'manage_absensi');
                         setFormData({ ...formData, permissions: newPerms });
@@ -545,12 +732,12 @@ export default function SiswaPage() {
                     Akses Fitur Absensi (OSIS)
                   </label>
                   <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: "0.9rem" }}>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       className="form-checkbox"
                       checked={formData.permissions.includes('manage_pelanggaran')}
                       onChange={(e) => {
-                        const newPerms = e.target.checked 
+                        const newPerms = e.target.checked
                           ? [...formData.permissions, 'manage_pelanggaran']
                           : formData.permissions.filter(p => p !== 'manage_pelanggaran');
                         setFormData({ ...formData, permissions: newPerms });
@@ -571,11 +758,12 @@ export default function SiswaPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Modal Import ── */}
-      {isImportModalOpen && (
+      {isImportModalOpen && createPortal(
         <div className="modal-overlay" onClick={() => setIsImportModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
             <div className="modal-header">
@@ -653,13 +841,14 @@ export default function SiswaPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── QR Modal ── */}
-      {isQRModalOpen && (
+      {isQRModalOpen && createPortal(
         <QRDownloadModal siswaList={dataSiswa} onClose={() => setIsQRModalOpen(false)} />
-      )}
+        , document.body)}
     </>
   );
 }
