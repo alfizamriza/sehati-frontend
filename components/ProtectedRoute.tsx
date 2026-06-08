@@ -25,11 +25,9 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
 
   useEffect(() => {
     if (allowedRoles && allowedRoles.length > 0) {
-      const roleFromStorage =
-        typeof window !== "undefined" ? localStorage.getItem("auth_role") : null;
-      const roleFromCookie = getCookie("auth_role");
+      const roleFromCookie = getCookie('auth_role');
       const cached = authService.getCachedProfile();
-      const currentRole = roleFromStorage || roleFromCookie || cached?.role || null;
+      const currentRole = roleFromCookie || cached?.role || null;
 
       if (!currentRole || !allowedRoles.includes(currentRole)) {
         router.replace('/unauthorized');

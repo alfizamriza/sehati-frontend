@@ -10,13 +10,27 @@ export default function UnauthorizedPage() {
 
   // Auto-logout: bersihkan sesi langsung saat halaman ini terbuka
   useEffect(() => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("user_role");
-    localStorage.removeItem("user_id");
+    const clearSession = async () => {
+      try {
+        await fetch('/api/proxy/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+        });
+      } catch (error) {
+        console.error('Logout request failed:', error);
+      }
 
-    // Clear cookies as well so middleware.ts also recognizes the logout
-    document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    document.cookie = "auth_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('auth_profile');
+      localStorage.removeItem('auth_role');
+      localStorage.removeItem('auth_user');
+
+      document.cookie = 'auth_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=None;';
+    };
+
+    void clearSession();
   }, []);
 
   const handleReLogin = () => {

@@ -1,10 +1,10 @@
 import { getAuthToken, getUserRole } from '@/lib/services/shared';
 
 export function checkAuth() {
-  const token = getAuthToken();
+  const role = getUserRole();
   return {
-    isAuthenticated: !!token,
-    token,
+    isAuthenticated: !!role,
+    role,
   };
 }
 

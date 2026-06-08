@@ -66,17 +66,21 @@ export const authService = {
   },
 
   getToken(): string | null {
-    return getCookie(TOKEN_KEY);
+    return null;
   },
 
-  removeToken() {
+  async removeToken() {
     if (typeof window === 'undefined') return;
+
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    }
+
     localStorage.removeItem(PROFILE_KEY);
     localStorage.removeItem(PROFILE_TS_KEY);
-    const isSecure = window.location.protocol === 'https:';
-    const sameSite = isSecure ? 'None; Secure' : 'Lax';
-    document.cookie = `${TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=${sameSite}`;
-    document.cookie = `auth_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=${sameSite}`;
+    document.cookie = `auth_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=None;`;
     inMemoryProfile = null;
     profileRequestPromise = null;
   },
@@ -115,11 +119,11 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    return !!this.getToken() || !!getCookie('auth_role');
+    return !!getCookie('auth_role') || !!this.getCachedProfile();
   },
 
   logout() {
-    this.removeToken();
+    void this.removeToken();
     if (typeof window !== 'undefined') {
       window.location.href = '/auth';
     }

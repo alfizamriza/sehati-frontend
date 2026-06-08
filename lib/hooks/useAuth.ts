@@ -12,12 +12,11 @@ export interface AuthState {
 
 export function useAuth(): AuthState {
   const [authState] = useState<AuthState>(() => {
-    const token = getAuthToken();
     const role = getUserRole();
 
     return {
-      isAuthenticated: !!token || !!role,
-      token,
+      isAuthenticated: !!role,
+      token: null,
       role,
       isLoading: false,
     };

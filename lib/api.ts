@@ -1,10 +1,7 @@
 import axios from "axios";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-
 const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: "/api/proxy",
   headers: {
     "Content-Type": "application/json",
   },
@@ -54,33 +51,8 @@ function toLogString(value: unknown): string {
 
 api.interceptors.request.use(
   (config) => {
-    // Add Authorization token if present in cookies or localStorage
-    if (typeof window !== "undefined") {
-      let token: string | null = null;
-      
-      try {
-        // Try to get token from cookies
-        const match = document.cookie
-          .split(";")
-          .map((cookie) => cookie.trim())
-          .find((cookie) => cookie.startsWith("auth_token="));
-        if (match) {
-          token = decodeURIComponent(match.slice("auth_token=".length));
-        }
-
-        // Fallback to localStorage
-        if (!token) {
-          token = localStorage.getItem("auth_token");
-        }
-
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      } catch (e) {
-        console.error("Failed to append authorization token:", e);
-      }
-    }
-
+    // Using HttpOnly auth_token cookie for authentication.
+    // Do not attach Authorization headers from client-side storage.
     if (
       typeof FormData !== "undefined" &&
       config.data instanceof FormData &&

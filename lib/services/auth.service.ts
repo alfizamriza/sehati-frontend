@@ -1,5 +1,7 @@
 'use client';
 
+import api from '@/lib/api';
+
 const AUTH_TOKEN_KEY = 'auth_token';
 const AUTH_ROLE_KEY = 'auth_role';
 const AUTH_USER_KEY = 'auth_user';
@@ -28,8 +30,6 @@ export interface LoginResponse {
     redirectTo: string;
   };
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 function setCookie(name: string, value: string, days: number = 7): void {
   const expiryDate = new Date();
@@ -73,15 +73,6 @@ function syncRoleCookie(role: string | null): void {
   setCookie(AUTH_ROLE_KEY, role, 7);
 }
 
-function syncTokenCookie(token: string | null): void {
-  if (!token) {
-    clearCookie(AUTH_TOKEN_KEY);
-    return;
-  }
-
-  setCookie(AUTH_TOKEN_KEY, token, 7);
-}
-
 function clearSessionArtifacts(): void {
   if (typeof window === 'undefined') return;
 
@@ -99,21 +90,8 @@ function clearSessionArtifacts(): void {
 
 export async function loginUser(loginRequest: LoginRequest): Promise<LoginResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(loginRequest),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Login gagal. Silakan coba lagi.');
-    }
-
-    const data: LoginResponse = await response.json();
+    const response = await api.post('/auth/login', loginRequest);
+    const data: LoginResponse = response.data;
 
     if (data.success && data.data.token) {
       if (typeof window !== 'undefined') {
@@ -121,8 +99,6 @@ export async function loginUser(loginRequest: LoginRequest): Promise<LoginRespon
         localStorage.setItem(AUTH_ROLE_KEY, data.data.user.role);
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.data.user));
         localStorage.setItem(AUTH_PROFILE_KEY, JSON.stringify(data.data.user));
-        localStorage.setItem(AUTH_TOKEN_KEY, data.data.token);
-        syncTokenCookie(data.data.token);
         syncRoleCookie(data.data.user.role);
       }
     } else {
@@ -143,7 +119,7 @@ export function getAuthToken(): string | null {
     return null;
   }
   try {
-    return getCookie(AUTH_TOKEN_KEY) || localStorage.getItem(AUTH_TOKEN_KEY);
+    return localStorage.getItem(AUTH_TOKEN_KEY);
   } catch (e) {
     console.error('Error getting auth token:', e);
     return null;
@@ -164,22 +140,23 @@ export function getUserRole(): string | null {
 
 export function isAuthenticated(): boolean {
   try {
-    return !!getAuthToken() || !!getUserRole();
+    return !!getUserRole() || !!getCachedProfile();
   } catch (e) {
     console.error('Error checking authentication:', e);
     return false;
   }
 }
 
-export function logout(): void {
+export async function logout(): Promise<void> {
   if (typeof window === 'undefined') {
     return;
   }
 
   try {
+    await api.post('/auth/logout');
+
     clearSessionArtifacts();
     clearCookie(AUTH_ROLE_KEY);
-    clearCookie(AUTH_TOKEN_KEY);
 
     setTimeout(() => {
       window.location.href = '/auth';

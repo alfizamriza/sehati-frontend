@@ -25,8 +25,8 @@ const TINGKAT_TO_NUMBER: Record<TingkatOption, number> = {
 };
 
 export default function KelasPage() {
-  const [dataKelas, setDataKelas] = useState<Class[]>(() => getCachedClasses() || []);
-  const [isLoading, setIsLoading] = useState(() => !getCachedClasses());
+  const [dataKelas, setDataKelas] = useState<Class[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [filterJenjang, setFilterJenjang] = useState<"ALL" | JenjangOption>("ALL");
   const [expandedId, setExpandedId] = useState<string | number | null>(null);
@@ -50,6 +50,12 @@ export default function KelasPage() {
 
   useEffect(() => {
     let mounted = true;
+    const cached = getCachedClasses();
+    if (cached) {
+      setDataKelas(cached);
+      setIsLoading(false);
+    }
+
     getClasses({ forceRefresh: true })
       .then((d) => { if (mounted) setDataKelas(d); })
       .catch(() => showToast("Gagal memuat data kelas", "error"))
