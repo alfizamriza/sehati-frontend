@@ -39,6 +39,9 @@ async function proxyRequest(req: NextRequest, paramsPromise: Promise<{ path: str
 
   // Remove existing set-cookie from responseHeaders to control the exact values sent back
   responseHeaders.delete('set-cookie');
+  responseHeaders.delete('content-encoding');
+  responseHeaders.delete('content-length');
+  responseHeaders.delete('transfer-encoding');
 
   const response = new NextResponse(responseBody, {
     status: backendRes.status,
