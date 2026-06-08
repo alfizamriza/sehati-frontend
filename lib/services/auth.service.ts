@@ -138,6 +138,19 @@ export function getUserRole(): string | null {
   }
 }
 
+export function getCachedProfile(): any {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  try {
+    const profileStr = localStorage.getItem(AUTH_PROFILE_KEY);
+    return profileStr ? JSON.parse(profileStr) : null;
+  } catch (e) {
+    console.error('Error getting cached profile:', e);
+    return null;
+  }
+}
+
 export function isAuthenticated(): boolean {
   try {
     return !!getUserRole() || !!getCachedProfile();
