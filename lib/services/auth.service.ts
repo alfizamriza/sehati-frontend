@@ -140,7 +140,7 @@ export function getUserRole(): string | null {
 
 export function isAuthenticated(): boolean {
   try {
-    return !!getUserRole() || !!getCachedProfile();
+    return !!getUserRole();
   } catch (e) {
     console.error('Error checking authentication:', e);
     return false;
