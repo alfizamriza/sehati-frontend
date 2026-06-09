@@ -244,7 +244,7 @@ export default function DashboardSiswaPage() {
     }
   }, [dashboardData]);
 
-  useEffect(() => { loadData(false, false); }, []); // eslint-disable-line
+  useEffect(() => { loadData(true, false); }, []); // eslint-disable-line
 
   useEffect(() => {
     function handleFocus() {

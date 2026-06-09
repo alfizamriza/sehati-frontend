@@ -219,7 +219,7 @@ export function ShowcaseCard({
         </div>
         <div className="profil-showcase-message">
           {showcaseNote.noteText ||
-            "Achievement ini sedang dipamerkan di leaderboard."}
+            "Achievement ini sedang dipamerkan"}
         </div>
       </div>
 
@@ -511,7 +511,7 @@ export function ModalShowcaseNote({
                 <span>{currentNote?.achievementName}</span>
               </div>
               <div className="profil-showcase-preview-msg has-text">
-                {currentNote?.noteText || "Achievement ini sedang dipamerkan di leaderboard."}
+                {currentNote?.noteText || "Achievement ini sedang dipamerkan."}
               </div>
             </div>
           </div>

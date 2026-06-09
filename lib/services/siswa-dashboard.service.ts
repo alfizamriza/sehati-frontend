@@ -68,9 +68,6 @@ const CACHE_KEY = (m: DashboardMode, y?: number, mo?: number) =>
 const TS_KEY = (m: DashboardMode, y?: number, mo?: number) =>
   `sehati_dash_ts_${m}_${y ?? "cur"}_${mo ?? "cur"}`;
 
-const AUTH_KEYS_LOCALSTORAGE  = ["auth_token", "auth_user", "auth_profile", "user_data", "sehati_user"];
-const AUTH_KEYS_SESSION       = ["sehati_auth", "current_user"];
-
 interface CacheEntry { data: SiswaDashboard; timestamp: number }
 
 // In-memory cache pakai key string
@@ -140,11 +137,9 @@ export function clearDashboardCache(): void {
   memCache.clear();
   if (!isBrowser()) return;
   try {
-    AUTH_KEYS_LOCALSTORAGE.forEach((k) => localStorage.removeItem(k));
-    AUTH_KEYS_SESSION.forEach((k) => sessionStorage.removeItem(k));
     [localStorage, sessionStorage].forEach((storage) => {
       Object.keys(storage)
-        .filter((k) => k.includes("sehati") || k.includes("auth") || k.includes("user"))
+        .filter((k) => k.startsWith("sehati_dash_") || k.startsWith("sehati_dash_ts_"))
         .forEach((k) => storage.removeItem(k));
     });
   } catch {}
@@ -181,6 +176,7 @@ export async function getDashboardSiswa(
   const res = await api.get("/dashboard/siswa", {
     params: {
       mode,
+      ...(forceRefresh ? { _ts: Date.now() } : {}),
       // Kirim year & month ke backend jika ada (navigasi bulan lain)
       ...(year !== undefined && month !== undefined ? { year, month } : {}),
     },

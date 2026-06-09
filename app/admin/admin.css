@@ -3014,6 +3014,12 @@ select.form-input option {
   color: var(--red);
 }
 
+.btn-icon-sq.transfer {
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  color: #b45309;
+}
+
 /* Summary bar (kantin) */
 .summary-bar {
   display: flex;
@@ -3486,6 +3492,200 @@ select.form-input option {
   font-size: 0.78rem;
   color: var(--text-faint);
   font-style: italic;
+}
+
+.siswa-list-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  color: var(--text-main);
+  font-size: 0.88rem;
+}
+
+.siswa-list-row small {
+  color: var(--text-faint);
+}
+
+.transfer-modal .modal-body {
+  max-height: min(68vh, 620px);
+  overflow: auto;
+}
+
+.transfer-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.transfer-summary > div {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.transfer-summary-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-faint);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.transfer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+  gap: 14px;
+}
+
+.transfer-panel {
+  min-width: 0;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: 12px;
+}
+
+.transfer-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.transfer-panel-head p {
+  margin-top: 4px;
+  color: var(--text-sec);
+  font-size: 0.8rem;
+}
+
+.transfer-student-list,
+.transfer-target-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 330px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.transfer-student-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: border-color 0.16s, background 0.16s;
+}
+
+.transfer-student-row:hover {
+  border-color: var(--primary-glow);
+  background: var(--surface-hover);
+}
+
+.transfer-student-row input {
+  flex-shrink: 0;
+}
+
+.transfer-student-row span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.transfer-student-row strong,
+.transfer-target-row strong {
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.transfer-student-row small,
+.transfer-target-row small {
+  color: var(--text-faint);
+  font-size: 0.78rem;
+}
+
+.transfer-target-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--r-md);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.16s, background 0.16s;
+}
+
+.transfer-target-row:hover,
+.transfer-target-row.selected {
+  border-color: var(--primary-glow);
+  background: var(--surface-hover);
+}
+
+.transfer-target-row span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.transfer-target-row em {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border-radius: var(--r-full);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.transfer-target-row em.ok,
+.transfer-capacity-note.ok {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.transfer-target-row em.warn,
+.transfer-capacity-note.warn {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.transfer-capacity-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .transfer-summary,
+  .transfer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transfer-panel-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .transfer-target-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 /* Jenjang filter — segmented control */

@@ -200,6 +200,21 @@ export async function deleteKelas(id: number) {
   return res.data;
 }
 
+// ================================
+// TRANSFER STUDENTS
+// ================================
+export async function transferStudents(
+  sourceKelasId: number,
+  siswaList: string[],
+  targetKelasId: number,
+) {
+  const res = await api.post(`/kelas/${sourceKelasId}/transfer-students`, {
+    siswaList,
+    targetKelasId,
+  });
+  kelasCache = null;
+  return res.data;
+}
 
 /**
  * Get kelas for dropdown (nama + tingkat)

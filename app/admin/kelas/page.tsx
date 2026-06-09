@@ -3,12 +3,13 @@
 import { useMemo, useState, useEffect } from "react";
 import {
   createKelas, deleteKelas, getCachedClasses,
-  getClasses, updateKelas,
+  getClasses, transferStudents, updateKelas,
 } from "@/lib/services/admin";
 import type { Class } from "@/lib/dummy/types";
 import {
   Plus, Search, Users, School, Pencil, Trash2, X, Save,
   ChevronDown, ChevronUp, User, CheckCircle2, AlertCircle, Loader2,
+  ArrowRightLeft,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 
@@ -23,6 +24,10 @@ const TINGKAT_OPTIONS: Record<JenjangOption, TingkatOption[]> = {
 const TINGKAT_TO_NUMBER: Record<TingkatOption, number> = {
   I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12,
 };
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
 
 export default function KelasPage() {
   const [dataKelas, setDataKelas] = useState<Class[]>([]);
@@ -42,6 +47,12 @@ export default function KelasPage() {
     tingkat: "" as TingkatOption | "", kapasitas: 32,
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string | number } | null>(null);
+
+  // Transfer state
+  const [transferSourceKelasId, setTransferSourceKelasId] = useState<string | number | null>(null);
+  const [selectedStudentsForTransfer, setSelectedStudentsForTransfer] = useState<Set<string>>(new Set());
+  const [transferTargetKelasId, setTransferTargetKelasId] = useState<number | null>(null);
+  const [isTransferring, setIsTransferring] = useState(false);
 
   const showToast = (msg: string, type: "success" | "error") => {
     setToast({ show: true, msg, type });
@@ -69,6 +80,22 @@ export default function KelasPage() {
     return matchQ && (filterJenjang === "ALL" || k.jenjang === filterJenjang);
   }), [dataKelas, query, filterJenjang]);
 
+  const transferSourceKelas = useMemo(
+    () => dataKelas.find((k) => k.id === transferSourceKelasId) ?? null,
+    [dataKelas, transferSourceKelasId]
+  );
+  const transferTargetKelas = useMemo(
+    () => dataKelas.find((k) => Number(k.id) === transferTargetKelasId) ?? null,
+    [dataKelas, transferTargetKelasId]
+  );
+  const selectedTransferCount = selectedStudentsForTransfer.size;
+  const targetRemainingSeats = transferTargetKelas
+    ? Math.max(transferTargetKelas.kapasitas - transferTargetKelas.siswaAktif, 0)
+    : 0;
+  const isTargetCapacityEnough = Boolean(
+    transferTargetKelas && targetRemainingSeats >= selectedTransferCount
+  );
+
   const handleSave = async () => {
     if (!formData.namaKelas || !formData.jenjang || !formData.tingkat) {
       showToast("Lengkapi semua form wajib!", "error"); return;
@@ -85,8 +112,8 @@ export default function KelasPage() {
       setDataKelas(await getClasses({ forceRefresh: true }));
       setIsModalOpen(false);
       showToast(modalMode === "add" ? "Kelas berhasil dibuat!" : "Kelas berhasil diperbarui!", "success");
-    } catch (err: any) {
-      showToast(err?.message || "Terjadi kesalahan", "error");
+    } catch (err: unknown) {
+      showToast(getErrorMessage(err, "Terjadi kesalahan"), "error");
     } finally { setIsSubmitting(false); }
   };
 
@@ -104,6 +131,64 @@ export default function KelasPage() {
       showToast("Gagal menghapus kelas", "error");
     } finally {
       setDeleteConfirm(null);
+    }
+  };
+
+  const closeTransferModal = () => {
+    setTransferSourceKelasId(null);
+    setSelectedStudentsForTransfer(new Set());
+    setTransferTargetKelasId(null);
+  };
+
+  const startTransfer = (kelasId: string | number) => {
+    setTransferSourceKelasId(kelasId);
+    setSelectedStudentsForTransfer(new Set());
+    setTransferTargetKelasId(null);
+  };
+
+  const toggleStudentSelection = (nis: string) => {
+    const newSet = new Set(selectedStudentsForTransfer);
+    if (newSet.has(nis)) {
+      newSet.delete(nis);
+    } else {
+      newSet.add(nis);
+    }
+    setSelectedStudentsForTransfer(newSet);
+  };
+
+  const toggleAllTransferStudents = () => {
+    if (!transferSourceKelas?.peserta?.length) return;
+    if (selectedStudentsForTransfer.size === transferSourceKelas.peserta.length) {
+      setSelectedStudentsForTransfer(new Set());
+      return;
+    }
+    setSelectedStudentsForTransfer(new Set(transferSourceKelas.peserta.map((p) => p.nis)));
+  };
+
+  const handleTransferStudents = async () => {
+    if (!transferSourceKelasId || !transferTargetKelasId || selectedTransferCount === 0) {
+      showToast("Data transfer tidak lengkap", "error");
+      return;
+    }
+    if (!isTargetCapacityEnough) {
+      showToast("Kapasitas kelas tujuan tidak mencukupi", "error");
+      return;
+    }
+
+    setIsTransferring(true);
+    try {
+      const result = await transferStudents(
+        Number(transferSourceKelasId),
+        Array.from(selectedStudentsForTransfer),
+        transferTargetKelasId,
+      );
+      setDataKelas(await getClasses({ forceRefresh: true }));
+      closeTransferModal();
+      showToast(result.message || "Siswa berhasil dipindahkan", "success");
+    } catch (err: unknown) {
+      showToast(getErrorMessage(err, "Gagal memindahkan siswa"), "error");
+    } finally {
+      setIsTransferring(false);
     }
   };
 
@@ -224,23 +309,23 @@ export default function KelasPage() {
                       setFormData({ namaKelas: k.namaKelas, jenjang: k.jenjang, tingkat: k.tingkat, kapasitas: k.kapasitas });
                       setIsModalOpen(true);
                     }}><Pencil size={15} /></button>
-                    <button
-                      type="button"
-                      className="btn-icon-sq delete"
-                      title="Hapus"
-                      onClick={() => confirmDelete(k.id)} // ← ganti ini
-                    >
+                    <button type="button" className="btn-icon-sq delete" title="Hapus"
+                      onClick={() => confirmDelete(k.id)}>
                       <Trash2 size={15} />
+                    </button>
+                    <button type="button" className="btn-icon-sq transfer" title="Pindah Siswa"
+                      onClick={() => startTransfer(k.id)}>
+                      <ArrowRightLeft size={15} />
                     </button>
                   </div>
 
                   {expandedId === k.id && (
                     <div className="siswa-list-expanded">
                       {k.peserta?.length ? (
-                        k.peserta.map((p: any, i: number) => (
-                          <div key={i} className="siswa-list-item">
-                            <div className="siswa-list-dot" />
-                            {p.nama}
+                        k.peserta.map((p, i) => (
+                          <div key={`${p.nis}-${i}`} className="siswa-list-row">
+                            <span>{p.nama}</span>
+                            <small>{p.nis}</small>
                           </div>
                         ))
                       ) : (
@@ -285,7 +370,7 @@ export default function KelasPage() {
                 Apakah kamu yakin ingin menghapus kelas
               </p>
               <p style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-main)", marginBottom: 8 }}>
-                "{dataKelas.find((k) => k.id === deleteConfirm.id)?.namaKelas ?? ""}"?
+                &quot;{dataKelas.find((k) => k.id === deleteConfirm.id)?.namaKelas ?? ""}&quot;?
               </p>
               <p style={{ fontSize: "0.78rem", color: "var(--text-faint)" }}>
                 Kelas tidak dapat dihapus jika masih terdapat siswa di dalam kelas ini.
@@ -309,7 +394,7 @@ export default function KelasPage() {
         document.body
       )}
 
-      {/* Modal */}
+      {/* Modal Tambah/Edit Kelas */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 450 }}>
@@ -363,6 +448,136 @@ export default function KelasPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Pindah Siswa */}
+      {transferSourceKelasId && createPortal(
+        <div className="modal-overlay" onClick={closeTransferModal}>
+          <div className="modal-content transfer-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 720 }}>
+            <div className="modal-header">
+              <h3 className="modal-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <ArrowRightLeft size={18} />
+                Pindah Siswa
+              </h3>
+              <button className="modal-close-btn" onClick={closeTransferModal}><X size={20} /></button>
+            </div>
+            <div className="modal-body">
+              <div className="transfer-summary">
+                <div>
+                  <span className="transfer-summary-label">Dari kelas</span>
+                  <strong>{transferSourceKelas?.namaKelas ?? "-"}</strong>
+                </div>
+                <div>
+                  <span className="transfer-summary-label">Dipilih</span>
+                  <strong>{selectedTransferCount} siswa</strong>
+                </div>
+              </div>
+
+              <div className="transfer-grid">
+                <section className="transfer-panel">
+                  <div className="transfer-panel-head">
+                    <div>
+                      <span className="form-label">Pilih Siswa</span>
+                      <p>Pilih satu atau beberapa siswa yang akan dipindahkan.</p>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={toggleAllTransferStudents}
+                      disabled={!transferSourceKelas?.peserta?.length}
+                    >
+                      {transferSourceKelas?.peserta?.length &&
+                      selectedStudentsForTransfer.size === transferSourceKelas.peserta.length
+                        ? "Kosongkan"
+                        : "Pilih Semua"}
+                    </button>
+                  </div>
+
+                  <div className="transfer-student-list">
+                    {transferSourceKelas?.peserta?.length ? (
+                      transferSourceKelas.peserta.map((p) => (
+                        <label key={p.nis} className="transfer-student-row">
+                          <input
+                            type="checkbox"
+                            checked={selectedStudentsForTransfer.has(p.nis)}
+                            onChange={() => toggleStudentSelection(p.nis)}
+                          />
+                          <span>
+                            <strong>{p.nama}</strong>
+                            <small>{p.nis}</small>
+                          </span>
+                        </label>
+                      ))
+                    ) : (
+                      <span className="siswa-list-empty">Belum ada siswa di kelas ini</span>
+                    )}
+                  </div>
+                </section>
+
+                <section className="transfer-panel">
+                  <div className="transfer-panel-head">
+                    <div>
+                      <span className="form-label">Kelas Tujuan</span>
+                      <p>Pilih kelas dengan kapasitas yang masih cukup.</p>
+                    </div>
+                  </div>
+
+                  <div className="transfer-target-list">
+                    {dataKelas.filter((k) => k.id !== transferSourceKelasId).map((k) => {
+                      const remaining = Math.max(k.kapasitas - k.siswaAktif, 0);
+                      const enough = selectedTransferCount > 0 && remaining >= selectedTransferCount;
+                      const isSelected = transferTargetKelasId === Number(k.id);
+
+                      return (
+                        <button
+                          key={k.id}
+                          type="button"
+                          className={`transfer-target-row ${isSelected ? "selected" : ""}`}
+                          onClick={() => setTransferTargetKelasId(Number(k.id))}
+                        >
+                          <span>
+                            <strong>{k.namaKelas}</strong>
+                            <small>{k.jenjang} - Tingkat {k.tingkat} - {k.siswaAktif}/{k.kapasitas} siswa</small>
+                          </span>
+                          <em className={enough ? "ok" : "warn"}>
+                            {selectedTransferCount === 0
+                              ? `${remaining} kursi`
+                              : enough
+                              ? `Cukup, sisa ${remaining}`
+                              : `Tidak cukup, sisa ${remaining}`}
+                          </em>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {transferTargetKelas && (
+                    <div className={`transfer-capacity-note ${isTargetCapacityEnough ? "ok" : "warn"}`}>
+                      {isTargetCapacityEnough
+                        ? `Kapasitas cukup. Setelah dipindahkan, ${transferTargetKelas.namaKelas} berisi ${transferTargetKelas.siswaAktif + selectedTransferCount}/${transferTargetKelas.kapasitas} siswa.`
+                        : `Kapasitas belum cukup untuk ${selectedTransferCount} siswa. Pilih kelas lain atau kurangi pilihan siswa.`}
+                    </div>
+                  )}
+                </section>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={closeTransferModal} disabled={isTransferring}>
+                Batal
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleTransferStudents}
+                disabled={isTransferring || selectedTransferCount === 0 || !transferTargetKelasId || !isTargetCapacityEnough}
+              >
+                {isTransferring
+                  ? <><Loader2 size={15} className="spin" /> Memindahkan...</>
+                  : <><ArrowRightLeft size={15} /> Pindahkan</>}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </>
   );
