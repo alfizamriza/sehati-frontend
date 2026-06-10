@@ -83,7 +83,12 @@ export async function createIzinBatch(payload: {
   tipe: IzinTipe;
   catatan?: string;
 }): Promise<{ count: number }> {
-  const res = await api.post("/izin/batch", payload);
+  const res = await api.post("/izin/batch", {
+    nisList: payload.nis_list,
+    tanggal: payload.tanggal,
+    tipe: payload.tipe,
+    catatan: payload.catatan,
+  });
   const envelope = res.data as ApiEnvelope<{ count: number }>;
   if (envelope.success === false) {
     throw new Error(envelope.message || "Gagal membuat izin");
