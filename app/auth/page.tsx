@@ -286,7 +286,7 @@ export default function LoginPage() {
               </form>
 
               <div className="footer">
-                Aplikasi Sekolah Hijau v2.0 •{" "}
+                Aplikasi Sekolah Hijau •{" "}
                 <button type="button" className="linklike-button" onClick={() => setShowTerms(true)}>Ketentuan</button> •{" "}
                 <button type="button" className="linklike-button" onClick={() => setShowPrivacy(true)}>Privasi</button>
               </div>
