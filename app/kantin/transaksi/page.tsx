@@ -583,7 +583,7 @@ function KalkulatorTunai({ totalBayar, onUangChange, externalUang, onExternalUan
   - Tampilan lebih compact dan terorganisir
 */
 function ModalKonfirmasi({
-  siswa, guru, namaUmum, tipePelanggan, cart, voucher, metodeBayar, onKonfirmasi, onClose, loading, onToggleByoc, externalUang, onExternalUangConsumed 
+  siswa, guru, namaUmum, tipePelanggan, cart, voucher, metodeBayar, onKonfirmasi, onClose, loading, onToggleByoc, externalUang, onExternalUangConsumed
 }: {
   siswa: SiswaInfo | null; guru: GuruInfo | null; namaUmum: string;
   tipePelanggan: "siswa" | "guru" | "umum";
@@ -727,8 +727,8 @@ function ModalKonfirmasi({
                 <div style={{ fontSize: "0.8rem", fontWeight: 700, marginBottom: 8 }}>Dibayar Sekarang (DP)</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--tr-bg-input)', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--tr-border-input)' }}>
                   <span style={{ fontWeight: 700, color: 'var(--tr-text-muted)' }}>Rp</span>
-                  <input type="number" min="0" max={bayar} 
-                    value={uangDiterima || ''} 
+                  <input type="number" min="0" max={bayar}
+                    value={uangDiterima || ''}
                     onChange={(e) => setUangDiterima(Number(e.target.value) || 0)}
                     placeholder="0"
                     style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--tr-text-primary)', fontSize: '1rem', fontWeight: 600, outline: 'none' }}
@@ -987,15 +987,15 @@ export default function TransaksiPage() {
   const katalog = kelompokkanProduk(produkAll);
   const kategoriList = Object.keys(katalog);
 
-  const doLookup = useCallback(async (raw: string, type: 'siswa'|'guru') => {
+  const doLookup = useCallback(async (raw: string, type: 'siswa' | 'guru') => {
     if (!raw.trim()) return;
-    setLoadingPelanggan(true); 
+    setLoadingPelanggan(true);
     if (type === 'siswa') setSiswa(null); else setGuru(null);
-    try { 
-      if (type === 'siswa') setSiswa(await lookupSiswa(raw)); 
-      else setGuru(await lookupGuru(raw)); 
+    try {
+      if (type === 'siswa') setSiswa(await lookupSiswa(raw));
+      else setGuru(await lookupGuru(raw));
     }
-    catch { 
+    catch {
       if (type === 'siswa') setSiswa(null); else setGuru(null);
     }
     finally { setLoadingPelanggan(false); }
@@ -1047,8 +1047,8 @@ export default function TransaksiPage() {
     setLoadingBayar(true);
     try {
       const extra = {
-         ...(metodeBayar === "voucher" && selectedVoucher ? { voucherId: selectedVoucher.id } : {}),
-         ...(metodeBayar === "ngutang" ? { nominalDibayar: uangDibayar } : {})
+        ...(metodeBayar === "voucher" && selectedVoucher ? { voucherId: selectedVoucher.id } : {}),
+        ...(metodeBayar === "ngutang" ? { nominalDibayar: uangDibayar } : {})
       };
       const identitas = tipePelanggan === 'siswa' ? { nis: siswa!.nis } : tipePelanggan === 'guru' ? { nip: guru!.nip } : { namaUmum: namaUmumInput };
       const payload = buildPayload(tipePelanggan, identitas, cart, metodeBayar, extra);
@@ -1143,7 +1143,7 @@ export default function TransaksiPage() {
         <ModalInputVoucher nis={siswa.nis} onPilih={handlePilihVoucher} onClose={() => setModalInputVoucher(false)} />
       )}
       {modalKonfirmasi && (
-        <ModalKonfirmasi 
+        <ModalKonfirmasi
           siswa={siswa} guru={guru} namaUmum={namaUmumInput} tipePelanggan={tipePelanggan} cart={cart} voucher={selectedVoucher}
           metodeBayar={metodeBayar} loading={loadingBayar}
           onToggleByoc={(p) => setCart(toggleCartByoc(cart, p.id))}
@@ -1165,17 +1165,17 @@ export default function TransaksiPage() {
             <h1>Transaksi Baru</h1>
           </Link>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
-            <div className="tabs-pelanggan" style={{display: 'flex', gap: 4, background: 'var(--tr-bg-panel)', padding: 4, borderRadius: 10}}>
-                {(["siswa", "guru", "umum"] as const).map((t) => (
-                   <button key={t} onClick={() => { setTipePelanggan(t); setCart([]); }} 
-                      style={{
-                        padding: '6px 14px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 600, textTransform: 'capitalize',
-                        background: tipePelanggan === t ? S.cyan : 'transparent',
-                        color: tipePelanggan === t ? '#fff' : 'var(--tr-text-muted)', border: 'none', cursor: 'pointer'
-                      }}>
-                     {t}
-                   </button>
-                ))}
+            <div className="tabs-pelanggan" style={{ display: 'flex', gap: 4, background: 'var(--tr-bg-panel)', padding: 4, borderRadius: 10 }}>
+              {(["siswa", "guru", "umum"] as const).map((t) => (
+                <button key={t} onClick={() => { setTipePelanggan(t); setCart([]); }}
+                  style={{
+                    padding: '6px 14px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 600, textTransform: 'capitalize',
+                    background: tipePelanggan === t ? S.cyan : 'transparent',
+                    color: tipePelanggan === t ? '#fff' : 'var(--tr-text-muted)', border: 'none', cursor: 'pointer'
+                  }}>
+                  {t}
+                </button>
+              ))}
             </div>
           </div>
         </header>
@@ -1196,13 +1196,13 @@ export default function TransaksiPage() {
               </button>
             )}
             {tipePelanggan === 'siswa' && (
-                <NisSearchInput value={nisInput} onChange={(val) => { setNisInput(val); if (!val.trim()) setSiswa(null); }} onSelect={(nis) => doLookup(nis, 'siswa')} loading={loadingPelanggan} strategy="local" listAllFn={listSiswa} searchByNisFn={async (nis) => { try { return await lookupSiswa(nis); } catch { return null; } }} />
+              <NisSearchInput value={nisInput} onChange={(val) => { setNisInput(val); if (!val.trim()) setSiswa(null); }} onSelect={(nis) => doLookup(nis, 'siswa')} loading={loadingPelanggan} strategy="local" listAllFn={listSiswa} searchByNisFn={async (nis) => { try { return await lookupSiswa(nis); } catch { return null; } }} />
             )}
             {tipePelanggan === 'guru' && (
-                <NipSearchInput value={nipInput} onChange={(val) => { setNipInput(val); if (!val.trim()) setGuru(null); }} onSelect={(nip) => doLookup(nip, 'guru')} loading={loadingPelanggan} strategy="local" listAllFn={listGuru as any} searchByNipFn={async (nip) => { try { return await lookupGuru(nip); } catch { return null; } }} />
+              <NipSearchInput value={nipInput} onChange={(val) => { setNipInput(val); if (!val.trim()) setGuru(null); }} onSelect={(nip) => doLookup(nip, 'guru')} loading={loadingPelanggan} strategy="local" listAllFn={listGuru as any} searchByNipFn={async (nip) => { try { return await lookupGuru(nip); } catch { return null; } }} />
             )}
             {tipePelanggan === 'umum' && (
-                <input type="text" value={namaUmumInput} onChange={(e) => setNamaUmumInput(e.target.value)} placeholder="Tulis nama pembeli Umum..." className="nis-input-field" style={{flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--tr-border-input)', background: 'transparent', color: 'var(--tr-text-primary)'}} />
+              <input type="text" value={namaUmumInput} onChange={(e) => setNamaUmumInput(e.target.value)} placeholder="Tulis nama pembeli Umum..." className="nis-input-field" style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--tr-border-input)', background: 'transparent', color: 'var(--tr-text-primary)' }} />
             )}
           </div>
 
@@ -1335,7 +1335,7 @@ export default function TransaksiPage() {
               </button>
               <button className="btn-pay cash" disabled={!hasPelanggan || !cart.length} style={{ background: `${S.amber}22`, color: S.amber, border: `1px solid ${S.amber}40` }}
                 onClick={() => { setSelectedVoucher(null); setMetodeBayar("ngutang"); setUangTunai(0); setModalKonfirmasi(true); }}>
-                💳 Ngutang
+                Ngutang
               </button>
             </div>
           </div>

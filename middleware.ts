@@ -1,4 +1,3 @@
-// d:\ALFI\TA\Projek\sehati-frontend\middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -17,7 +16,7 @@ export function middleware(request: NextRequest) {
   console.log('🔐 Middleware:', { pathname, hasToken: !!token, role });
 
   // Check if route is protected
-  const isProtected = Object.keys(PROTECTED_ROUTES).some(route => 
+  const isProtected = Object.keys(PROTECTED_ROUTES).some(route =>
     pathname.startsWith(route)
   );
 
@@ -29,7 +28,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Check role-based access
-    const routePrefix = Object.keys(PROTECTED_ROUTES).find(route => 
+    const routePrefix = Object.keys(PROTECTED_ROUTES).find(route =>
       pathname.startsWith(route)
     );
 

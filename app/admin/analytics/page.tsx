@@ -17,6 +17,7 @@ import {
 } from "@/lib/services/analytics.service";
 import api, { type ApiClientError } from "@/lib/api";
 import "./analytics.css";
+import { jsPDF } from "jspdf";
 
 // ─── HEATMAP GRID + RICH TOOLTIP ─────────────────────────────────────────────
 
@@ -28,6 +29,18 @@ interface HeatmapTooltipState {
   hour: number;
   count: number;
   max: number;
+}
+
+function sanitizePdfText(text: string): string {
+  return text
+    .replace(/Rp\s?/g, "Rp ")          // pastikan spasi normal
+    .replace(/[^\x00-\x7F\u00C0-\u024F]/g, "?")  // buang non-Latin chars
+    // atau lebih spesifik:
+    .replace(/↑/g, "+")
+    .replace(/↓/g, "-")
+    .replace(/🥇/g, "1.")
+    .replace(/🥈/g, "2.")
+    .replace(/🥉/g, "3.");
 }
 
 function HeatmapGrid({
@@ -1021,7 +1034,7 @@ export default function AnalyticsPage() {
                         {k.pelanggar} pelanggaran
                         <span style={{ margin: "0 4px", opacity: 0.4 }}>·</span>
                         <Coins size={9} style={{ marginRight: 2 }} />
-                        rata {k.coinsRata.toLocaleString("id-ID")}
+                        rata {Math.round(k.coinsRata).toString()}
                       </div>
                     </div>
                   );

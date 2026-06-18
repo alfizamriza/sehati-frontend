@@ -106,7 +106,7 @@ function writeSessionCache(key: string, entry: AnalyticsCacheEntry) {
   if (typeof window === "undefined") return;
   try {
     window.sessionStorage.setItem(`analytics-cache:${key}`, JSON.stringify(entry));
-  } catch {}
+  } catch { }
 }
 
 function normalizeAnalyticsData(raw: any): AnalyticsData {
@@ -199,10 +199,10 @@ export function formatPeriodLabel(
   const s = new Date(start).toLocaleDateString("id-ID", opts);
   const e = new Date(end).toLocaleDateString("id-ID", opts);
   switch (period) {
-    case "today":  return `Hari Ini, ${s}`;
-    case "week":   return `7 Hari Terakhir (${s} – ${e})`;
-    case "month":  return `Bulan Ini (${new Date(start).toLocaleDateString("id-ID", monthOpts)})`;
-    case "year":   return `Tahun ${new Date(start).getFullYear()}`;
+    case "today": return `Hari Ini, ${s}`;
+    case "week": return `7 Hari Terakhir (${s} – ${e})`;
+    case "month": return `Bulan Ini (${new Date(start).toLocaleDateString("id-ID", monthOpts)})`;
+    case "year": return `Tahun ${new Date(start).getFullYear()}`;
     case "custom": return `${s} – ${e}`;
     default: return s;
   }
@@ -214,22 +214,22 @@ export async function exportAnalyticsPDF(
   data: AnalyticsData,
   infoSekolah: { namaSekolah: string; npsn: string; alamat: string },
 ): Promise<void> {
-  const { default: jsPDF }     = await import("jspdf");
+  const { default: jsPDF } = await import("jspdf");
   const { default: autoTable } = await import("jspdf-autotable");
 
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const W   = doc.internal.pageSize.getWidth();
-  const H   = doc.internal.pageSize.getHeight();
-  const M   = 16;
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+  const M = 16;
 
-  const DARK:   [number,number,number] = [10,  14, 40];
-  const BLUE:   [number,number,number] = [23, 158,255];
-  const GREEN:  [number,number,number] = [16, 185,129];
-  const PURPLE: [number,number,number] = [139, 92,246];
-  const AMBER:  [number,number,number] = [245,158, 11];
-  const RED:    [number,number,number] = [239, 68, 68];
-  const LGRAY:  [number,number,number] = [248,250,255];
-  const GRAY:   [number,number,number] = [100,116,139];
+  const DARK: [number, number, number] = [10, 14, 40];
+  const BLUE: [number, number, number] = [23, 158, 255];
+  const GREEN: [number, number, number] = [16, 185, 129];
+  const PURPLE: [number, number, number] = [139, 92, 246];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const RED: [number, number, number] = [239, 68, 68];
+  const LGRAY: [number, number, number] = [248, 250, 255];
+  const GRAY: [number, number, number] = [100, 116, 139];
 
   const periodLabel = formatPeriodLabel(data.period, data.range.start, data.range.end);
 
@@ -279,14 +279,14 @@ export async function exportAnalyticsPDF(
   let y = 50;
   const colW = (W - M * 2 - 8) / 3;
   const cardH = 28;
-  const cardColors: [number,number,number][] = [BLUE, GREEN, PURPLE, AMBER, RED, GREEN];
+  const cardColors: [number, number, number][] = [BLUE, GREEN, PURPLE, AMBER, RED, GREEN];
 
   data.stats.slice(0, 6).forEach((s, i) => {
-    const col  = i % 3;
-    const row  = Math.floor(i / 3);
-    const cx   = M + col * (colW + 4);
-    const cy   = y + row * (cardH + 6);
-    const clr  = cardColors[i];
+    const col = i % 3;
+    const row = Math.floor(i / 3);
+    const cx = M + col * (colW + 4);
+    const cy = y + row * (cardH + 6);
+    const clr = cardColors[i];
 
     // Card background
     doc.setFillColor(...LGRAY);
@@ -313,13 +313,13 @@ export async function exportAnalyticsPDF(
     doc.text(s.valueFormatted, cx + 8, cy + 19);
 
     // Change
-    const changeClr: [number,number,number] = s.negative
+    const changeClr: [number, number, number] = s.negative
       ? (s.change > 0 ? RED : GREEN)
       : (s.change >= 0 ? GREEN : RED);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(...changeClr);
-    doc.text(`${s.change >= 0 ? "▲" : "▼"} ${s.changeText}`, cx + 8, cy + 25);
+    doc.text(`${s.change >= 0 ? "+" : "-"} ${s.changeText}`, cx + 8, cy + 25);
   });
 
   y += cardH * 2 + 20;
@@ -341,7 +341,7 @@ export async function exportAnalyticsPDF(
     body: data.topProduk.slice(0, 5).map((p) => [
       String(p.rank), p.name, String(p.value),
     ]),
-    headStyles: { fillColor: DARK, textColor: [255,255,255], fontSize: 8, cellPadding: 4 },
+    headStyles: { fillColor: DARK, textColor: [255, 255, 255], fontSize: 8, cellPadding: 4 },
     bodyStyles: { fontSize: 8.5, cellPadding: 3.5, textColor: DARK },
     alternateRowStyles: { fillColor: LGRAY },
     columnStyles: { 0: { cellWidth: 12, halign: "center" }, 2: { halign: "right" } },
@@ -366,7 +366,7 @@ export async function exportAnalyticsPDF(
     body: data.topSiswa.slice(0, 6).map((s) => [
       String(s.rank), s.name, s.sub, String(s.value),
     ]),
-    headStyles: { fillColor: DARK, textColor: [255,255,255], fontSize: 8, cellPadding: 4 },
+    headStyles: { fillColor: DARK, textColor: [255, 255, 255], fontSize: 8, cellPadding: 4 },
     bodyStyles: { fontSize: 8.5, cellPadding: 3.5, textColor: DARK },
     alternateRowStyles: { fillColor: LGRAY },
     columnStyles: { 0: { cellWidth: 12, halign: "center" }, 3: { halign: "right" } },
@@ -411,9 +411,9 @@ export async function exportAnalyticsPDF(
       String(k.totalSiswa),
       String(k.pelanggar),
       `${k.kepatuhanPct}%`,
-      `${k.coinsRata.toLocaleString("id-ID")} 🪙`,
+      String(Math.round(k.coinsRata)),
     ]),
-    headStyles: { fillColor: DARK, textColor: [255,255,255], fontSize: 8, cellPadding: 4 },
+    headStyles: { fillColor: DARK, textColor: [255, 255, 255], fontSize: 8, cellPadding: 4 },
     bodyStyles: { fontSize: 8.5, cellPadding: 3.5, textColor: DARK },
     alternateRowStyles: { fillColor: LGRAY },
     columnStyles: {
@@ -454,7 +454,7 @@ export async function exportAnalyticsPDF(
       String(d.value),
       `${Math.round((d.value / totalMetode) * 100)}%`,
     ]),
-    headStyles: { fillColor: DARK, textColor: [255,255,255], fontSize: 8, cellPadding: 4 },
+    headStyles: { fillColor: DARK, textColor: [255, 255, 255], fontSize: 8, cellPadding: 4 },
     bodyStyles: { fontSize: 8.5, cellPadding: 3.5, textColor: DARK },
     alternateRowStyles: { fillColor: LGRAY },
     columnStyles: { 1: { halign: "center" }, 2: { halign: "center" } },
@@ -483,15 +483,15 @@ export async function exportAnalyticsPDF(
         d.name, String(d.value),
         `${Math.round((d.value / totalKemasan) * 100)}%`,
       ]),
-      headStyles: { fillColor: DARK, textColor: [255,255,255], fontSize: 8, cellPadding: 4 },
+      headStyles: { fillColor: DARK, textColor: [255, 255, 255], fontSize: 8, cellPadding: 4 },
       bodyStyles: { fontSize: 8.5, cellPadding: 3.5, textColor: DARK },
       alternateRowStyles: { fillColor: LGRAY },
       columnStyles: { 1: { halign: "center" }, 2: { halign: "center" } },
       didParseCell: (hook) => {
         if (hook.section === "body" && hook.column.index === 0) {
           const name = String(hook.cell.raw);
-          if (name === "Plastik")       hook.cell.styles.textColor = RED;
-          if (name === "Kertas")        hook.cell.styles.textColor = AMBER;
+          if (name === "Plastik") hook.cell.styles.textColor = RED;
+          if (name === "Kertas") hook.cell.styles.textColor = AMBER;
           if (name === "Tanpa Kemasan") hook.cell.styles.textColor = GREEN;
         }
       },
@@ -509,16 +509,16 @@ export async function exportAnalyticsPDF(
 
 function drawPageHeader(
   doc: any, W: number, M: number,
-  dark: [number,number,number], blue: [number,number,number],
+  dark: [number, number, number], blue: [number, number, number],
   title: string, sub: string,
 ) {
   doc.setFillColor(...dark); doc.rect(0, 0, W, 38, "F");
   doc.setFillColor(...blue); doc.rect(0, 0, 5, 38, "F");
   doc.setFont("helvetica", "bold"); doc.setFontSize(12);
-  doc.setTextColor(255,255,255);
+  doc.setTextColor(255, 255, 255);
   doc.text(title, 12, 16);
-  doc.setFont("helvetica","normal"); doc.setFontSize(8);
-  doc.setTextColor(160,180,220);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+  doc.setTextColor(160, 180, 220);
   doc.text(sub, 12, 26);
   doc.setDrawColor(...blue); doc.setLineWidth(0.4);
   doc.line(0, 38, W, 38);
@@ -527,12 +527,12 @@ function drawPageHeader(
 function drawFooter(
   doc: any, W: number, H: number, M: number,
   namaSekolah: string, page: number,
-  dark: [number,number,number],
+  dark: [number, number, number],
 ) {
   doc.setFillColor(...dark);
   doc.rect(0, H - 12, W, 12, "F");
-  doc.setFont("helvetica","normal"); doc.setFontSize(7);
-  doc.setTextColor(160,180,220);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+  doc.setTextColor(160, 180, 220);
   doc.text(
     `${namaSekolah}  ·  Laporan Analitik SEHATI  ·  Halaman ${page}`,
     W / 2, H - 5, { align: "center" },

@@ -82,7 +82,8 @@ export default function SiswaPage() {
     statusAktif: true,
     permissions: [] as string[],
   });
-
+  const [pwdHint, setPwdHint] = useState<{ msg: string; type: "info" | "error" | "success" } | null>(null);
+  const [namaHint, setNamaHint] = useState<string | null>(null);
   const handleNisBlur = () => {
     if (!formData.nis) return;
     const exists = dataSiswa.some((s) => s.nis === formData.nis);
@@ -198,6 +199,9 @@ export default function SiswaPage() {
   const openAdd = () => {
     setModalMode("add");
     setFormData({ nis: "", nama: "", password: "", kelasId: "", statusAktif: true, permissions: [] });
+    setPwdHint(null);
+    setNamaHint(null);
+    setNisError(null);
     setIsModalOpen(true);
     void loadKelasDropdown();
   };
@@ -206,6 +210,9 @@ export default function SiswaPage() {
     setModalMode("edit");
     setCurrentNis(s.nis);
     setFormData({ nis: s.nis, nama: s.nama, password: "", kelasId: s.kelasId || "", statusAktif: s.statusAktif, permissions: s.permissions || [] });
+    setPwdHint(null);
+    setNamaHint(null);
+    setNisError(null);
     setIsModalOpen(true);
     void loadKelasDropdown();
   };
@@ -218,6 +225,10 @@ export default function SiswaPage() {
     }
     if (modalMode === "add" && !formData.password) {
       showToast("Password wajib diisi untuk siswa baru!", "error");
+      return;
+    }
+    if (formData.password && formData.password.length < 6) {
+      showToast("Password minimal 6 karakter!", "error");
       return;
     }
     setIsSubmitting(true);
@@ -641,10 +652,18 @@ export default function SiswaPage() {
                     type="text" className="form-input" placeholder="Nomor Induk"
                     value={formData.nis}
                     onChange={(e) => {
-                      setFormData({ ...formData, nis: e.target.value });
-                      setNisError(null); // reset error saat mengetik ulang
+                      const raw = e.target.value;
+                      const val = raw.replace(/\D/g, "");
+                      setFormData({ ...formData, nis: val });
+                      setNisError(null);
+                      if (raw !== val) {
+                        setNisError("Huruf tidak diperbolehkan pada NIS!");
+                        setTimeout(() => setNisError(null), 10000);
+                      }
                     }}
-                    onBlur={handleNisBlur} // ← validasi saat pindah fokus
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onBlur={handleNisBlur}
                     disabled={modalMode === "edit"}
                     style={{
                       ...(modalMode === "edit" ? { opacity: 0.5, cursor: "not-allowed" } : {}),
@@ -662,8 +681,23 @@ export default function SiswaPage() {
                   <input
                     type="text" className="form-input" placeholder="Nama siswa..."
                     value={formData.nama}
-                    onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      const val = raw.replace(/[0-9]/g, "");
+                      setFormData({ ...formData, nama: val });
+                      if (raw !== val) {
+                        setNamaHint("Angka tidak diperbolehkan pada nama!");
+                        setTimeout(() => setNamaHint(null), 10000);
+                      } else {
+                        setNamaHint(null);
+                      }
+                    }}
                   />
+                  {namaHint && (
+                    <span className="form-hint" style={{ color: "var(--red)", display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+                      <AlertCircle size={12} /> {namaHint}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -703,12 +737,42 @@ export default function SiswaPage() {
                 <label className="form-label">Password</label>
                 <input
                   type="password" className="form-input"
-                  placeholder={modalMode === "edit" ? "Kosongkan jika tidak ingin mengubah" : "Password awal siswa..."}
+                  placeholder={modalMode === "edit" ? "Kosongkan jika tidak ingin mengubah" : "Min. 6 karakter..."}
+                  minLength={6}
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFormData({ ...formData, password: val });
+                    if (val.length === 0) {
+                      setPwdHint(null);
+                    } else if (val.length < 6) {
+                      setPwdHint({ msg: `Kurang ${6 - val.length} karakter lagi`, type: "error" });
+                    } else {
+                      setPwdHint({ msg: "Password memenuhi syarat", type: "success" });
+                    }
+                  }}
+                  style={
+                    pwdHint?.type === "error"
+                      ? { borderColor: "var(--red)", boxShadow: "0 0 0 2px rgba(239,68,68,0.15)" }
+                      : pwdHint?.type === "success"
+                        ? { borderColor: "var(--green)", boxShadow: "0 0 0 2px rgba(5,150,105,0.15)" }
+                        : {}
+                  }
                 />
-                {modalMode === "edit" && (
-                  <span className="form-hint">* Hanya isi jika ingin mereset password siswa</span>
+                {pwdHint ? (
+                  <span className="form-hint" style={{
+                    color: pwdHint.type === "error" ? "var(--red)" : "var(--green)",
+                    display: "flex", alignItems: "center", gap: 4, marginTop: 4
+                  }}>
+                    {pwdHint.type === "error"
+                      ? <AlertCircle size={12} />
+                      : <CheckCircle size={12} />}
+                    {pwdHint.msg}
+                  </span>
+                ) : modalMode === "edit" ? (
+                  <span className="form-hint">* Hanya isi jika ingin mereset password siswa (min. 6 karakter)</span>
+                ) : (
+                  <span className="form-hint">* Minimal 6 karakter</span>
                 )}
               </div>
 

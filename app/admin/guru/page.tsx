@@ -99,6 +99,11 @@ export default function GuruPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
+  // ── VALIDATION STATE ─────────────────────────────────────────────────────────
+  const [nipError, setNipError] = useState<string | null>(null);
+  const [namaHint, setNamaHint] = useState<string | null>(null);
+  const [pwdHint, setPwdHint] = useState<{ msg: string; type: "error" | "success" } | null>(null);
+
   // ── Toast helper ──
   const showToast = (msg: string, type: "success" | "error") => {
     setToast({ show: true, msg, type });
@@ -200,6 +205,9 @@ export default function GuruPage() {
     setModalMode("add");
     setCurrentNip(null);
     setFormData(FORM_EMPTY);
+    setNipError(null);
+    setNamaHint(null);
+    setPwdHint(null);
     await loadKelasTersedia();
     setIsModalOpen(true);
   };
@@ -216,6 +224,9 @@ export default function GuruPage() {
       kelasWaliId: guru.kelasWali?.id || "",
       statusAktif: guru.statusAktif,
     });
+    setNipError(null);
+    setNamaHint(null);
+    setPwdHint(null);
     await loadKelasTersedia(guru.kelasWali?.id);
     setIsModalOpen(true);
   };
@@ -238,6 +249,10 @@ export default function GuruPage() {
     }
     if (modalMode === "add" && !formData.password) {
       showToast("Password wajib diisi untuk guru baru!", "error");
+      return;
+    }
+    if (formData.password && formData.password.length < 6) {  // ← tambah
+      showToast("Password minimal 6 karakter!", "error");
       return;
     }
     if (formData.peran === "wali_kelas" && !formData.kelasWaliId) {
@@ -665,10 +680,30 @@ export default function GuruPage() {
                     className="form-input"
                     placeholder="19870101..."
                     value={formData.nip}
-                    onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      const val = raw.replace(/\D/g, "");
+                      setFormData({ ...formData, nip: val });
+                      if (raw !== val) {
+                        setNipError("Huruf tidak diperbolehkan pada NIP!");
+                        setTimeout(() => setNipError(null), 1500);
+                      } else {
+                        setNipError(null);
+                      }
+                    }}
                     disabled={modalMode === "edit"}
-                    style={modalMode === "edit" ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+                    style={{
+                      ...(modalMode === "edit" ? { opacity: 0.5, cursor: "not-allowed" } : {}),
+                      ...(nipError ? { borderColor: "var(--red)", boxShadow: "0 0 0 2px rgba(239,68,68,0.15)" } : {}),
+                    }}
                   />
+                  {nipError && (
+                    <span className="form-hint" style={{ color: "var(--red)", display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+                      <AlertCircle size={12} /> {nipError}
+                    </span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label className="form-label">Nama Lengkap</label>
@@ -677,8 +712,23 @@ export default function GuruPage() {
                     className="form-input"
                     placeholder="Nama guru..."
                     value={formData.nama}
-                    onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      const val = raw.replace(/[0-9]/g, "");
+                      setFormData({ ...formData, nama: val });
+                      if (raw !== val) {
+                        setNamaHint("Angka tidak diperbolehkan pada nama!");
+                        setTimeout(() => setNamaHint(null), 1500);
+                      } else {
+                        setNamaHint(null);
+                      }
+                    }}
                   />
+                  {namaHint && (
+                    <span className="form-hint" style={{ color: "var(--red)", display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+                      <AlertCircle size={12} /> {namaHint}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -768,15 +818,43 @@ export default function GuruPage() {
                   placeholder={
                     modalMode === "edit"
                       ? "Kosongkan jika tidak ingin mengubah"
-                      : "Password akun guru..."
+                      : "Min. 6 karakter..."
                   }
+                  minLength={6}
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFormData({ ...formData, password: val });
+                    if (val.length === 0) {
+                      setPwdHint(null);
+                    } else if (val.length < 6) {
+                      setPwdHint({ msg: `Kurang ${6 - val.length} karakter lagi`, type: "error" });
+                    } else {
+                      setPwdHint({ msg: "Password memenuhi syarat", type: "success" });
+                    }
+                  }}
+                  style={
+                    pwdHint?.type === "error"
+                      ? { borderColor: "var(--red)", boxShadow: "0 0 0 2px rgba(239,68,68,0.15)" }
+                      : pwdHint?.type === "success"
+                        ? { borderColor: "var(--green)", boxShadow: "0 0 0 2px rgba(5,150,105,0.15)" }
+                        : {}
+                  }
                 />
-                {modalMode === "edit" && (
-                  <span className="form-hint">
-                    * Hanya isi jika ingin mereset password guru
+                {pwdHint ? (
+                  <span className="form-hint" style={{
+                    color: pwdHint.type === "error" ? "var(--red)" : "var(--green)",
+                    display: "flex", alignItems: "center", gap: 4, marginTop: 4,
+                  }}>
+                    {pwdHint.type === "error"
+                      ? <AlertCircle size={12} />
+                      : <CheckCircle size={12} />}
+                    {pwdHint.msg}
                   </span>
+                ) : modalMode === "edit" ? (
+                  <span className="form-hint">* Hanya isi jika ingin mereset password guru (min. 6 karakter)</span>
+                ) : (
+                  <span className="form-hint">* Minimal 6 karakter</span>
                 )}
               </div>
 

@@ -28,7 +28,6 @@ async function proxyRequest(req: NextRequest, paramsPromise: Promise<{ path: str
 
   const responseHeaders = new Headers(backendRes.headers);
 
-  // Extract cookies using standard Web API getSetCookie if available
   let setCookieHeaders: string[] = [];
   if (typeof backendRes.headers.getSetCookie === 'function') {
     setCookieHeaders = backendRes.headers.getSetCookie();
@@ -47,6 +46,37 @@ async function proxyRequest(req: NextRequest, paramsPromise: Promise<{ path: str
     status: backendRes.status,
     headers: responseHeaders,
   });
+
+  const joinedPath = path.join('/');
+  if (joinedPath === 'auth/login' && backendRes.status === 200) {
+    try {
+      const decoder = new TextDecoder();
+      const text = decoder.decode(responseBody);
+      const json = JSON.parse(text);
+      const token = json.data?.token;
+      const role = json.data?.role;
+
+      if (token && role) {
+        response.cookies.set('auth_token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 60 * 60 * 8, // 8 jam
+        });
+
+        response.cookies.set('auth_role', role, {
+          httpOnly: false,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 60 * 60 * 8, // 8 jam
+        });
+      }
+    } catch (e) {
+      console.error('Error intercepting login response in proxy:', e);
+    }
+  }
 
   if (Array.isArray(setCookieHeaders) && setCookieHeaders.length > 0) {
     for (let cookie of setCookieHeaders) {
