@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
 
         const result = await backendRes.json();
 
-        // Pastikan data user dikembalikan oleh backend
         if (!result.success || !result.data?.user) {
             return NextResponse.json(
                 { success: false, message: result.message || 'Login gagal.' },
@@ -42,14 +41,12 @@ export async function POST(request: NextRequest) {
 
         const user = result.data.user as { id: string; role: string; nama?: string };
 
-        // 2. Generate JWT menggunakan JWT_SECRET frontend agar bisa divalidasi oleh Middleware Next.js
         const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
         const token = await new SignJWT({ userId: user.id, role: user.role })
             .setProtectedHeader({ alg: 'HS256' })
             .setExpirationTime('8h') // Token otomatis kedaluwarsa setelah 8 jam
             .sign(secret);
 
-        // 3. Buat response JSON berisi data user dan jalur redirect
         const response = NextResponse.json({
             success: true,
             message: 'Login berhasil',

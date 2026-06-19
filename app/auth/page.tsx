@@ -37,6 +37,28 @@ const ROLES = [
 
 type RoleId = (typeof ROLES)[number]["id"];
 
+// Nomor HP fallback admin SEHATI jika pengaturan "nomor_hp" belum tersedia dari API
+const DEFAULT_ADMIN_PHONE = "082211341607";
+
+// Pesan otomatis yang akan terisi saat pengguna klik link WhatsApp admin
+const FORGOT_PASSWORD_MESSAGE = "Halo Admin, saya lupa password akun saya. Bolehkah dibantu?";
+
+// Mengubah nomor HP lokal (0812xxxx / 62812xxxx / +62812xxxx) menjadi format
+// internasional tanpa simbol, sesuai yang dibutuhkan oleh wa.me (62812xxxx)
+function formatPhoneForWhatsApp(rawPhone: string): string {
+  const digitsOnly = rawPhone.replace(/[^\d]/g, "");
+  if (digitsOnly.startsWith("62")) return digitsOnly;
+  if (digitsOnly.startsWith("0")) return `62${digitsOnly.slice(1)}`;
+  return `62${digitsOnly}`;
+}
+
+// Membuat URL wa.me lengkap dengan nomor admin dan pesan otomatis yang sudah di-encode
+function buildAdminWhatsAppUrl(rawPhone: string): string {
+  const phone = formatPhoneForWhatsApp(rawPhone);
+  const text = encodeURIComponent(FORGOT_PASSWORD_MESSAGE);
+  return `https://wa.me/${phone}?text=${text}`;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const defaultSchoolName = "Sekolah Sukma Bangsa Pidie";
@@ -48,6 +70,7 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [schoolName, setSchoolName] = useState(defaultSchoolName);
+  const [adminPhone, setAdminPhone] = useState(DEFAULT_ADMIN_PHONE);
 
   // Policy Modals State
   const [showTerms, setShowTerms] = useState(false);
@@ -66,6 +89,10 @@ export default function LoginPage() {
         const configuredSchoolName = pengaturan.find((item) => item.key === "nama_sekolah")?.value?.trim();
         if (alive && configuredSchoolName) {
           setSchoolName(configuredSchoolName);
+        }
+        const configuredAdminPhone = pengaturan.find((item) => item.key === "nomor_hp")?.value?.trim();
+        if (alive && configuredAdminPhone) {
+          setAdminPhone(configuredAdminPhone);
         }
       } catch {
         if (alive) {
@@ -274,6 +301,17 @@ export default function LoginPage() {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {/* <div className="forgot-password-hint">
+                    Lupa kata sandi? Hubungi{" "}
+                    <a
+                      href={buildAdminWhatsAppUrl(adminPhone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="forgot-password-link"
+                    >
+                      admin SEHATI
+                    </a>
+                  </div> */}
                 </div>
 
                 <button className="submit" type="submit" disabled={isLoading}>
@@ -289,6 +327,16 @@ export default function LoginPage() {
                 Aplikasi Sekolah Hijau •{" "}
                 <button type="button" className="linklike-button" onClick={() => setShowTerms(true)}>Ketentuan</button> •{" "}
                 <button type="button" className="linklike-button" onClick={() => setShowPrivacy(true)}>Privasi</button>
+                <br />
+                Lupa password?{" "}
+                <a
+                  href={buildAdminWhatsAppUrl(adminPhone)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-admin-link"
+                >
+                  Hubungi admin SEHATI
+                </a>
               </div>
             </div>
           </section>
