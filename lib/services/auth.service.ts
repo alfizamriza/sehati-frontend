@@ -153,7 +153,7 @@ export function getCachedProfile(): any {
 
 export function isAuthenticated(): boolean {
   try {
-    return !!getUserRole() || !!getCachedProfile();
+    return !!getUserRole();
   } catch (e) {
     console.error('Error checking authentication:', e);
     return false;
